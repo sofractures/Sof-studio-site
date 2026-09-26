@@ -1,0 +1,2659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>jamie reddington / sound of fractures studios</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#0a0a0a;
+    --g60:rgba(10,10,10,.6);
+    --g40:rgba(10,10,10,.4);
+    --g25:rgba(10,10,10,.25);
+    --g12:rgba(10,10,10,.12);
+    --mono:"SF Mono","IBM Plex Mono","Space Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);color:var(--ink);font-family:var(--mono);
+    overflow:hidden;-webkit-font-smoothing:antialiased;
+  }
+  #map{position:fixed;inset:0;display:block;cursor:crosshair;}
+
+  /* ---------- overview node buttons ---------- */
+  #nodeLayer{position:fixed;inset:0;pointer-events:none;z-index:10;transition:opacity .35s;}
+  #nodeLayer.hidden{opacity:0;pointer-events:none;}
+  #nodeLayer.hidden .node{pointer-events:none;}
+  .node{
+    position:fixed;top:0;left:0;pointer-events:auto;
+    background:none;border:none;cursor:grab;text-align:center;
+    font-family:var(--mono);padding:6px 10px;
+    -webkit-tap-highlight-color:rgba(10,10,10,.08);
+    touch-action:none;
+    transform-origin:50% 0;
+  }
+  .node.dragging{cursor:grabbing;}
+  .node .num{display:block;font-size:8.5px;letter-spacing:.2em;color:var(--g40);margin-bottom:4px;}
+  .node .lbl{
+    display:inline-block;font-size:12.5px;font-weight:700;color:var(--ink);
+    letter-spacing:.02em;border-bottom:1px dotted var(--g25);padding-bottom:2px;
+    transition:border-color .2s;
+  }
+  .node .sub{
+    display:block;font-size:9px;letter-spacing:.08em;color:var(--g40);
+    margin-top:5px;opacity:0;transition:opacity .2s;
+  }
+  .node:hover .lbl,.node:focus .lbl{border-bottom:1px solid var(--ink);}
+  .node:hover .sub,.node:focus .sub{opacity:1;}
+  @media (hover:none){ .node .sub{opacity:.65;} }
+
+  /* ---------- section (sub-map) layer ---------- */
+  #subLayer{position:fixed;inset:0;pointer-events:none;z-index:12;opacity:0;transition:opacity .4s;}
+  #subLayer.on{opacity:1;}
+  #subLayer.on .leaf,#subLayer.on .childlbl{pointer-events:auto;}
+  .subhub{
+    position:fixed;top:0;left:0;text-align:center;transform:translate(-50%,-50%);
+  }
+  .subhub .num{display:block;font-size:9px;letter-spacing:.2em;color:var(--g40);margin-bottom:6px;}
+  .subhub .t{font-size:26px;font-weight:700;letter-spacing:-.01em;}
+  .subhub .d{display:block;font-size:9.5px;color:var(--g40);margin-top:8px;letter-spacing:.05em;max-width:240px;}
+  .childlbl{
+    position:fixed;top:0;left:0;transform:translate(-50%,-50%);
+    background:var(--bg);border:none;cursor:pointer;
+    font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);
+    padding:4px 10px;letter-spacing:.02em;
+  }
+  .childlbl .cl{border-bottom:1px dotted var(--g25);padding-bottom:2px;transition:border-color .2s;}
+  .childlbl:hover .cl{border-bottom:1px solid var(--ink);}
+  .leaf{
+    position:fixed;top:0;left:0;width:100px;
+    text-decoration:none;color:var(--ink);text-align:center;
+    -webkit-tap-highlight-color:rgba(10,10,10,.08);
+  }
+  .leaf .lthumb{
+    display:flex;align-items:center;justify-content:center;
+    width:100px;height:60px;background:#f2f2f0;border:1px solid var(--g25);
+    overflow:hidden;margin-bottom:6px;
+    transition:border-color .2s;
+  }
+  .leaf:hover .lthumb{border-color:var(--ink);}
+  .leaf .lthumb img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(15%);}
+  .leaf:hover .lthumb img{filter:none;}
+  .leaf .lthumb .noimg{font-size:8.5px;letter-spacing:.12em;color:var(--g40);padding:4px;}
+  .leaf .lt{
+    display:block;font-size:9.5px;line-height:1.5;font-weight:700;
+    border-bottom:none;
+  }
+  .leaf .ls{display:block;font-size:8px;color:var(--g40);letter-spacing:.08em;margin-top:3px;}
+  .leaf:hover .lt{text-decoration:underline;}
+  .leaf.still{cursor:default;}
+  .leaf.still:hover .lt{text-decoration:none;}
+  .card.still{cursor:default;}
+  .card.still:hover .t{border-color:transparent;}
+  /* mini leaves: small image-only markers inside the projects overview */
+  .leaf.mini{width:58px;cursor:pointer;}
+  .leaf.mini .lthumb{width:58px;height:36px;margin-bottom:0;}
+  /* wide leaves: room for full academic titles */
+  .leaf.wide{width:170px;}
+  .leaf.wide .lthumb{margin-left:auto;margin-right:auto;}
+  .subnote{
+    position:fixed;top:0;left:0;transform:translate(-50%,-50%);
+    font-size:10.5px;color:var(--g40);letter-spacing:.06em;line-height:2;
+    text-align:center;max-width:300px;
+  }
+  .backmap{
+    position:fixed;top:96px;left:26px;z-index:36;
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    background:var(--bg);border:1px solid var(--g25);
+    padding:8px 15px;cursor:pointer;color:var(--ink);
+    display:none;
+  }
+  .backmap.on{display:block;}
+  .backmap:hover{border-color:var(--ink);}
+  @media (max-width:640px){
+    .node .lbl{font-size:11px;}
+    .node .num{font-size:8px;margin-bottom:3px;}
+    .node .sub{font-size:8.5px;margin-top:4px;}
+    .subhub .t{font-size:20px;}
+    .subhub .d{display:none;}
+    .leaf{width:78px;}
+    .leaf .lthumb{width:78px;height:47px;}
+    .leaf.mini{width:46px;}
+    .leaf.mini .lthumb{width:46px;height:29px;}
+    .leaf.wide{width:150px;}
+    .leaf .lt{font-size:8.5px;}
+    .childlbl{font-size:11.5px;}
+    .backmap{top:118px;left:18px;}
+    /* tight mode: engaged only when a section can't fit comfortably */
+    #subLayer.tight .leaf{width:70px;}
+    #subLayer.tight .leaf .lthumb{width:70px;height:42px;margin-bottom:4px;}
+    #subLayer.tight .leaf .lt{font-size:7.8px;line-height:1.45;}
+    #subLayer.tight .leaf .ls{font-size:7px;margin-top:2px;}
+    #subLayer.tight .leaf.wide{width:132px;}
+    #subLayer.tight .subhub .t{font-size:18px;}
+    #subLayer.tight .subnote{font-size:9.5px;}
+  }
+
+  /* ---------- chrome ---------- */
+  header{
+    position:fixed;top:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:flex-start;
+    padding:22px 26px;pointer-events:none;z-index:35;
+  }
+  .wordmark{pointer-events:auto;line-height:1.55;}
+  .wordmark .jr{font-size:13px;letter-spacing:.06em;font-weight:700;}
+  .wordmark .sof{font-size:11px;color:var(--g60);letter-spacing:.05em;}
+  /* the line: one stated sentence, the first words on the map */
+  .wordmark .line{
+    display:block;margin-top:14px;max-width:340px;
+    font-size:10px;color:var(--g40);letter-spacing:.03em;line-height:1.85;
+  }
+  .wordmark .line .nb{white-space:nowrap;}
+  .wordmark .line{transition:opacity .35s;}
+  body.dirmode .wordmark .line,body.insec .wordmark .line{opacity:0;pointer-events:none;}
+  @media (max-width:640px){ .wordmark .line{max-width:210px;font-size:9.5px;margin-top:10px;} }
+  .wordmark .mail{display:inline-block;margin-top:8px;font-size:9.5px;color:var(--g40);letter-spacing:.05em;text-decoration:none;border-bottom:1px dotted var(--g25);}
+  .wordmark .mail:hover{color:var(--ink);border-color:var(--ink);}
+  .modes{pointer-events:auto;font-size:11px;display:flex;gap:16px;align-items:center;}
+  .modes button{
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    background:none;border:none;color:var(--g40);cursor:pointer;padding:2px 0;
+  }
+  .modes button.active{color:var(--ink);border-bottom:1px solid var(--ink);}
+  .modes .mlabel{color:var(--g25);}
+  .burger{
+    display:flex;flex-direction:column;gap:4px;padding:6px 2px !important;
+  }
+  .burger span{display:block;width:16px;height:1px;background:var(--ink);}
+
+  /* ---------- menu overlay ---------- */
+  #menuView{
+    position:fixed;inset:0;z-index:50;background:rgba(255,255,255,.97);
+    display:none;align-items:center;justify-content:center;
+  }
+  #menuView.open{display:flex;}
+  .menu-inner{text-align:center;max-width:380px;padding:0 22px;}
+  .menu-inner .mi{
+    display:block;margin:24px auto;font-family:var(--mono);
+    font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.02em;
+    background:none;border:none;cursor:pointer;text-decoration:none;
+  }
+  .menu-inner .mi .u{border-bottom:1px dotted var(--g25);padding-bottom:2px;transition:border-color .2s;}
+  .menu-inner .mi:hover .u{border-bottom:1px solid var(--ink);}
+  .menu-inner .msmall{display:block;margin-top:38px;font-size:10px;color:var(--g40);letter-spacing:.06em;}
+  .menu-inner .msmall a{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
+  .mclose{
+    position:fixed;top:20px;right:24px;font-family:var(--mono);font-size:20px;
+    background:none;border:none;cursor:pointer;color:var(--g60);padding:6px 10px;
+  }
+  .mclose:hover{color:var(--ink);}
+  #signupBox{display:none;margin:8px auto 0;}
+  #signupBox.open{display:block;}
+  #signupBox .promise{font-size:10.5px;color:var(--g40);letter-spacing:.05em;line-height:1.9;margin-bottom:16px;}
+  #signupBox input[type=email]{
+    width:100%;background:none;border:none;border-bottom:1px solid var(--ink);
+    font-family:var(--mono);font-size:13px;padding:9px 2px;text-align:center;
+    color:var(--ink);outline:none;
+  }
+  #signupBox .join{
+    margin-top:20px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    background:var(--bg);border:1px solid var(--ink);padding:9px 20px;color:var(--ink);cursor:pointer;
+  }
+  #signupBox .join:hover{background:var(--ink);color:var(--bg);}
+  #signupBox .alt{display:block;margin-top:20px;font-size:10px;color:var(--g40);text-decoration:none;letter-spacing:.06em;}
+  #signupBox .alt:hover{color:var(--ink);}
+  #signupBox .done{font-size:11.5px;letter-spacing:.05em;line-height:2.1;}
+  .hp{position:absolute;left:-5000px;top:0;opacity:0;pointer-events:none;}
+
+  /* ---------- page views ---------- */
+  #patronView{
+    position:fixed;inset:0;z-index:52;background:var(--bg);display:none;
+    padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #patronView.open{display:block;}
+  #workView{
+    position:fixed;inset:0;z-index:52;background:var(--bg);display:none;
+    padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #workView.open{display:block;}
+  #studioView{
+    position:fixed;inset:0;z-index:52;background:var(--bg);display:none;
+    padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #studioView.open{display:block;}
+  .sdef{border-left:1px solid var(--g25);padding:2px 0 2px 16px;font-style:italic;color:var(--g60);}
+  #sdPatron .ww:after,#sdWork .ww:after{content:' →';}
+  .wrow{display:flex;gap:18px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--g12);text-decoration:none;color:var(--ink);}
+  .wrow .wt{font-size:12px;font-weight:700;letter-spacing:.02em;line-height:1.7;flex:1;}
+  .wrow .ww{font-size:10px;color:var(--g40);letter-spacing:.06em;line-height:1.8;flex:0 0 46%;text-align:right;}
+  a.wrow:hover .wt{text-decoration:underline;}
+  a.wrow .ww:after{content:' ↗';}
+  @media (max-width:640px){
+    .wrow{flex-direction:column;gap:3px;}
+    .wrow .ww{text-align:left;flex:none;}
+  }
+  .patron{max-width:600px;margin:0 auto;}
+  .patron .pnum{font-size:9px;letter-spacing:.2em;color:var(--g40);}
+  .patron h1{font-size:26px;font-weight:700;letter-spacing:-.01em;margin:8px 0 30px;}
+  .patron p{font-size:12.5px;line-height:2.05;letter-spacing:.02em;margin-bottom:24px;}
+  .patron p a,.pcredits .cnames a{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
+  .patron p a:hover,.pcredits .cnames a:hover{color:var(--ink);border-color:var(--ink);}
+  .patron .plabel{font-size:9.5px;letter-spacing:.18em;color:var(--g40);margin:42px 0 6px;}
+  .pform input,.pform textarea{
+    width:100%;background:none;border:none;border-bottom:1px solid var(--g25);
+    font-family:var(--mono);font-size:12.5px;padding:11px 2px;color:var(--ink);
+    outline:none;resize:none;
+  }
+  .pform input:focus,.pform textarea:focus{border-color:var(--ink);}
+  .pform textarea{margin-top:14px;line-height:1.8;}
+  .pform .send{
+    margin-top:24px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+    background:var(--bg);border:1px solid var(--ink);padding:10px 22px;color:var(--ink);cursor:pointer;
+  }
+  .pform .send:hover{background:var(--ink);color:var(--bg);}
+  .pform .pdone{font-size:12px;line-height:2.1;letter-spacing:.03em;padding:10px 0;}
+  /* credits */
+  .pcredits{margin-bottom:14px;}
+  .pcredits .crow{display:flex;gap:16px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--g12);}
+  .pcredits .cproj{font-size:12px;font-weight:700;flex:0 0 128px;letter-spacing:.02em;}
+  .pcredits .cnames{font-size:10.5px;color:var(--g60);letter-spacing:.05em;line-height:1.9;}
+  /* voices — patrons in their own words */
+  .pvoices{margin-bottom:14px;}
+  .pv{border-left:1px solid var(--g25);padding:2px 0 2px 16px;margin:20px 0;}
+  .pv p{font-size:12px;line-height:2;letter-spacing:.02em;margin-bottom:6px;}
+  .pv .pvw{font-size:9.5px;color:var(--g40);letter-spacing:.08em;}
+  .pv .pvw a{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
+  .pv .pvw a:hover{color:var(--ink);border-color:var(--ink);}
+  /* the thinking — a little network of the writing behind patronage */
+  .pnet{position:relative;display:flex;gap:26px;padding-top:36px;margin-bottom:12px;}
+  .pnet svg{position:absolute;top:0;left:0;width:100%;height:34px;pointer-events:none;}
+  .pnet svg path{fill:none;stroke:rgba(10,10,10,.25);stroke-width:1;stroke-dasharray:2 4;vector-effect:non-scaling-stroke;}
+  .pnet .pdot{position:absolute;top:-3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:rgba(168,72,50,.85);}
+  .ptile{flex:1;min-width:0;text-decoration:none;color:var(--ink);}
+  .ptile .pthumb{display:block;height:96px;background:#f2f2f0;border:1px solid var(--g25);overflow:hidden;margin-bottom:8px;transition:border-color .2s;}
+  .ptile:hover .pthumb{border-color:var(--ink);}
+  .ptile .pthumb img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(15%);}
+  .ptile:hover .pthumb img{filter:none;}
+  .ptile .ptt{display:block;font-size:10.5px;font-weight:700;line-height:1.7;}
+  .ptile:hover .ptt{text-decoration:underline;}
+  .ptile .pts{display:block;font-size:9px;color:var(--g40);letter-spacing:.08em;margin-top:4px;}
+  .pmail{font-size:10.5px;color:var(--g40);margin-top:28px;letter-spacing:.05em;}
+  .pmail a{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
+  .pback{
+    position:fixed;top:24px;left:26px;font-family:var(--mono);font-size:11px;
+    letter-spacing:.08em;background:var(--bg);border:1px solid var(--g25);
+    padding:8px 15px;cursor:pointer;color:var(--ink);
+  }
+  .pback:hover{border-color:var(--ink);}
+  footer{
+    position:fixed;bottom:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:flex-end;
+    padding:20px 26px;pointer-events:none;z-index:20;font-size:11px;
+  }
+  .traces-count{color:var(--g60);letter-spacing:.04em;line-height:1.7;}
+  .traces-count .dot{display:inline-block;width:4px;height:4px;background:var(--ink);margin-right:7px;vertical-align:2px;}
+  .traces-count .sub{color:var(--g25);}
+  .leave{pointer-events:auto;}
+  .leave button{
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;cursor:pointer;
+    background:var(--bg);border:1px solid var(--ink);
+    padding:9px 16px;color:var(--ink);transition:all .2s ease;
+  }
+  .leave button:hover{background:var(--ink);color:var(--bg);}
+
+  /* ---------- statement ---------- */
+  #trailChip{
+    position:fixed;top:0;left:0;z-index:40;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
+    background:rgba(255,255,255,.92);padding:3px 8px;
+    transform:translate(-50%,-50%);
+    cursor:pointer;white-space:nowrap;
+    opacity:0;pointer-events:none;
+    transition:opacity .45s ease-out;
+  }
+  #trailChip.on{opacity:1;pointer-events:auto;}
+  #trailChip input{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
+    border:none;border-bottom:1px solid currentColor;background:none;
+    width:110px;outline:none;color:inherit;text-align:center;
+  }
+  body.dirmode #trailChip{display:none;}
+  #trailHint{
+    position:fixed;top:0;left:0;z-index:15;max-width:210px;text-align:center;
+    font-size:9px;letter-spacing:.04em;line-height:1.75;color:var(--g40);
+    background:rgba(255,255,255,.92);padding:5px 9px;
+    pointer-events:none;opacity:0;transition:opacity .6s;
+  }
+  #trailHint.on{opacity:1;}
+  body.dirmode #trailHint{display:none;}
+
+  /* ---------- fellow explorers: the guestbook toggle ---------- */
+  /* other visitors' names are a guestbook, not ambient labels —
+     hidden by default, revealed on request */
+  #expBtn{
+    position:fixed;bottom:20px;left:26px;z-index:20;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
+    background:rgba(255,255,255,.92);border:none;
+    padding:2px 0;color:var(--g40);cursor:pointer;
+    transition:color .2s,opacity .35s;
+  }
+  #expBtn .u{border-bottom:1px dotted var(--g25);padding-bottom:2px;transition:border-color .2s;}
+  #expBtn:hover{color:var(--ink);}
+  #expBtn:hover .u{border-color:var(--ink);}
+  body.insec #expBtn,body.dirmode #expBtn{opacity:0;pointer-events:none;}
+  @media (max-width:640px){ #expBtn{bottom:16px;left:18px;} }
+
+  /* ---------- directory / archive ---------- */
+  #directoryView{
+    position:fixed;inset:0;z-index:30;background:var(--bg);display:none;
+    padding:120px 30px 80px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #directoryView.open{display:block;}
+  .dir{max-width:760px;margin:0 auto;}
+  .dir-sect{margin-bottom:64px;}
+  .dir-sect>h2{
+    font-size:11px;font-weight:400;letter-spacing:.18em;color:var(--g40);
+    display:flex;align-items:baseline;gap:14px;margin-bottom:6px;
+  }
+  .dir-sect>h2 .big{font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--ink);}
+  .dir-sect>h2::after{content:"";flex:1;height:1px;background:var(--g12);align-self:center;}
+  .dir-group{font-size:10px;letter-spacing:.14em;color:var(--g40);margin:28px 0 4px;}
+  .card{
+    display:flex;align-items:center;gap:18px;
+    padding:16px 0;border-bottom:1px solid var(--g12);
+    text-decoration:none;color:var(--ink);
+  }
+  .card .thumb{
+    flex:0 0 118px;height:70px;overflow:hidden;background:#f2f2f0;
+    border:1px solid var(--g12);display:flex;align-items:center;justify-content:center;
+  }
+  .card .thumb img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(18%);transition:filter .25s;}
+  .card:hover .thumb img{filter:none;}
+  .card .thumb .noimg{font-size:9px;letter-spacing:.12em;color:var(--g40);text-align:center;padding:4px;}
+  .card .meta{flex:1;min-width:0;}
+  .card .t{display:inline-block;font-size:13.5px;font-weight:700;line-height:1.5;border-bottom:1px solid transparent;}
+  .card:hover .t{border-color:var(--ink);}
+  .card .src{display:block;font-size:10px;color:var(--g40);letter-spacing:.06em;margin-top:5px;}
+  .card .arrow{flex:0 0 auto;font-size:12px;color:var(--g40);}
+  .card:hover .arrow{color:var(--ink);}
+  .dir-note{font-size:11px;color:var(--g40);letter-spacing:.05em;padding:14px 0;line-height:1.8;}
+  .dir-intro{font-size:11px;color:var(--g40);letter-spacing:.04em;line-height:2;margin-bottom:56px;max-width:520px;}
+  /* versions — the site's own history, each row opens that version, still live */
+  .vrow{display:flex;gap:18px;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--g12);text-decoration:none;color:var(--ink);}
+  .vrow .vv{flex:0 0 96px;font-size:11.5px;font-weight:700;letter-spacing:.04em;}
+  .vrow .vv .vd{display:block;font-size:8.5px;font-weight:400;color:var(--g40);letter-spacing:.1em;margin-top:3px;}
+  .vrow .vt{flex:1;font-size:10.5px;color:var(--g60);letter-spacing:.04em;line-height:1.9;}
+  .vrow .va{flex:0 0 auto;font-size:11px;color:var(--g40);}
+  a.vrow:hover .vt,a.vrow:hover .va{color:var(--ink);}
+  a.vrow:hover .vv{text-decoration:underline;}
+  .vrow.vnow .vt{color:var(--ink);}
+  @media (max-width:640px){ .vrow{gap:12px;} .vrow .vv{flex-basis:70px;font-size:10.5px;} .vrow .vt{font-size:9.5px;} }
+  body.dirmode .statement{display:none;}
+  @media (max-width:640px){
+    #directoryView{padding:104px 18px 60px;}
+    .card .thumb{flex-basis:92px;height:56px;}
+    .card .t{font-size:12px;}
+    .card{gap:12px;}
+  }
+
+  /* ---------- flow: the map suggests where to go next ---------- */
+  #flowHint{
+    position:fixed;top:0;left:0;z-index:14;max-width:230px;text-align:center;
+    font-size:9.5px;letter-spacing:.05em;line-height:1.9;
+    background:rgba(255,255,255,.93);padding:6px 10px;cursor:pointer;
+    transform:translate(-50%,0);opacity:0;transition:opacity .7s;pointer-events:none;
+  }
+  #flowHint.on{opacity:1;pointer-events:auto;}
+  #flowHint:hover{text-decoration:underline;}
+  body.dirmode #flowHint{display:none;}
+  /* a due milestone (signup / subscribe / patron) never interrupts —
+     it settles in as a quiet footer note, low and out of the way,
+     the same register as the trail hint and the suggestion whisper */
+  #flowNote{
+    position:fixed;left:50%;bottom:26px;z-index:45;
+    transform:translate(-50%,10px);
+    width:88%;max-width:360px;
+    background:rgba(255,255,255,.94);border:1px solid var(--g12);
+    padding:14px 20px;text-align:center;
+    opacity:0;pointer-events:none;
+    transition:opacity .9s ease-out, transform .9s ease-out;
+  }
+  #flowNote.on{opacity:1;pointer-events:auto;transform:translate(-50%,0);}
+  body.dirmode #flowNote{display:none;}
+  .fn-box p{font-size:11px;line-height:1.9;letter-spacing:.03em;margin-bottom:14px;color:var(--g60);}
+  .fn-box .fna{
+    display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+    background:var(--bg);border:1px solid var(--ink);padding:7px 15px;color:var(--ink);
+    cursor:pointer;text-decoration:none;
+  }
+  .fn-box .fna:hover{background:var(--ink);color:var(--bg);}
+  .fn-box .fnb{
+    display:block;margin:12px auto 0;background:none;border:none;
+    font-family:var(--mono);font-size:9.5px;color:var(--g40);letter-spacing:.06em;
+    cursor:pointer;
+  }
+  .fn-box .fnb span{border-bottom:1px dotted var(--g25);padding-bottom:2px;}
+  .fn-box .fnb:hover{color:var(--ink);}
+  .fn-box .fnb:hover span{border-color:var(--ink);}
+  #fnForm input{
+    width:100%;max-width:240px;background:none;border:none;border-bottom:1px solid var(--ink);
+    font-family:var(--mono);font-size:12px;padding:8px 2px;text-align:center;
+    color:var(--ink);outline:none;margin-bottom:12px;
+  }
+
+  /* ---------- youtube lightbox: films play inside the site ---------- */
+  #ytView{
+    position:fixed;inset:0;z-index:70;background:rgba(255,255,255,.96);
+    display:none;align-items:center;justify-content:center;
+  }
+  #ytView.open{display:flex;}
+  #ytView .ytbox{width:min(880px,86vw);}
+  #ytView .ytframe{position:relative;width:100%;padding-top:56.25%;background:#000;border:1px solid var(--g25);}
+  #ytView .ytframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  #ytView .ytmeta{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-top:10px;}
+  #ytView .yttitle{font-size:11px;font-weight:700;letter-spacing:.03em;}
+  #ytView .ytopen{font-size:9.5px;color:var(--g40);text-decoration:none;letter-spacing:.06em;border-bottom:1px dotted var(--g25);white-space:nowrap;}
+  #ytView .ytopen:hover{color:var(--ink);border-color:var(--ink);}
+  @media (max-width:640px){ #ytView .ytbox{width:94vw;} }
+
+  /* ---------- trace modal ---------- */
+  #traceModal{
+    position:fixed;inset:0;z-index:60;display:none;
+    background:rgba(255,255,255,.95);align-items:center;justify-content:center;
+  }
+  #traceModal.open{display:flex;}
+  .trace-box{max-width:420px;width:90%;text-align:center;}
+  .trace-box p{font-size:12px;line-height:2;margin-bottom:26px;color:var(--ink);letter-spacing:.03em;}
+  .trace-box input{
+    width:100%;background:none;border:none;border-bottom:1px solid var(--ink);
+    font-family:var(--mono);font-size:13px;padding:10px 4px;text-align:center;
+    color:var(--ink);outline:none;
+  }
+  .trace-box .actions{margin-top:28px;display:flex;gap:10px;justify-content:center;}
+  .trace-box button{
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;cursor:pointer;
+    background:var(--bg);border:1px solid var(--ink);padding:9px 18px;color:var(--ink);
+  }
+  .trace-box button.primary{background:var(--ink);color:var(--bg);}
+  .trace-box .hint{font-size:10px;color:var(--g40);margin-top:20px;letter-spacing:.04em;}
+
+  /* =========================================================
+     MOTION PASS — the map assembles, ink settles, signals move.
+     one easing family everywhere; everything honours
+     prefers-reduced-motion at the bottom of this block.
+     ========================================================= */
+  :root{ --ease:cubic-bezier(.22,1,.36,1); }
+
+  /* ---------- arrival: the chrome takes its place ---------- */
+  @keyframes chromeDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+  @keyframes chromeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .wordmark .jr{animation:chromeDown .7s var(--ease) .15s backwards;}
+  .wordmark .line{animation:chromeDown .8s var(--ease) .5s backwards;}
+  .modes{animation:chromeDown .7s var(--ease) .3s backwards;}
+  #expBtn{animation:chromeUp .8s var(--ease) 2.6s backwards;}
+
+  /* ---------- the ink underline: dotted rest, solid sweep ----------
+     hover draws a solid line across the dots, left to right,
+     instead of snapping */
+  .node .lbl,.childlbl .cl,.menu-inner .mi .u,#expBtn .u,
+  .patron p a,.pcredits .cnames a,.pv .pvw a,.wordmark .mail,
+  .menu-inner .msmall a,#signupBox .alt{
+    border-bottom:none !important;
+    padding-bottom:2px;
+    background-image:
+      linear-gradient(currentColor,currentColor),
+      repeating-linear-gradient(90deg,var(--g25) 0 1px,transparent 1px 3px);
+    background-repeat:no-repeat,no-repeat;
+    background-position:0 100%,0 100%;
+    background-size:0% 1px,100% 1px;
+    transition:background-size .5s var(--ease),color .25s;
+  }
+  .node:hover .lbl,.node:focus .lbl,.childlbl:hover .cl,
+  .menu-inner .mi:hover .u,#expBtn:hover .u,
+  .patron p a:hover,.pcredits .cnames a:hover,.pv .pvw a:hover,
+  .wordmark .mail:hover,.menu-inner .msmall a:hover,#signupBox .alt:hover{
+    background-size:100% 1px,100% 1px;
+  }
+  .card .t{border-bottom:none;background-image:linear-gradient(currentColor,currentColor);
+    background-repeat:no-repeat;background-position:0 100%;background-size:0% 1px;
+    padding-bottom:2px;transition:background-size .5s var(--ease);}
+  .card:hover .t{background-size:100% 1px;}
+
+  /* ---------- buttons: ink fills from the left ---------- */
+  #signupBox .join,.pform .send,.fn-box .fna,.trace-box button:not(.primary){
+    background:linear-gradient(to right,var(--ink) 0 50%,var(--bg) 50% 100%) no-repeat;
+    background-size:201% 100%;background-position:99.5% 0;
+    transition:background-position .45s var(--ease),color .3s;
+  }
+  #signupBox .join:hover,.pform .send:hover,.fn-box .fna:hover,
+  .trace-box button:not(.primary):hover{background-position:0 0;color:var(--bg);}
+
+  /* ---------- thumbnails: a slow lean-in ---------- */
+  .leaf .lthumb img,.card .thumb img,.ptile .pthumb img{
+    transition:filter .3s,transform .9s var(--ease);
+  }
+  .leaf:hover .lthumb img,.card:hover .thumb img,.ptile:hover .pthumb img{transform:scale(1.05);}
+  .leaf .lthumb,.card .thumb,.ptile .pthumb{transition:border-color .25s;}
+
+  /* arrows point where they're going */
+  a.wrow .ww:after,.card .arrow{display:inline-block;transition:transform .35s var(--ease),color .2s;}
+  a.wrow:hover .ww:after{transform:translate(3px,-2px);}
+  .card:hover .arrow{transform:translate(3px,-2px);}
+
+  /* ---------- pages: content settles line by line ---------- */
+  @keyframes pvRise{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+  @keyframes pvTitle{from{opacity:0;transform:translateY(18px);letter-spacing:.09em;}to{opacity:1;transform:none;}}
+  @keyframes pvLabel{from{opacity:0;transform:translateY(8px);letter-spacing:.42em;}to{opacity:1;transform:none;}}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  #patronView.open,#studioView.open,#workView.open{animation:fadeIn .3s backwards;}
+  #patronView.open .patron>*,#studioView.open .patron>*,#workView.open .patron>*{
+    animation:pvRise .65s var(--ease) backwards;
+    animation-delay:calc(120ms + var(--n,0)*45ms);
+  }
+  #patronView.open .patron h1,#studioView.open .patron h1,#workView.open .patron h1{
+    animation-name:pvTitle;animation-duration:.8s;
+  }
+  #patronView.open .patron .plabel,#studioView.open .patron .plabel,#workView.open .patron .plabel{
+    animation-name:pvLabel;animation-duration:.7s;
+  }
+  #patronView.open .pback,#studioView.open .pback,#workView.open .pback{
+    animation:fadeIn .5s var(--ease) .5s backwards;
+  }
+
+  /* ---------- menu: held breath, then one item at a time ---------- */
+  #menuView.open{animation:fadeIn .3s backwards;}
+  #menuView.open .menu-inner>*{
+    animation:pvRise .55s var(--ease) backwards;
+    animation-delay:calc(80ms + var(--n,0)*55ms);
+  }
+  @keyframes spinIn{from{opacity:0;transform:rotate(-90deg);}to{opacity:1;transform:none;}}
+  #menuView.open .mclose{animation:spinIn .5s var(--ease) .25s backwards;}
+
+  /* ---------- index: sections cascade, rules draw ---------- */
+  #directoryView.open{animation:fadeIn .3s backwards;}
+  #directoryView.open .dir>*{
+    animation:pvRise .6s var(--ease) backwards;
+    animation-delay:calc(100ms + var(--n,0)*70ms);
+  }
+  @keyframes ruleIn{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+  #directoryView.open .dir-sect>h2::after{
+    transform-origin:left center;
+    animation:ruleIn .9s var(--ease) backwards;
+    animation-delay:calc(260ms + var(--n,0)*70ms);
+  }
+
+  /* ---------- sub-map: the hub title arrives letter by letter ---------- */
+  .subhub .t .ch{
+    display:inline-block;opacity:0;transform:translateY(9px);filter:blur(3px);
+    animation:chIn .55s var(--ease) forwards;
+    animation-delay:calc(120ms + var(--i,0)*26ms);
+  }
+  @keyframes chIn{to{opacity:1;transform:none;filter:none;}}
+
+  /* ---------- films: the lightbox breathes open ---------- */
+  #ytView.open{animation:fadeIn .3s backwards;}
+  #ytView.open .ytbox{animation:pvRise .5s var(--ease) .08s backwards;}
+  #ytView.open .mclose{animation:spinIn .5s var(--ease) .2s backwards;}
+
+  /* ---------- wayfinding: the back button slides into reach ---------- */
+  .backmap.on{animation:pvRise .45s var(--ease) .12s backwards;}
+  .backmap,.pback{transition:border-color .25s,transform .3s var(--ease);}
+  .backmap:hover,.pback:hover{transform:translateX(-2px);}
+
+  /* ---------- stillness is a preference ---------- */
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+      animation-duration:.001s !important;
+      animation-delay:0s !important;
+      transition-duration:.001s !important;
+    }
+  }
+
+  @media (max-width:640px){
+    header{padding:16px 18px;}
+    footer{padding:16px 18px;}
+    .statement{font-size:11px;max-width:280px;}
+    .menu-inner .mi{font-size:14px;}
+    #patronView,#workView,#studioView{padding:88px 20px 70px;}
+    .patron h1{font-size:21px;}
+    .pcredits .cproj{flex-basis:98px;font-size:11px;}
+    .pnet{gap:14px;}
+    .ptile .pthumb{height:62px;}
+    .pback{top:16px;left:18px;}
+    .mclose{top:12px;right:14px;}
+    #flowNote{bottom:16px;width:92%;padding:12px 16px;}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="map"></canvas>
+<div id="nodeLayer"></div>
+<div id="subLayer"></div>
+<button class="backmap" id="backBtn">← the map</button>
+
+<div id="trailChip"></div>
+<div id="trailHint">leave your real name, if you like — it becomes part of the map's record</div>
+<button id="expBtn"><span class="u">show fellow explorers</span></button>
+
+<header>
+  <div class="wordmark">
+    <div class="jr">sound of fractures</div>
+    <p class="line">jamie reddington (sound of fractures) is a <span class="nb">uk-based</span> artist and researcher working at the intersection of music, memory, and participation.</p>
+  </div>
+  <nav class="modes">
+    <span class="mlabel">view:</span>
+    <button id="mapBtn" class="active">map</button>
+    <span class="mlabel">/</span>
+    <button id="dirBtn">index</button>
+    <button class="burger" id="menuBtn" aria-label="menu"><span></span><span></span><span></span></button>
+  </nav>
+</header>
+
+<div id="menuView">
+  <button class="mclose" id="menuClose" aria-label="close">×</button>
+  <div class="menu-inner">
+    <button class="mi" id="miSignup"><span class="u">sign up</span></button>
+    <div id="signupBox">
+      <div class="promise" id="suPromise">occasional letters from the studio — experiments, essays, invitations. no noise.</div>
+      <form id="signupForm">
+        <input type="email" id="suEmail" placeholder="your email" autocomplete="email" required>
+        <input type="text" id="suWeb" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button class="join" type="submit">join</button>
+      </form>
+      <a class="alt" href="https://soundoffractures.substack.com" target="_blank" rel="noopener">or read the writing so far ↗</a>
+    </div>
+    <button class="mi" id="miStudio"><span class="u">studio</span></button>
+    <button class="mi" id="miPatron"><span class="u">become a part of the studio</span></button>
+    <button class="mi" id="miWork"><span class="u">work with me</span></button>
+    <a class="mi" href="https://soundoffractures.substack.com/p/musician-artist" target="_blank" rel="noopener"><span class="u">substack ↗</span></a>
+    <span class="msmall"><a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></span>
+  </div>
+</div>
+
+<div id="patronView">
+  <button class="pback" id="patronBack">← back</button>
+  <div class="patron">
+    <div class="pnum">— THE STUDIO</div>
+    <h1>become a part of the studio</h1>
+    <p>the studio is funded by people who want this work to exist. it funds the experiment, not the outcome.</p>
+    <div class="plabel">THE MODEL</div>
+    <div class="pcredits">
+      <div class="crow"><span class="cproj">studio board</span><span class="cnames">the small group who make each year of the work possible. names on what the studio makes: the talks, the writing, the events, the editions. cy lee is the first.</span></div>
+      <div class="crow"><span class="cproj">studio partners</span><span class="cnames">an open place in the studio, at a level that's yours to choose. your name here, and the process as it happens — the messy middle, not the highlights.</span></div>
+    </div>
+    <p>presence in the process, credit on what emerges, a hand in something you believe should exist.</p>
+    <div class="plabel">THE RECORD</div>
+    <div class="pcredits">
+      <div class="crow"><span class="cproj">scenes</span><span class="cnames">made possible by 55 people — c.y. lee · maarten walraven · nick smith. that experiment became the book, the exhibition, and the method alone together runs on today</span></div>
+      <div class="crow"><span class="cproj">alone together</span><span class="cnames">c.y. lee (lead) · alex watson · alex houpillart</span></div>
+    </div>
+    <div class="plabel">VOICES</div>
+    <div class="pvoices">
+      <blockquote class="pv"><p>"i'm looking for people who already have alignment with what i believe in, and who are already taking action in that direction. and i'm asking if they need fuel."</p><span class="pvw">— c.y. lee, studio board</span></blockquote>
+      <blockquote class="pv"><p>"looking back, i don't think i was saying yes to a project. i was saying yes to jamie. because every now and then, someone shares an idea that deserves everything you can bring to it."</p><span class="pvw">— alex watson, alone together · <a href="https://www.instagram.com/p/Dbc6YMJiPES/" target="_blank" rel="noopener">read the full post ↗</a></span></blockquote>
+      <blockquote class="pv"><p>"what we need more of: making music feel less disposable. we should find ways to support creative research &amp; development driven by artists."</p><span class="pvw">— maarten walraven, executive producer of scenes</span></blockquote>
+    </div>
+    <div class="plabel">THE THINKING</div>
+    <div class="pnet">
+      <span class="pdot"></span>
+      <svg viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M50,0 C44,14 32,18 25,34"></path>
+        <path d="M50,0 C56,14 68,18 75,34"></path>
+      </svg>
+      <a class="ptile" href="https://soundoffractures.substack.com/p/scaling-intent-what-patronage-actually" target="_blank" rel="noopener">
+        <span class="pthumb"><img src="https://substackcdn.com/image/fetch/$s_!kkVE!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd603498a-f199-4cd6-89bd-9f6b001e8aaa_1280x720.png" alt="" loading="lazy"></span>
+        <span class="ptt">scaling intent — what patronage actually means</span>
+        <span class="pts">the essay ↗</span>
+      </a>
+      <a class="ptile" href="https://soundoffractures.substack.com/p/new-forms-001-an-interview-with-patron" target="_blank" rel="noopener">
+        <span class="pthumb"><img src="https://substackcdn.com/image/fetch/$s_!HIbK!,w_1200,h_600,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-video.s3.amazonaws.com%2Fvideo_upload%2Fpost%2F181035580%2F060f6556-7302-40a4-a012-4526b0c3c5aa%2Ftranscoded-02890.png" alt="" loading="lazy"></span>
+        <span class="ptt">new forms 001 — an interview with patron c.y. lee</span>
+        <span class="pts">the interview ↗</span>
+      </a>
+    </div>
+    <div class="plabel">START THE CONVERSATION</div>
+    <p>it starts as a conversation, not a checkout — write to me, or leave a note here.</p>
+    <form class="pform" id="patronForm">
+      <input type="email" id="ptEmail" placeholder="your email" autocomplete="email" required>
+      <input type="text" id="ptWeb" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <textarea id="ptNote" rows="3" maxlength="600" placeholder="what feels meaningful to you? (optional)"></textarea>
+      <button class="send" type="submit">send</button>
+    </form>
+    <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
+  </div>
+</div>
+
+<div id="studioView">
+  <button class="pback" id="studioBack">← back</button>
+  <div class="patron">
+    <div class="pnum">— THE STUDIO</div>
+    <h1>sound of fractures</h1>
+    <p>jamie reddington (sound of fractures) is a <span class="nb">uk-based</span> artist and researcher working at the intersection of music, memory, and participation. most artists release content. this studio builds containers for meaning.</p>
+    <p class="sdef">container for meaning (n.) — a song, an event, a book, an archive: anything built so that other people's lives can live inside it, not just pass by it.</p>
+
+    <p>the studio exists to create: experiments in human connection and participation, with music as the seed. it researches by making. it creates knowledge and shares it. it doesn't offer answers — each experiment grows out of the last.</p>
+    <p>underneath it is a bigger question: what a creative career looks like when a few companies own the rails. music went first — and every medium is now on the same tracks. the research into that future is currently run by the platforms. the studio runs it from the other side — led by an artist, with the audience in it, shared as it happens.</p>
+
+    <div class="plabel">THE CONTAINER</div>
+    <p>the ethos is the fixed point — connection, participation, process shared. everything else moves with its moment: the medium, the technology, the shape each experiment takes. projects end; the thread doesn't. the studio is the container for all of it.</p>
+
+    <div class="plabel">THE TRAP</div>
+    <blockquote class="pv"><p>"being easy to understand gets good clicks. the dj, the pads producer, the modular head — ready-made lanes, someone else's rules. i didn't want to choose one. so the studio builds the alternative in public: the use case, so people can see it, hear it, take part, and want it to exist."</p><span class="pvw">— jamie reddington</span></blockquote>
+
+    <div class="plabel">THE METHOD</div>
+    <p>artist → experiment → community → archive → next experiment.</p>
+    <p>the output is never the endpoint — each artifact becomes evidence for the next exploration.</p>
+
+    <div class="plabel">PROOF OF WORK</div>
+    <div class="pcredits">
+      <div class="crow"><span class="cproj">scenes</span><span class="cnames">an album that became participatory art — a decentralised, artist-owned platform. a song became a prompt, the prompt gathered strangers' memories, the memories became artefacts, the artefacts became an exhibition, a book, a peer-reviewed chapter, a case study taught on stages from amsterdam to hamburg — designed to remind people of the emotional value of music</span></div>
+      <div class="crow"><span class="cproj">alone together</span><span class="cnames">part immersive exhibition, part live show, part community event — an ep and an experiment testing whether you can design architecture for genuine connection: alone, then together, then alone together — instead of putting strangers in proximity and hoping</span></div>
+      <div class="crow"><span class="cproj">network archives</span><span class="cnames">the method turned outward — edition 001: a directory of inspiration gathering 60 worldbuilding artist case studies, curated by me with metalabel; 120 digital editions collected</span></div>
+    </div>
+    <div class="plabel">DOORS</div>
+    <div class="wlist">
+      <a class="wrow" href="https://soundoffractures.substack.com" target="_blank" rel="noopener"><span class="wt">follow the work</span><span class="ww">the letters</span></a>
+      <a class="wrow" href="https://symphony.to/sound-of-fractures/vpvkxkmpt4o1" target="_blank" rel="noopener"><span class="wt">take part</span><span class="ww">join the community</span></a>
+      <a class="wrow" href="#" id="sdPatron"><span class="wt">step into it</span><span class="ww">become a part of the studio</span></a>
+      <a class="wrow" href="#" id="sdWork"><span class="wt">bring it somewhere</span><span class="ww">work with me</span></a>
+    </div>
+    <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
+  </div>
+</div>
+
+<div id="workView">
+  <button class="pback" id="workBack">← back</button>
+  <div class="patron">
+    <div class="pnum">— WORK WITH ME</div>
+    <h1>the practice travels</h1>
+    <p>the same method has now been a record, an exhibition, a book, a platform, a peer-reviewed chapter and a keynote. the thinking behind it lives in <a href="#" id="wkStudioLink">the studio</a>.</p>
+    <p>if you're interested in collaborating, write to me — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a>.</p>
+
+    <div class="plabel">WHAT I DO</div>
+    <div class="pcredits">
+      <div class="crow"><span class="cproj">talks</span><span class="cnames">keynotes, panels &amp; workshops on world-building, participation, patronage and creative careers in the internet's next era</span></div>
+      <div class="crow"><span class="cproj">commissions</span><span class="cnames">participatory works, exhibitions &amp; live formats built on the scenes / alone together method — song → prompt → memory → artefact → archive</span></div>
+      <div class="crow"><span class="cproj">research</span><span class="cnames">practice-based research, case studies &amp; artist-led r&amp;d sprints (most recently sponsored by lalal.ai) — <a href="https://soundoffractures.substack.com/p/the-artist-led-creative-sprint" target="_blank" rel="noopener">field notes ↗</a></span></div>
+      <div class="crow"><span class="cproj">teaching</span><span class="cnames">deputy course leader, ma music management — university of westminster</span></div>
+    </div>
+
+    <div class="plabel">KEYNOTES &amp; WORKSHOPS</div>
+    <div class="wlist">
+      <div class="wrow"><span class="wt">reimagining creative careers in the internet's next era</span><span class="ww">keynote · imbra conference, hamburg · festival spectacular, prague · createch, university of westminster</span></div>
+      <div class="wrow"><span class="wt">being a creator is more than you think it is — a case study</span><span class="ww">keynote · the platformization of the internet, leipzig</span></div>
+      <div class="wrow"><span class="wt">re-defining ip management in the digital era</span><span class="ww">panel &amp; workshop · ade, amsterdam</span></div>
+      <div class="wrow"><span class="wt">making your process part of your output</span><span class="ww">workshop · beatport community · story protocol</span></div>
+    </div>
+
+    <div class="plabel">PRESS</div>
+    <div class="wlist">
+      <a class="wrow" href="https://www.decential.io/articles/listening-to-scenes-the-connective-experiment-from-sound-of-fractures-that-reminds-us-what-were-doing-here" target="_blank" rel="noopener"><span class="wt">listening to scenes — the connective experiment that reminds us what we're doing here</span><span class="ww">decential</span></a>
+      <a class="wrow" href="https://www.c-heads.com/2026/04/29/when-strangers-start-to-meet-sound-of-fractures-on-alone-together/" target="_blank" rel="noopener"><span class="wt">when strangers start to meet — sound of fractures on alone together</span><span class="ww">c-heads</span></a>
+      <a class="wrow" href="https://musically.com/2024/04/19/sound-of-fractures-wants-tokens-to-re-imagine-our-relationship-with-music/" target="_blank" rel="noopener"><span class="wt">sound of fractures wants tokens to re-imagine our relationship with music</span><span class="ww">music ally</span></a>
+    </div>
+
+    <div class="plabel">PODCAST GUEST</div>
+    <div class="wlist">
+      <div class="wrow"><span class="wt">learn how sound of fractures is leveraging web3 to further his artistic journey</span><span class="ww">invest in music</span></div>
+      <div class="wrow"><span class="wt">financial independence &amp; value, with jamie (sound of fractures)</span><span class="ww">got no juice</span></div>
+      <div class="wrow"><span class="wt">how artists are using new technology to build active communities</span><span class="ww">the future of music</span></div>
+    </div>
+
+    <div class="plabel">START THE CONVERSATION</div>
+    <form class="pform" id="workForm">
+      <input type="email" id="wkEmail" placeholder="your email" autocomplete="email" required>
+      <input type="text" id="wkWeb" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <textarea id="wkNote" rows="3" maxlength="600" placeholder="what are you programming, building or funding? (optional)"></textarea>
+      <button class="send" type="submit">send</button>
+    </form>
+    <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
+  </div>
+</div>
+
+<div id="directoryView">
+  <div class="dir" id="dirRoot"></div>
+</div>
+
+<div id="flowHint"></div>
+
+<div id="flowNote">
+  <div class="fn-box">
+    <p id="fnText"></p>
+    <form id="fnForm" style="display:none">
+      <input type="email" id="fnEmail" placeholder="your email" autocomplete="email" required>
+      <button class="fna" type="submit">sign up</button>
+    </form>
+    <a class="fna" id="fnAction" href="#" rel="noopener"></a>
+    <button class="fnb" id="fnLater"><span>another time — keep exploring</span></button>
+  </div>
+</div>
+
+<div id="ytView">
+  <button class="mclose" id="ytClose" aria-label="close">×</button>
+  <div class="ytbox">
+    <div class="ytframe" id="ytSlot"></div>
+    <div class="ytmeta">
+      <span class="yttitle" id="ytTitle"></span>
+      <a class="ytopen" id="ytOpen" href="#" target="_blank" rel="noopener">watch on youtube ↗</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   THE CONSTELLATION v6 — zoomable network
+   overview map → click a section → zoom into its own
+   mini-map: hub → projects → image-leaves that ARE the links
+   ========================================================= */
+
+/* ---------- link library ---------- */
+const L = {
+  scenesSite:{t:'scenes — the interactive album', s:'project site', url:'https://scenes.soundoffractures.com/',
+    img:'https://scenes.soundoffractures.com/social-images/opengraph-image.jpg'},
+  beyond:{t:'beyond streams & virality', s:'substack · case study', url:'https://soundoffractures.substack.com/p/beyond-streams-and-virality-a-case',
+    img:'https://substackcdn.com/image/fetch/$s_!yVBD!,w_600,h_338,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2c2b234e-1cbe-46b3-9d48-7babd908fe05_1583x1600.jpeg'},
+  decential:{t:'listening to scenes', s:'decential · press', url:'https://www.decential.io/articles/listening-to-scenes-the-connective-experiment-from-sound-of-fractures-that-reminds-us-what-were-doing-here',
+    img:'https://static1.squarespace.com/static/625d6a69c3ee27183378cba8/625d6e41fc379b2c562e4af4/65de6d8eb726eb498ad2a602/1714108277301/Jamie+Reddington.jpg?format=750w'},
+  twoDays:{t:'alone together: two days later', s:'substack · essay', url:'https://soundoffractures.substack.com/p/alone-together-building-for-depth',
+    img:'https://substackcdn.com/image/fetch/$s_!IAmd!,w_600,h_338,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2b967c12-3be1-4b84-b4b3-193e103b3807_3184x1660.jpeg'},
+  canva:{t:'event 2 — photo deck', s:'canva · photos', url:'https://alonetogetherpatrons.my.canva.site/alone-together-event-2', img:null, ph:'photo deck'},
+  cheads:{t:'when strangers start to meet', s:'c-heads · interview', url:'https://www.c-heads.com/2026/04/29/when-strangers-start-to-meet-sound-of-fractures-on-alone-together/', img:null, ph:'c-heads'},
+  spotify:{t:'sound of fractures', s:'spotify · artist', url:'https://open.spotify.com/artist/4syKpCOJEOnegH5QmuGnKk',
+    img:'https://image-cdn-fa.spotifycdn.com/image/ab676161000051745bc5bd1767967b125c58b1b2'},
+  playlist:{t:'where i’m @ — playlist', s:'spotify · playlist', url:'https://open.spotify.com/playlist/6isoH65GLBFtBhKsMnrwsR',
+    img:'https://image-cdn-fa.spotifycdn.com/image/ab67706c0000d72ca433e052fde4d457f3075959'},
+  bandcamp:{t:'collect the music', s:'bandcamp', url:'https://sofractures.bandcamp.com/',
+    img:'https://f4.bcbits.com/img/0030168336_23.jpg'},
+  cards:{t:'alone together conversation cards', s:'metalabel · object', url:'https://soundoffractures.metalabel.com/record_4szze9odexxo99tto?variantId=1',
+    img:'https://metalabel.imgix.net/QmdT71Cyt5LtxaycjrB8dNRhQJh8okuJRi1nEwJ1oUmQZK?w=600'},
+  book:{t:'scenes: prompts to reflect — post card book', s:'metalabel · object', url:'https://soundoffractures.metalabel.com/scenesbook?variantId=1',
+    img:'https://metalabel.imgix.net/Qmb1uwDW3dPbeeNHv2QcXNUjQbWum3iR75BZKcYdYXs3Zd?w=600'},
+  vScenes:{t:'scenes (official video)', s:'youtube', yt:'nHbDu3u6JaY', url:'https://www.youtube.com/watch?v=nHbDu3u6JaY', img:'https://i.ytimg.com/vi/nHbDu3u6JaY/hqdefault.jpg'},
+  vTouch:{t:'your touch', s:'youtube', yt:'Utu9WjlbwZs', url:'https://www.youtube.com/watch?v=Utu9WjlbwZs', img:'https://i.ytimg.com/vi/Utu9WjlbwZs/hqdefault.jpg'},
+  vFriends:{t:'real friends', s:'youtube', yt:'rF3HJDQgNME', url:'https://www.youtube.com/watch?v=rF3HJDQgNME', img:'https://i.ytimg.com/vi/rF3HJDQgNME/hqdefault.jpg'},
+  vTraces:{t:'traces', s:'youtube', yt:'YRlw8RfUoU8', url:'https://www.youtube.com/watch?v=YRlw8RfUoU8', img:'https://i.ytimg.com/vi/YRlw8RfUoU8/hqdefault.jpg'},
+  /* new forms — the interview series */
+  nf1:{t:'new forms 001 — patron c.y. lee', s:'new forms · interview', yt:'qjnyBvzHuVg', url:'https://www.youtube.com/watch?v=qjnyBvzHuVg', img:'https://i.ytimg.com/vi/qjnyBvzHuVg/hqdefault.jpg'},
+  nf2:{t:'new forms 002 — black dave mk2', s:'new forms · interview', yt:'bX-09etErVg', url:'https://www.youtube.com/watch?v=bX-09etErVg', img:'https://i.ytimg.com/vi/bX-09etErVg/hqdefault.jpg'},
+  nf3:{t:'new forms 003 — la equis', s:'new forms · interview', yt:'0Rh-rzd6eZs', url:'https://www.youtube.com/watch?v=0Rh-rzd6eZs', img:'https://i.ytimg.com/vi/0Rh-rzd6eZs/hqdefault.jpg'},
+  nfYancey:{t:'the future of creative careers — yancey strickler', s:'new forms · conversation', yt:'MB_qFOF3rq0', url:'https://www.youtube.com/watch?v=MB_qFOF3rq0', img:'https://i.ytimg.com/vi/MB_qFOF3rq0/hqdefault.jpg'},
+  nfVivid:{t:'vivid fever dreams — ai, music & visual storytelling', s:'new forms · conversation', yt:'U9YgSBvug1U', url:'https://www.youtube.com/watch?v=U9YgSBvug1U', img:'https://i.ytimg.com/vi/U9YgSBvug1U/hqdefault.jpg'},
+  wPurpose:{t:'grappling for purpose', s:'substack', url:'https://soundoffractures.substack.com/p/grappling-for-purpose',
+    img:'https://substackcdn.com/image/fetch/$s_!XkbR!,w_600,h_338,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1daa8c52-f3a8-45b3-9369-121c603c5f85_958x590.png'},
+  wCareer:{t:'the career i actually want', s:'substack', url:'https://soundoffractures.substack.com/p/the-career-i-actually-want',
+    img:'https://substackcdn.com/image/fetch/$s_!XwPo!,w_600,h_338,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F9a0250d9-8560-45d8-b9c2-32b472c115ce_4284x3349.jpeg'},
+  wRhythm:{t:'the rhythm that owns us', s:'substack', url:'https://soundoffractures.substack.com/p/a-rhythm-that-owns-us',
+    img:'https://substackcdn.com/image/fetch/$s_!e9w4!,w_600,h_338,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F60412b60-a2fe-4cab-b297-e8cdee6987aa_1200x628.jpeg'},
+  wAudience:{t:'the audience the industry can\'t see', s:'music x · essay', url:'https://musicx.substack.com/p/the-audience-the-industry-cant-see',
+    img:'https://substackcdn.com/image/fetch/$s_!DQh-!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb03c9f51-d858-46db-bf33-f7961251860c_3400x2104.jpeg'},
+  wPeople:{t:'the practice of finding your people', s:'substack', url:'https://soundoffractures.substack.com/p/the-practice-of-finding-your-people',
+    img:'https://substackcdn.com/image/fetch/$s_!9_RW!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fea8c8234-fa8b-481d-869e-504acc7667f5_1080x1440.jpeg'},
+  wScaling:{t:'scaling intent — what patronage actually means', s:'substack · essay', url:'https://soundoffractures.substack.com/p/scaling-intent-what-patronage-actually',
+    img:'https://substackcdn.com/image/fetch/$s_!kkVE!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fd603498a-f199-4cd6-89bd-9f6b001e8aaa_1280x720.png'},
+  wInterview:{t:'new forms 001 — an interview with patron c.y. lee', s:'substack · interview', url:'https://soundoffractures.substack.com/p/new-forms-001-an-interview-with-patron',
+    img:'https://substackcdn.com/image/fetch/$s_!HIbK!,w_1200,h_600,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-video.s3.amazonaws.com%2Fvideo_upload%2Fpost%2F181035580%2F060f6556-7302-40a4-a012-4526b0c3c5aa%2Ftranscoded-02890.png'},
+  wExpression:{t:'the beautiful, crushing act of expression', s:'substack', url:'https://soundoffractures.substack.com/p/the-beautiful-crushing-act-of-expression',
+    img:'https://substackcdn.com/image/fetch/$s_!t7BL!,w_600,h_338,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F447d46f8-4ae5-47f7-9244-7548481a970a_3024x1392.jpeg'},
+  wFriction:{t:'building for friction as an independent artist', s:'substack', url:'https://soundoffractures.substack.com/p/building-for-friction-as-an-independent',
+    img:'https://substackcdn.com/image/fetch/$s_!azjJ!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1e670031-ed35-48d2-aaa1-3c3b87771537_1920x1080.png'},
+  wWorldB:{t:'world-building as release strategy', s:'substack', url:'https://soundoffractures.substack.com/p/world-building-as-release-strategy',
+    img:'https://substackcdn.com/image/fetch/$s_!jQbn!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F67864ba6-6e0b-4f14-833f-55e1f2635155_781x428.png'},
+  /* alone together — the film */
+  atReel:{t:'the showreel', s:'youtube · film', yt:'97BGIyBCeso', url:'https://www.youtube.com/watch?v=97BGIyBCeso',
+    img:'https://i.ytimg.com/vi/97BGIyBCeso/hqdefault.jpg'},
+  /* the process — alone together */
+  atFilm:{t:'the making of — mini doc ep.1', s:'youtube · bts', yt:'6PKDsMJriyw', url:'https://youtu.be/6PKDsMJriyw',
+    img:'https://i.ytimg.com/vi/6PKDsMJriyw/hqdefault.jpg'},
+  atFindings:{t:'alone together pilot — the findings', s:'substack', url:'https://soundoffractures.substack.com/p/thanks-for-coming-to-the-alone-together',
+    img:'https://substackcdn.com/image/fetch/$s_!J_Tn!,w_1200,h_675,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fbec540cc-0ce6-495d-b70d-4eb592399c28_1920x1080.jpeg'},
+  atWork:{t:'what the work is — behind the scenes', s:'substack', url:'https://soundoffractures.substack.com/p/what-the-work-is-behind-the-scenes',
+    img:'https://substackcdn.com/image/fetch/$s_!tiIN!,w_1200,h_675,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F37ab6158-85ca-40eb-970a-bc74cf9aa313_3088x2316.jpeg'},
+  atConnect:{t:'how do you actually facilitate connection?', s:'substack', url:'https://soundoffractures.substack.com/p/how-do-you-actually-facilitate-connection',
+    img:'https://substackcdn.com/image/fetch/$s_!g7kI!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F8c6d99aa-9c13-4c3d-9f12-cfb1a3324379_5712x4284.jpeg'},
+  atWorld:{t:'building a world around my music', s:'substack', url:'https://soundoffractures.substack.com/p/alone-together-building-a-world-around',
+    img:'https://substackcdn.com/image/fetch/$s_!3bsz!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc20da111-794f-497c-a865-dd202b630b35_1400x1400.jpeg'},
+  /* the process — scenes */
+  scBook:{t:'scenes the book — a perfect time to reflect', s:'substack', url:'https://soundoffractures.substack.com/p/scenes-the-book-a-perfect-time-to',
+    img:'https://substackcdn.com/image/fetch/$s_!pGjg!,w_1200,h_675,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fb24070a8-9284-4ff3-a6fc-4b93700944d4_4713x4713.jpeg'},
+  scVideo:{t:'how an idea for a music video turned into a reality', s:'substack', url:'https://soundoffractures.substack.com/p/how-an-idea-for-a-music-video-turned',
+    img:'https://substackcdn.com/image/fetch/$s_!rCIJ!,w_1200,h_675,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F017ff7d7-eff6-47e6-bce9-1948f6a91334_1200x834.jpeg'},
+  scVibe:{t:'a vibe coding story — my first product', s:'substack', url:'https://soundoffractures.substack.com/p/a-vibe-coding-story-my-first-product',
+    img:'https://substackcdn.com/image/fetch/$s_!yfuE!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1a73dfc7-53e4-4182-916c-655e27727954_1774x1416.png'},
+  scProduct:{t:'turning an album concept into a product', s:'substack', url:'https://soundoffractures.substack.com/p/turning-an-album-concept-into-a-product',
+    img:'https://substackcdn.com/image/fetch/$s_!9cnk!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F07350309-aa18-43f5-b0b9-3bcdb9ef19c9_4677x3210.jpeg'},
+  /* research — forthcoming peer-reviewed chapters (springer, "music ecosystems: challenges and opportunities") */
+  rTeach:{t:'"what is it that we\'re doing here?" — pedagogical tension, uncertainties and reflexivity in higher popular music education', s:'springer · chapter', wide:1, bare:1, url:'https://link.springer.com/book/9783032325143',
+    img:'https://media.springernature.com/w306/springer-static/cover/book/9783032325143.jpg'},
+  rScenes:{t:'scenes — building new collaborative ecosystems around music releases', s:'springer · chapter', wide:1, bare:1, url:'https://link.springer.com/book/9783032325143',
+    img:'https://media.springernature.com/w306/springer-static/cover/book/9783032325143.jpg'},
+  rSprint:{t:'the artist-led creative sprint', s:'substack · field notes', url:'https://soundoffractures.substack.com/p/the-artist-led-creative-sprint',
+    img:'https://substackcdn.com/image/fetch/$s_!HJG9!,w_1200,h_675,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fc1fc289a-9b88-4366-8ce1-b2d314701171_1600x1200.jpeg'},
+  vBts:{t:'behind the scenes', s:'substack · bts', url:'https://soundoffractures.substack.com/p/behind-the-scenes',
+    img:'https://substackcdn.com/image/fetch/$s_!CqjC!,w_1200,h_600,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-video.s3.amazonaws.com%2Fvideo_upload%2Fpost%2F162673202%2F425a4a78-9916-4a67-8898-29531cc04aa1%2Ftranscoded-00001.png'},
+  /* network archives — the meta-world: a directory of inspiration */
+  naObj:{t:'network archives 001 — a directory of inspiration', s:'metalabel · the zine', url:'https://networkarchives.metalabel.com/directoryofinspiration', img:null, ph:'network archives'},
+  naOut:{t:'out now — network archives 001', s:'substack', url:'https://soundoffractures.substack.com/p/out-now-network-archives-001-a-directory',
+    img:'https://substackcdn.com/image/fetch/$s_!h_5o!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4910182a-7e4c-440a-a93f-4052314bda20_1600x1080.jpeg'},
+  naMagnetic:{t:'sound of fractures & metalabel curate a directory of inspiration', s:'magnetic magazine · press', url:'https://magneticmag.com/2024/12/sound-of-fractures-metalabel-curate-innovative-directory-of-inspiration-with-network-archives-001/',
+    img:'https://magneticmag.com/wp-content/uploads/2024/12/241127-direct-cover.png'},
+  naMusically:{t:'sound of fractures and metalabel launch network archives zine', s:'music ally · press', url:'https://musically.com/2024/12/16/sound-of-fractures-and-metalabel-launch-network-archives-zine/', img:null, ph:'music ally'},
+  /* teaching, talks & conversations — the practice, out loud */
+  rTeaching:{t:'deputy course leader — ma music management, university of westminster', s:'teaching', wide:1, bare:1, still:1},
+};
+
+/* every link knows its own key — used by the seen-memory */
+Object.keys(L).forEach(k=>{ L[k].k=k; });
+
+/* ---------- overview nodes ---------- */
+const NODES = [
+  { id:'projects', num:'01', label:'projects', x:.36, y:.30, sq:8, s:1.35, sub:'enter →',
+    d:'the worlds — alone together, scenes & new concepts' },
+  { id:'music',    num:'02', label:'music', x:.68, y:.34, sq:6, s:1.35, sub:'enter →',
+    d:'sound of fractures — releases & ways to listen' },
+  { id:'videos',   num:'03', label:'videos', x:.85, y:.60, sq:4, s:1, sub:'enter →',
+    d:'music videos & the new forms interviews' },
+  { id:'writing',  num:'04', label:'writing', x:.57, y:.72, sq:5, s:1, sub:'enter →',
+    d:'the substack — curated process notes & frameworks' },
+  { id:'research', num:'05', label:'research', x:.26, y:.66, sq:5, s:1, sub:'enter →',
+    d:'the practitioner-researcher — chapters, teaching, field notes' },
+  { id:'shop',     num:'06', label:'shop', x:.12, y:.42, sq:4, s:.8, sub:'enter →',
+    d:'more than merch — memories you can hold' },
+];
+
+const EDGES = [
+  ['projects','music','the ep', 0],
+  ['projects','videos','', 1],
+  ['music','videos','watch', 1],
+  ['research','writing','frameworks', 1],
+  ['writing','projects','process notes', 1],
+  ['shop','projects','the book', 1],
+  ['shop','music','', 1],
+  ['research','projects','case study', 1],
+];
+
+/* ---------- section sub-maps ---------- */
+const SECTIONS = {
+  projects:{ num:'01', title:'projects', d:'each project is a world — a container for meaning',
+    children:[
+      {id:'scenes', label:'scenes', x:.22, y:.32, mx:.5, my:.17, leaves:[L.scenesSite, L.beyond, L.decential]},
+      {id:'alonetogether', label:'alone together', x:.78, y:.40, mx:.5, my:.58, leaves:[L.atReel, L.twoDays, L.canva, L.cheads]},
+      {id:'networkarchives', label:'network archives', x:.50, y:.80, mx:.5, my:.85, leaves:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
+    ]},
+  networkarchives:{ num:'01', title:'network archives', d:'the meta-world — a directory of inspiration, made with metalabel', parent:'projects',
+    leaves:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
+  scenes:{ num:'01', title:'scenes', d:'the participatory album', parent:'projects', proc:'scenesproc',
+    leaves:[L.scenesSite, L.beyond, L.decential]},
+  alonetogether:{ num:'01', title:'alone together', d:'the current world', parent:'projects', proc:'atproc',
+    leaves:[L.atReel, L.twoDays, L.canva, L.cheads]},
+  scenesproc:{ num:'01', title:'the process', d:'notes from the making of scenes', parent:'scenes',
+    leaves:[L.scBook, L.scVideo, L.scVibe, L.scProduct]},
+  atproc:{ num:'01', title:'the process', d:'notes from the making of alone together', parent:'alonetogether',
+    leaves:[L.atFilm, L.atFindings, L.atWork, L.atConnect, L.atWorld]},
+  music:{ num:'02', title:'music', d:'emotional electronic music — where every world begins',
+    leaves:[L.spotify, L.playlist, L.bandcamp]},
+  videos:{ num:'03', title:'videos', d:'the worlds in motion',
+    children:[
+      {id:'musicvids', label:'music videos', x:.24, y:.36, mx:.5, my:.24, leaves:[L.vScenes, L.vTouch, L.vFriends, L.vTraces, L.vBts]},
+      {id:'newforms', label:'new forms', x:.76, y:.62, mx:.5, my:.74, leaves:[L.nf1, L.nf2, L.nf3, L.nfYancey, L.nfVivid]},
+    ]},
+  musicvids:{ num:'03', title:'music videos', d:'the worlds in motion', parent:'videos',
+    leaves:[L.vScenes, L.vTouch, L.vFriends, L.vTraces, L.vBts]},
+  newforms:{ num:'03', title:'new forms', d:'conversations about new models for music & creativity', parent:'videos',
+    leaves:[L.nf1, L.nf2, L.nf3, L.nfYancey, L.nfVivid]},
+  writing:{ num:'04', title:'writing', d:'honest process notes from building the model',
+    leaves:[L.wPurpose, L.wCareer, L.wRhythm, L.wExpression, L.wAudience, L.wPeople, L.wFriction, L.wWorldB]},
+  research:{ num:'05', title:'research', d:'the practitioner-researcher',
+    leaves:[L.rScenes, L.rTeach, L.rSprint, L.rTeaching]},
+  shop:{ num:'06', title:'shop', d:'more than merch — memories you can hold',
+    leaves:[L.cards, L.book, L.naObj, L.bandcamp]},
+};
+
+const SEED_TRACES = 137;
+
+/* walk a section up to its top-level world (for tints & trail waypoints) */
+const rootId = id => { let s=id; while(SECTIONS[s] && SECTIONS[s].parent) s=SECTIONS[s].parent; return s; };
+
+/* ---------- subtle colour system: one quiet hue per world ---------- */
+const TINT = {
+  projects:[168,72,50],   /* clay   */
+  music:[58,88,130],      /* slate  */
+  videos:[110,74,130],    /* plum   */
+  writing:[70,110,84],    /* moss   */
+  research:[150,112,44],  /* ochre  */
+  shop:[148,76,104],      /* rose   */
+};
+const tintStr=(id,a)=>{const c=TINT[id]||[10,10,10];return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';};
+
+/* how the worlds feed each other — lit on hover */
+const CROSS = {
+  projects:[['music','the songs seed the worlds'],['writing','documented as process notes'],['research','studied as case studies'],['shop','objects left behind']],
+  music:[['projects','every world begins here'],['videos','the worlds in motion'],['shop','collect it']],
+  videos:[['music','the songs'],['projects','windows into the worlds']],
+  writing:[['research','essays become frameworks'],['projects','notes feed the next experiment']],
+  research:[['writing','frameworks return as essays'],['projects','the study of the practice']],
+  shop:[['projects','memories you can hold'],['music','the records']],
+};
+
+/* ---------- canvas ---------- */
+const cv = document.getElementById('map');
+const ctx = cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1,2);
+  W = window.innerWidth||document.documentElement.clientWidth;
+  H = window.innerHeight||document.documentElement.clientHeight;
+  cv.width = W*DPR; cv.height = H*DPR;
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(view!=='over') layoutSection(view);
+}
+const isMobile = () => W < 640;
+const MONO = '"SF Mono","IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace';
+const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MOT = REDUCED ? 0 : 1;               /* motion amplitude factor */
+const easeOut = p => 1 - Math.pow(1 - p, 3);
+const aprog = (t, t0, delay, dur) => REDUCED ? 1 : Math.min(1, Math.max(0, (t - t0 - delay) / dur));
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const rng = mulberry32(20260807);
+
+/* ---------- view state ---------- */
+let view='over';          // 'over' | section id
+let trans=0;              // 0 = overview fully, 1 = section fully
+let transTarget=0;
+let transFrom=0, transT0=0, transDur=480;   // time-based tween state
+let sectionEnterT=0;                        // when the current section was entered
+let lastWpT=-1e9;                           // when the trail last grew a segment
+let activeSection=null;
+function setTrans(to,dur){ transFrom=trans; transTarget=to; transDur=dur; transT0=performance.now(); }
+
+window.addEventListener('resize',resize);
+resize();
+
+/* ---------- build overview world ---------- */
+const nodes = NODES.map(n=>{
+  const sats=[];
+  const count = isMobile()? Math.max(3,n.sq-2) : n.sq;
+  const a0 = rng()*Math.PI*2;
+  for(let i=0;i<count;i++){
+    let a = a0 + i*(Math.PI*2/count) + (rng()-.5)*.5;
+    if(Math.sin(a)>.35 && Math.abs(Math.cos(a))<.85){ a = -a; }
+    const dist = ((isMobile()?36:48) + rng()*(isMobile()?16:28)) * (.7+.3*(n.s||1));
+    sats.push({a, dist, size:(5+rng()*5)*(.8+.25*(n.s||1)), seed:rng()*1000});
+  }
+  return {...n, sats, seed:rng()*1000, hover:0, lift:0, zseed:rng()*1000};
+});
+
+/* ---------- arrival: the network assembles itself ----------
+   each world is born in turn — dot first, then its label, then its
+   satellites bloom, then the threads between worlds draw themselves,
+   and only then do the fainter layers (ghost arcs, other people's
+   trails, the shared zones) breathe in. fragments, then connections. */
+let introT0=null;
+nodes.forEach((n,i)=>{
+  n.born = 260 + i*150 + rng()*90;
+  n.sats.forEach((s,j)=>{ s.birth = n.born + 140 + j*65 + rng()*40; });
+});
+/* a touch of overshoot for the moment a world pops into being */
+const easeBack = p => { const c=2.0; const q=p-1; return 1 + q*q*((c+1)*q + c); };
+
+/* depth: each world sits at a slowly drifting distance from the viewer.
+   0 = far, 1 = near. a dragged world lifts toward you and settles back.
+   near worlds are a touch larger, darker and softer-shadowed; far ones
+   smaller and paler — enough to feel, not enough to notice. */
+function nodeZ(n,t){
+  const drift = .5 + .5*Math.sin(t*.00006 + n.zseed);
+  return Math.min(1, drift*.75 + n.lift*.6);
+}
+const zScale = z => .9 + z*.22;           /* 0.90 → 1.12 */
+const zInk   = z => .55 + z*.45;          /* alpha multiplier */
+function nodeSats(n,nx,ny,t){
+  const z=nodeZ(n,t), zs=zScale(z);
+  /* on click, the satellites briefly gather toward their world —
+     the network pulling itself in before the zoom */
+  const gp = Math.max(0, 1-(t-(n.gatherT||-1e9))/280)*MOT;
+  return n.sats.map(s=>{
+    const b = easeOut(aprog(t, introT0??t, s.birth||0, 420));   /* birth bloom */
+    const wob=Math.sin(t*.00035+s.seed)*3*MOT;
+    const reach=(s.dist+wob)*(.25+.75*b)*(1-.18*gp);
+    return {x:nx+Math.cos(s.a)*reach*zs*(1+n.hover*.08),
+            y:ny+Math.sin(s.a)*(reach*.72)*zs*(1+n.hover*.08),
+            size:s.size*zs*(.6+.4*b), b};
+  });
+}
+
+
+/* =========================================================
+   TRAILS — every visitor draws a coloured line between
+   the things they touch; the first connection can be named
+   ========================================================= */
+const nodeById=id=>nodes.find(n=>n.id===id);
+
+/* shared trail store (supabase — same database as the alone together memories) */
+const SB_URL='https://sqrriiduxnbjcdpdbiyq.supabase.co';
+const SB_KEY='sb_publishable_InhTMA89gwNxRVeKdAlE1g_dpko7Gu7';
+const SB_HDRS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+
+/* coarse, anonymous affinity signal: continent from the device timezone.
+   never a precise location — just 'europe', 'americas', … */
+const REGION=(()=>{try{
+  const tz=(Intl.DateTimeFormat().resolvedOptions().timeZone||'').split('/')[0].toLowerCase();
+  const m={america:'americas',australia:'oceania',pacific:'oceania',antarctica:'',atlantic:'',indian:'',arctic:'',etc:'',utc:''};
+  const r=(tz in m)? m[tz] : tz;
+  return ['europe','americas','asia','africa','oceania'].includes(r)? r : '';
+}catch(e){ return ''; }})();
+
+/* coarse traffic source: utm_source, or the referrer's platform name.
+   first touch only — stored with the trail so jamie can see where
+   explorers arrive from (instagram, substack, …). never a full url. */
+const SRC=(()=>{try{
+  const u=new URL(location.href);
+  const utm=(u.searchParams.get('utm_source')||u.searchParams.get('src')||'').toLowerCase().slice(0,24);
+  if(utm) return utm.replace(/[^a-z0-9._-]/g,'');
+  const h=(document.referrer? new URL(document.referrer).hostname:'').toLowerCase();
+  if(!h||h===location.hostname) return '';
+  if(h.includes('instagram'))return 'instagram';
+  if(h.includes('t.co')||h.includes('twitter')||h.includes('x.com'))return 'x';
+  if(h.includes('substack'))return 'substack';
+  if(h.includes('youtu'))return 'youtube';
+  if(h.includes('linkedin'))return 'linkedin';
+  if(h.includes('facebook'))return 'facebook';
+  if(h.includes('tiktok'))return 'tiktok';
+  if(h.includes('google'))return 'google';
+  return h.slice(0,40);
+}catch(e){ return ''; }})();
+
+let otherTrails=[];
+function loadTrails(){
+  fetch(SB_URL+'/rest/v1/site_trails?select=id,hue,name,wps,region&order=updated_at.desc&limit=80',{headers:SB_HDRS})
+    .then(r=>r.json())
+    .then(rows=>{
+      if(!Array.isArray(rows)) return;
+      otherTrails=rows
+        .filter(r=>r.id!==userTrail.id && Array.isArray(r.wps) && r.wps.length>=2)
+        .map(r=>({h:r.hue, name:(r.name||'').slice(0,24), wps:r.wps, region:r.region||''}));
+      learnCommunities();
+      expLabel();   /* hoisted — keeps the explorers count current */
+    })
+    .catch(()=>{});
+}
+
+function randHex(n){
+  const a=new Uint8Array(n); crypto.getRandomValues(a);
+  return Array.from(a,b=>b.toString(16).padStart(2,'0')).join('');
+}
+let userTrail=null;
+try{ userTrail=JSON.parse(localStorage.getItem('sof_trail_v1')); }catch(e){}
+if(!userTrail || !userTrail.wps){
+  userTrail={ h:Math.floor(Math.random()*360), name:'', wps:[] };
+}
+if(!userTrail.id){ userTrail.id=(crypto.randomUUID?crypto.randomUUID():randHex(16)); }
+if(!userTrail.key){ userTrail.key=randHex(16); }
+function saveTrail(){ try{ localStorage.setItem('sof_trail_v1', JSON.stringify(userTrail)); }catch(e){} }
+if(!userTrail.ref && SRC){ userTrail.ref=SRC; saveTrail(); }
+loadTrails();
+
+/* =========================================================
+   LEARNT COMMUNITIES — the map studies the trails it holds.
+   journeys that touch the same worlds (and, faintly, come
+   from the same part of the planet) drift together: their
+   colours lean toward each other and they pass through a
+   shared, softly-tinted zone. nothing is labelled — the
+   clusters simply emerge as more people visit.
+   ========================================================= */
+let communities=[];
+const worldsOf=tr=>{ const s=new Set(); tr.wps.forEach(w=>s.add(w[0])); return s; };
+function trailSim(a,b){
+  const A=worldsOf(a), B=worldsOf(b);
+  let inter=0; A.forEach(x=>{ if(B.has(x)) inter++; });
+  const uni=A.size+B.size-inter;
+  const j=uni? inter/uni : 0;                       /* similar journeys   */
+  const r=(a.region && a.region===b.region)? .3 : 0; /* similar geography  */
+  return j*.8 + r;
+}
+function learnCommunities(){
+  userTrail.region=REGION;
+  const all=[userTrail,...otherTrails].filter(tr=>Array.isArray(tr.wps)&&tr.wps.length>=2);
+  all.forEach(tr=>{ tr.dispH=null; });
+  const n=all.length, parent=all.map((_,i)=>i);
+  const find=i=>parent[i]===i? i : (parent[i]=find(parent[i]));
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++)
+    if(trailSim(all[i],all[j])>=.55){ parent[find(i)]=find(j); }
+  const groups={};
+  all.forEach((tr,i)=>{ const r=find(i); (groups[r]=groups[r]||[]).push(tr); });
+  communities=Object.values(groups).filter(g=>g.length>=3).map((g,k)=>{
+    /* circular mean hue of the group */
+    let sx=0,sy=0;
+    g.forEach(tr=>{ sx+=Math.cos(tr.h*Math.PI/180); sy+=Math.sin(tr.h*Math.PI/180); });
+    const mh=(Math.atan2(sy,sx)*180/Math.PI+360)%360;
+    /* members' displayed colours lean 25% toward their community */
+    g.forEach(tr=>{ const d=((mh-tr.h+540)%360)-180; tr.dispH=(tr.h+d*.25+360)%360; });
+    return {members:g, h:mh, seed:k*37.7};
+  });
+}
+/* the shared zone sits where the community's journeys begin */
+function commAnchor(c,t){
+  let ax=0,ay=0,m=0;
+  c.members.forEach(tr=>{
+    const p1=wpXY(tr.wps[0],t), p2=wpXY(tr.wps[1],t);
+    if(p1&&p2){ ax+=(p1[0]+p2[0])/2; ay+=(p1[1]+p2[1])/2; m++; }
+  });
+  return m? [ax/m, ay/m] : null;
+}
+function drawCommunities(t,alpha){
+  communities.forEach(c=>{
+    const a=commAnchor(c,t); if(!a) return;
+    const r=64+c.members.length*13+Math.sin(t*.0004+c.seed)*5*MOT;
+    const g=ctx.createRadialGradient(a[0],a[1],0,a[0],a[1],r);
+    g.addColorStop(0,'hsla('+c.h+',38%,50%,'+(.05*alpha)+')');
+    g.addColorStop(1,'hsla('+c.h+',38%,50%,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(a[0],a[1],r,0,Math.PI*2); ctx.fill();
+    /* kinship threads: each member's journey passes through the zone */
+    ctx.strokeStyle='hsla('+c.h+',36%,46%,'+(.06*alpha)+')';
+    ctx.lineWidth=.7;
+    c.members.forEach((tr,i)=>{
+      const p1=wpXY(tr.wps[0],t), p2=wpXY(tr.wps[1],t);
+      if(!p1||!p2) return;
+      curve((p1[0]+p2[0])/2,(p1[1]+p2[1])/2,a[0],a[1],((i%2)?-1:1)*(20+(i*13)%30));
+    });
+  });
+}
+
+/* push the trail to the shared map, gently debounced */
+let syncTimer=null;
+function syncTrail(){
+  if(userTrail.wps.length<2) return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(()=>{
+    fetch(SB_URL+'/rest/v1/rpc/upsert_site_trail',{
+      method:'POST', headers:SB_HDRS,
+      body:JSON.stringify({p_id:userTrail.id, p_key:userTrail.key, p_hue:userTrail.h%360, p_name:userTrail.name||'', p_wps:userTrail.wps, p_region:REGION||null,
+        p_ref:userTrail.ref||null, p_secs:seen.secs.slice(0,40)})
+    }).catch(()=>{});
+  },1200);
+}
+
+const trailCol=(h,a)=>'hsla('+h+',36%,46%,'+a+')';
+function addWaypoint(id, ox, oy){
+  if(!id) return;
+  /* a new segment marks a genuinely new place — revisiting (or clicking
+     around inside a world you're already in) doesn't extend the trail,
+     so the line reads as where you explored, not how long you lingered */
+  if(userTrail.wps.some(w=>w[0]===id)) return;
+  userTrail.wps.push([id, Math.round(ox), Math.round(oy)]);
+  if(userTrail.wps.length>30) userTrail.wps.shift();
+  if(userTrail.wps.length>=2) lastWpT=performance.now();
+  saveTrail();
+  syncTrail();
+  learnCommunities();
+}
+function wpXY(wp,t){
+  const n=nodeById(wp[0]); if(!n) return null;
+  const [nx,ny]=nodePos(n,t);
+  return [nx+(wp[1]||0), ny+(wp[2]||0)];
+}
+function drawTrail(tr,t,a,withName,animate){
+  const pts=tr.wps.map(w=>wpXY(w,t)).filter(Boolean);
+  if(pts.length<2) return;
+  const hue=(tr.dispH!=null)? tr.dispH : tr.h;   /* colour leans toward its community */
+  ctx.strokeStyle=trailCol(hue,a);
+  ctx.lineWidth=.8;
+  for(let i=0;i<pts.length-1;i++){
+    const bend=(((tr.h+i*37)%2)?-1:1)*(24+((tr.h+i*53)%38));
+    if(animate && i===pts.length-2){
+      /* the newest connection draws itself in */
+      curvePartial(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],bend,
+        easeOut(aprog(t,lastWpT,0,600)));
+    } else {
+      curve(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],bend);
+    }
+  }
+  if(withName && tr.name && nameA>0.02){
+    let lx=(pts[0][0]+pts[1][0])/2, ly=(pts[0][1]+pts[1][1])/2-6;
+    /* a name sitting on top of a world's label reads like it belongs to that
+       world — a track or release title, not a visitor's trail. nudge it
+       clear of any node it's landed too close to. */
+    nodes.forEach(n=>{
+      const [nx,ny]=nodePos(n,t);
+      const dx=lx-nx, dy=ly-ny, d=Math.hypot(dx,dy);
+      const clear=40+(n.s||1)*8;
+      if(d<clear){
+        const push=(clear-d)+3;
+        const ux=d>0.01? dx/d : 0, uy=d>0.01? dy/d : -1;
+        lx+=ux*push; ly+=uy*push;
+      }
+    });
+    ctx.font='8.5px '+MONO;
+    ctx.fillStyle=trailCol(hue,Math.min(.55,a*3)*nameA);
+    ctx.textAlign='center';
+    ctx.fillText(tr.name,lx,ly);
+    ctx.textAlign='left';
+  }
+}
+
+/* ---------- fellow explorers: the guestbook toggle ---------- */
+/* names on other visitors' trails read like a guestbook — a semi-public
+   co-sign, not ambient decoration. hidden by default; a quiet button
+   reveals who else has walked the map. */
+let namesOn=false, nameA=0;
+const expBtn=document.getElementById('expBtn');
+function expLabel(){
+  const n=otherTrails.filter(tr=>tr.name).length;
+  expBtn.querySelector('.u').textContent=
+    (namesOn?'hide fellow explorers':'show fellow explorers')+(n?' ('+n+')':'');
+}
+expBtn.onclick=()=>{ namesOn=!namesOn; expLabel(); };
+expLabel();
+
+/* the "name your trail" chip sits on the first connection */
+const trailChip=document.getElementById('trailChip');
+const trailHint=document.getElementById('trailHint');
+let chipEditing=false;
+let trailHinted=false;
+try{ trailHinted = !!localStorage.getItem('sof_trailhint_v1'); }catch(e){}
+let hintShownAt=null;
+function markTrailHinted(){
+  if(trailHinted) return;
+  trailHinted=true;
+  try{ localStorage.setItem('sof_trailhint_v1','1'); }catch(e){}
+}
+function updateChip(t){
+  const show = view==='over' && userTrail.wps.length>=2 && !document.body.classList.contains('dirmode');
+  trailChip.classList.toggle('on',show);
+  if(!show){ if(trailHint) trailHint.classList.remove('on'); return; }
+  const p1=wpXY(userTrail.wps[0],t), p2=wpXY(userTrail.wps[1],t);
+  if(!p1||!p2) return;
+  const cx=(p1[0]+p2[0])/2, cyy=(p1[1]+p2[1])/2;
+  /* while typing, hold still — a moving fixed-position element mid-edit
+     is what was breaking the cursor */
+  if(!chipEditing){
+    trailChip.style.transform=`translate(${cx}px,${cyy}px) translate(-50%,-50%)`;
+    trailChip.textContent = userTrail.name ? userTrail.name : 'leave your name';
+    trailChip.style.fontStyle = userTrail.name ? 'normal' : 'italic';
+  }
+  trailChip.style.color=trailCol(userTrail.dispH!=null?userTrail.dispH:userTrail.h,.95);
+  if(trailHint){
+    const showHint = !chipEditing && !userTrail.name && !trailHinted;
+    if(showHint){
+      if(hintShownAt===null) hintShownAt=t;
+      if(t-hintShownAt>9000){ markTrailHinted(); trailHint.classList.remove('on'); }
+      else{
+        trailHint.classList.add('on');
+        trailHint.style.transform=`translate(${cx}px,${cyy+20}px) translate(-50%,0)`;
+      }
+    } else {
+      trailHint.classList.remove('on');
+    }
+  }
+}
+trailChip.addEventListener('click',()=>{
+  if(chipEditing) return;
+  chipEditing=true;
+  markTrailHinted();
+  if(trailHint) trailHint.classList.remove('on');
+  trailChip.innerHTML='<input id="trailName" maxlength="24" value="'+(userTrail.name||'').replace(/"/g,'&quot;')+'" placeholder="leave your name">';
+  const inp=document.getElementById('trailName');
+  inp.focus();
+  const done=()=>{
+    userTrail.name=inp.value.trim().slice(0,24);
+    saveTrail();
+    syncTrail();
+    chipEditing=false;
+  };
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.stopPropagation(); done(); } });
+  inp.addEventListener('blur',done);
+});
+
+/* faded connections in the distance: ghost arcs between satellites */
+const ghosts=[];
+for(let i=0;i<14;i++){
+  const a=nodes[Math.floor(rng()*nodes.length)];
+  let b=nodes[Math.floor(rng()*nodes.length)];
+  if(b===a) b=nodes[(nodes.indexOf(a)+1)%nodes.length];
+  ghosts.push({a, ai:Math.floor(rng()*a.sats.length), b, bi:Math.floor(rng()*b.sats.length), bend:(rng()-.5)*180});
+}
+function satXY(n,s,t,hov){
+  const [nx,ny]=nodePos(n,t);
+  const zs=zScale(nodeZ(n,t));
+  const wob=Math.sin(t*.00035+s.seed)*3*MOT;
+  return [ nx+Math.cos(s.a)*(s.dist+wob)*zs*(1+hov*.08), ny+Math.sin(s.a)*(s.dist*.72+wob)*zs*(1+hov*.08) ];
+}
+function curve(x1,y1,x2,y2,bend){
+  const mx=(x1+x2)/2,my=(y1+y2)/2;
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1;
+  const px=-dy/L,py=dx/L;
+  ctx.beginPath();ctx.moveTo(x1,y1);
+  ctx.quadraticCurveTo(mx+px*bend,my+py*bend,x2,y2);
+  ctx.stroke();
+  return [mx+px*bend*.5,my+py*bend*.5];
+}
+/* draw only the first fraction p of a curve — lines that draw themselves */
+function curvePartial(x1,y1,x2,y2,bend,p){
+  if(p<=0) return;
+  if(p>=1){ curve(x1,y1,x2,y2,bend); return; }
+  const mx=(x1+x2)/2,my=(y1+y2)/2;
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1;
+  const cxp=mx+(-dy/L)*bend, cyp=my+(dx/L)*bend;
+  ctx.beginPath();
+  const N=22;
+  for(let i=0;i<=N;i++){
+    const tt=(i/N)*p;
+    const a=(1-tt)*(1-tt), b=2*(1-tt)*tt, c=tt*tt;
+    const X=a*x1+b*cxp+c*x2, Y=a*y1+b*cyp+c*y2;
+    i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);
+  }
+  ctx.stroke();
+}
+
+/* ---------- overview node buttons ---------- */
+/* the worlds can be rearranged: drag a node and every thread, trail
+   and shared zone stays attached, because the whole map reads each
+   node's position on every frame. the arrangement is remembered. */
+const nodeLayer=document.getElementById('nodeLayer');
+let hoverNode=null;
+let layoutSaved=null;
+try{ layoutSaved=JSON.parse(localStorage.getItem('sof_layout_v1')); }catch(e){}
+if(layoutSaved) nodes.forEach(n=>{
+  const p=layoutSaved[n.id];
+  if(p && p.x>0.02 && p.x<0.98 && p.y>0.05 && p.y<0.95){ n.x=p.x; n.y=p.y; }
+});
+function saveLayout(){
+  try{
+    const o={}; nodes.forEach(n=>o[n.id]={x:+n.x.toFixed(4), y:+n.y.toFixed(4)});
+    localStorage.setItem('sof_layout_v1', JSON.stringify(o));
+  }catch(e){}
+}
+nodes.forEach(n=>{
+  const b=document.createElement('button');
+  b.className='node';
+  b.innerHTML=`<span class="lbl">${n.label}</span>`;
+  b.querySelector('.lbl').style.fontSize=((isMobile()?11:12.5)*(n.s||1))+'px';
+  b.addEventListener('mouseenter',()=>{hoverNode=n;});
+  b.addEventListener('mouseleave',()=>{if(hoverNode===n)hoverNode=null;});
+  /* drag to rearrange; a small threshold keeps taps working as clicks */
+  b.addEventListener('pointerdown',e=>{
+    if(view!=='over') return;
+    const px0=e.clientX, py0=e.clientY, nx0=n.x, ny0=n.y;
+    let moved=false;
+    try{ b.setPointerCapture(e.pointerId); }catch(err){}
+    const mv=ev=>{
+      const dx=ev.clientX-px0, dy=ev.clientY-py0;
+      if(!moved && Math.hypot(dx,dy)>7){ moved=true; n.dragging=true; b.classList.add('dragging'); }
+      if(moved){
+        n.x=Math.min(.94, Math.max(.06, nx0+dx/W));
+        n.y=Math.min(.86, Math.max(.12, ny0+dy/H));
+      }
+    };
+    const up=()=>{
+      b.removeEventListener('pointermove',mv);
+      b.removeEventListener('pointerup',up);
+      b.removeEventListener('pointercancel',up);
+      b.classList.remove('dragging');
+      n.dragging=false;
+      if(moved){ saveLayout(); n.justDragged=performance.now(); }
+    };
+    b.addEventListener('pointermove',mv);
+    b.addEventListener('pointerup',up);
+    b.addEventListener('pointercancel',up);
+  });
+  b.addEventListener('click',()=>{
+    if(n.justDragged && performance.now()-n.justDragged<400) return;
+    enterSection(n.id);
+  });
+  nodeLayer.appendChild(b);
+  n.el=b;
+});
+
+/* ---------- section layer ---------- */
+const subLayer=document.getElementById('subLayer');
+const backBtn=document.getElementById('backBtn');
+let subEls=[];   // {el, bx, by, seed, kind} — canvas draws lines between stored positions
+let subGeom=null; // {hub:{x,y}, children:[{x,y,leaves:[{x,y}]}], leaves:[{x,y}]}
+
+function clearSub(){
+  subLayer.innerHTML=''; subEls=[]; subGeom=null;
+}
+
+function layoutSection(id){
+  clearSub();
+  const sec=SECTIONS[id];
+  const mob=isMobile();
+  const mini=!!sec.children;   /* project overview: small image-only leaves */
+  const root=rootId(id);
+  /* tight mode: on phones, shrink text/tiles ONLY when the section's
+     content genuinely won't fit the visible space comfortably */
+  let tight=false;
+  if(mob && !mini && sec.leaves && sec.leaves.length){
+    let est=0;
+    sec.leaves.forEach(l=>{ est += l.wide? (150+16)*(47+78) : (78+16)*(47+40); });
+    const avail=W*Math.max(H-320,200);
+    tight = est > .30*avail;
+  }
+  subLayer.classList.toggle('tight', tight);
+  /* mobile leaf metrics follow tight mode (must match the CSS above) */
+  const mW=tight?70:78, mWW=tight?132:150, mTH=tight?42:47,
+        mTx=tight?46:44, mWTx=tight?66:78;
+  const hub={ x: .5*W, y: (mob? (sec.children? (sec.children.length>2? .40 : .5) : .45) : .48)*H };
+  subGeom={hub, children:[], leaves:[], procAt:null, doors:[]};
+
+  /* hub element */
+  const hubEl=document.createElement('div');
+  hubEl.className='subhub';
+  /* the hub title lands letter by letter — ink settling into print */
+  const chTitle=[...sec.title].map((c,i)=>
+    `<span class="ch" style="--i:${i}">${c===' '?'&nbsp;':c.replace('<','&lt;')}</span>`).join('');
+  hubEl.innerHTML=`<span class="num">${sec.num}</span><span class="t">${chTitle}</span><span class="d">${sec.d||''}</span>`;
+  hubEl.querySelector('.num').style.color=tintStr(root,.9);
+  subLayer.appendChild(hubEl);
+  subEls.push({el:hubEl, bx:hub.x, by:hub.y, seed:rng()*1000, wob:3, delay:0, dur:260});
+
+  const mkLeaf=(l, x, y, parent, zoomTo)=>{
+    const a=document.createElement('a');
+    a.className='leaf'+(mini?' mini':'')+(!mini&&l.wide?' wide':'')+(!mini&&l.bare?' bare':'')+(l.still?' still':'');
+    if(l.still){
+      /* proof, not a link — a line in the record */
+      a.addEventListener('click',e=>e.preventDefault());
+    } else if(mini && zoomTo){
+      /* small picture = a doorway into the project, not an outbound link */
+      a.addEventListener('click',e=>{ e.preventDefault(); enterChild(zoomTo); });
+    } else if(l.yt){
+      /* films play in the centre of the site */
+      a.href=l.url; a.target='_blank'; a.rel='noopener';
+      a.addEventListener('click',e=>{
+        e.preventDefault();
+        markItem(l.k);
+        addWaypoint(root,(Math.random()-.5)*72,(Math.random()-.5)*56);
+        playYt(l.yt, l.t);
+      });
+    } else {
+      a.href=l.url; a.target='_blank'; a.rel='noopener';
+      a.addEventListener('click',()=>{
+        markItem(l.k);
+        addWaypoint(root,(Math.random()-.5)*72,(Math.random()-.5)*56);
+      });
+    }
+    a.innerHTML = mini
+      ? `<span class="lthumb">${l.img?`<img src="${l.img}" alt="" loading="lazy">`:`<span class="noimg">${l.ph||''}</span>`}</span>`
+      : `${l.bare?'':`<span class="lthumb">${l.img?`<img src="${l.img}" alt="" loading="lazy">`:`<span class="noimg">${l.ph||''}</span>`}</span>`}<span class="lt">${l.t}</span><span class="ls">${l.s}${l.still?'':(l.yt?' ▶':' ↗')}</span>`;
+    if(!mini) a.querySelector('.ls').style.color=tintStr(root,.8);
+    subLayer.appendChild(a);
+    const g={x,y,parent};
+    const se={el:a, bx:0, by:0, seed:Math.random()*1000, wob:4, abs:true,
+              delay:260+leafRefs.length*70, dur:380};
+    subEls.push(se);
+    subGeom.leaves.push(g);
+    leafRefs.push({g, se, wide:!mini&&!!l.wide, bare:!mini&&!!l.bare});
+    return g;
+  };
+  const leafRefs=[];
+  /* human jitter for any computed position */
+  const jit=(v,amt)=>v+(Math.random()-.5)*amt;
+
+  if(sec.children){
+    sec.children.forEach((c,ci)=>{
+      const cx=jit((mob? c.mx : c.x)*W, mob?10:W*.03), cy=jit((mob? c.my : c.y)*H, mob?8:H*.035);
+      const cEl=document.createElement('div');
+      cEl.className='childlbl';
+      cEl.innerHTML='<span class="cl"></span>';
+      cEl.querySelector('.cl').textContent=c.label;
+      cEl.addEventListener('click',()=>enterChild(c.id));
+      subLayer.appendChild(cEl);
+      subEls.push({el:cEl, bx:cx, by:cy, seed:rng()*1000, wob:3, delay:140, dur:300});
+      const cg={x:cx,y:cy,leaves:[]};
+      subGeom.children.push(cg);
+      const n=c.leaves.length;
+      const rx = mob? W*(sec.children.length>2? .30 : .26) : Math.min(W*.12, 175);
+      const ry = mob? H*(sec.children.length>2? .055 : .075) : Math.min(H*.15, 130);
+      c.leaves.forEach((l,i)=>{
+        let ang;
+        if(mob && sec.children.length>2){ ang = jit([-Math.PI*0.78, -Math.PI*0.22, Math.PI*0.78, Math.PI*0.22][i%4], .22); }
+        else if(mob){ ang = jit([-Math.PI/2, Math.PI*0.18, Math.PI*0.82][i%3], .3); }
+        else { ang = jit(-Math.PI/2 + i*(Math.PI*2/n) + (ci?0.5:0.2), .45); }
+        const rxJ=rx*(.82+Math.random()*.38), ryJ=ry*(.82+Math.random()*.38);
+        const x=cx+Math.cos(ang)*rxJ, y=cy+Math.sin(ang)*ryJ;
+        cg.leaves.push(mkLeaf(l, Math.min(Math.max(x, mob?54:80), W-(mob?54:80)), Math.min(Math.max(y,120), H-70), cg, c.id));
+      });
+    });
+  } else if(sec.leaves.length){
+    const n=sec.leaves.length;
+    const c=hub; /* links orbit the centred title */
+    const rx = mob? W*.30 : Math.min(W*.25, 360);
+    const ry = mob? H*.24 : Math.min(H*.30, 250);
+    const a0 = Math.random()*Math.PI*2;
+    sec.leaves.forEach((l,i)=>{
+      const ang = jit(a0 + i*(Math.PI*2/n), .4);
+      const rxJ=rx*(.8+Math.random()*.42), ryJ=ry*(.8+Math.random()*.42);
+      const x=c.x+Math.cos(ang)*rxJ, y=c.y+Math.sin(ang)*ryJ;
+      const mgx = l.wide?(mob?80:100):(mob?60:100);
+      mkLeaf(l, Math.min(Math.max(x, mgx), W-mgx), Math.min(Math.max(y,130), H-(l.wide?130:90)), null);
+    });
+  }
+
+  /* doorways — "the process", "talks & workshops", … — into deeper branches */
+  const doors=[].concat(sec.proc?[{label:'the process', id:sec.proc}]:[], sec.doors||[]);
+  subGeom.doors=[];
+  doors.forEach((d,di)=>{
+    const pEl=document.createElement('div');
+    pEl.className='childlbl';
+    pEl.innerHTML='<span class="cl"></span>';
+    pEl.querySelector('.cl').textContent=d.label;
+    pEl.addEventListener('click',()=>enterChild(d.id));
+    subLayer.appendChild(pEl);
+    /* several doors: side by side on desktop, stacked on phones */
+    const spread = (doors.length>1 && !mob) ? (di-(doors.length-1)/2)*210 : 0;
+    const px=jit(hub.x+spread, mob?8:W*.02);
+    const py=hub.y+(mob?(tight?112:128)+di*30:158+(doors.length>1?(di%2?14:-6):0));
+    subEls.push({el:pEl, bx:px, by:py, seed:rng()*777, wob:3, delay:220+di*60, dur:300});
+    subGeom.doors.push({x:px, y:py});
+  });
+  subGeom.procAt = subGeom.doors[0]||null;
+
+  if(sec.note){
+    const nEl=document.createElement('div');
+    nEl.className='subnote';
+    nEl.textContent=sec.note;
+    subLayer.appendChild(nEl);
+    subEls.push({el:nEl, bx:.5*W, by:hub.y+(mob?90:110), seed:1, wob:2, delay:340, dur:320});
+  }
+
+  /* relaxation: keep placement irregular but never overlapping.
+     sizes are MEASURED from the rendered elements, so wrapped titles
+     of any length are accounted for exactly */
+  leafRefs.forEach(r=>{
+    r.mw=r.se.el.offsetWidth || (mini?(mob?46:58):(mob?mW:100));
+    r.mh=r.se.el.offsetHeight || (mini?(mob?29:36):(mob?mTH+mTx:106));
+    /* a leaf's point (g.y) sits at the centre of its thumbnail; the box's
+       true centre is lower by half the text — solve with that box */
+    r.th=mini?(mob?29:36):(r.bare?16:(mob?mTH:60));
+    r.off=(r.mh-r.th)/2;
+  });
+  const lfW=r=>r.mw+16;
+  const lfH=r=>r.mh+(mini?16:14);
+  const cy=r=>r.g.y+r.off;
+  const hubW=hubEl.offsetWidth||0, hubH=hubEl.offsetHeight||0;
+  const obstacles=[{x:hub.x,y:hub.y,hw:Math.max(mob?(tight?88:100):175, hubW/2+12),hh:Math.max(mob?(tight?38:44):66, hubH/2+8)}];
+  if(sec.note) obstacles.push({x:.5*W,y:hub.y+(mob?90:110),hw:(mob?130:165),hh:36});
+  subGeom.doors.forEach(d=>obstacles.push({x:d.x,y:d.y,hw:mob?70:90,hh:28}));
+  subGeom.children.forEach(cc=>obstacles.push({x:cc.x,y:cc.y,hw:92,hh:32}));
+  const relax=(iters)=>{
+  for(let it=0;it<iters;it++){
+    let moved=false;
+    for(let i=0;i<leafRefs.length;i++){
+      const a=leafRefs[i].g, aW=lfW(leafRefs[i]), aH=lfH(leafRefs[i]);
+      for(let j=i+1;j<leafRefs.length;j++){
+        const b=leafRefs[j].g;
+        const LWm=(aW+lfW(leafRefs[j]))/2, LHm=(aH+lfH(leafRefs[j]))/2;
+        const dx=b.x-a.x, dy=cy(leafRefs[j])-cy(leafRefs[i]);
+        const ox=LWm-Math.abs(dx), oy=LHm-Math.abs(dy);
+        if(ox>0&&oy>0){
+          moved=true;
+          if(ox/LWm<oy/LHm){ const sft=(ox/2+1)*(dx<0?-1:1); a.x-=sft; b.x+=sft; }
+          else{ const sft=(oy/2+1)*(dy<0?-1:1); a.y-=sft; b.y+=sft; }
+        }
+      }
+      obstacles.forEach(o=>{
+        const dx=a.x-o.x, dy=cy(leafRefs[i])-o.y;
+        const ox=(aW/2+o.hw)-Math.abs(dx), oy=(aH/2+o.hh)-Math.abs(dy);
+        if(ox>0&&oy>0){
+          moved=true;
+          if(ox<oy) a.x+=(ox+1)*(dx<0?-1:1);
+          else a.y+=(oy+1)*(dy<0?-1:1);
+        }
+      });
+      const mgx = leafRefs[i].wide?(mob?(tight?70:78):90):(mob?(tight?40:48):64);
+      a.x=Math.min(Math.max(a.x,mgx),W-mgx);
+      a.y=Math.min(Math.max(a.y,(mob?(tight?156:160):135)),H-(leafRefs[i].bare?(mob?(tight?62:80):100):leafRefs[i].wide?(mob?(tight?128:150):145):(mob?(tight?95:115):105)));
+    }
+    if(!moved) break;
+  }
+  };
+  relax(tight?120:60);
+  /* tight mode: a final top-down sweep guarantees separation even when
+     the crowd is too dense for pairwise relaxation to converge */
+  const sweep=(passes)=>{
+    for(let pass=0;pass<passes;pass++){
+      const order=leafRefs.slice().sort((a,b)=>cy(a)-cy(b));
+      for(let i=0;i<order.length;i++)for(let j=i+1;j<order.length;j++){
+        const a=order[i].g, b=order[j].g, oa=order[i].off, ob=order[j].off;
+        const LW=(lfW(order[i])+lfW(order[j]))/2, LH=(lfH(order[i])+lfH(order[j]))/2;
+        const ox=LW-Math.abs(b.x-a.x), oy=LH-((b.y+ob)-(a.y+oa));
+        if(ox>0&&oy>0){
+          const want=(a.y+oa)+LH-ob;
+          if(ox<26){
+            const s=(ox+2)*((b.x-a.x)<0?-1:1);
+            b.x=Math.min(Math.max(b.x+s,40),W-40);
+            if(LW-Math.abs(b.x-a.x)>0) b.y=Math.min(want,H-(order[j].bare?40:58)-ob);
+          } else {
+            b.y=Math.min(want,H-(order[j].bare?40:58)-ob);
+          }
+        }
+      }
+    }
+  };
+  if(tight) sweep(2);
+  /* the hub and its doors are sacred: a last pass nudges any leaf the
+     sweep left sitting on one (vertically — the sweep works top-down) */
+  leafRefs.forEach(r=>{
+    const a=r.g, aW=lfW(r), aH=lfH(r);
+    obstacles.forEach(o=>{
+      const dx=a.x-o.x, dy=cy(r)-o.y;
+      const ox=(aW/2+o.hw)-Math.abs(dx), oy=(aH/2+o.hh)-Math.abs(dy);
+      if(ox>0&&oy>0){
+        if(ox<oy && !mob) a.x=Math.min(Math.max(a.x+(ox+2)*(dx<0?-1:1),64),W-64);
+        else a.y=Math.min(Math.max(a.y+(oy+2)*(dy<0?-1:1),(mob?156:135)),H-(r.bare?(mob?62:100):(mob?95:105)));
+      }
+    });
+  });
+  if(tight) sweep(1);
+  leafRefs.forEach(r=>{
+    const lw=mini?(mob?46:58):(r.wide?(mob?mWW:170):(mob?mW:100));
+    r.se.bx=r.g.x-lw/2;
+    r.se.by=r.g.y-r.th/2;
+  });
+}
+
+let clickRipple=null;
+function enterSection(id){
+  if(view!=='over') return;
+  hideSuggest();
+  cancelFlowNote();
+  closeFlowNote();
+  activeSection=nodes.find(n=>n.id===id);
+  /* the chosen world gathers its satellites and lets a ring go */
+  if(activeSection){ activeSection.gatherT=performance.now(); }
+  clickRipple={id, t0:performance.now()};
+  setTrans(1,480);
+  sectionEnterT=performance.now();
+  layoutSection(id);
+  view=id;
+  nodeLayer.classList.add('hidden');
+  setTimeout(()=>{subLayer.classList.add('on');},220);
+  backBtn.textContent='← the map';
+  backBtn.classList.add('on');
+  document.body.classList.add('insec');
+  markSec(id);
+  addWaypoint(id,0,0);
+}
+/* move between a section and one of its child projects (no overview zoom) */
+function swapSection(id){
+  view=id;
+  subLayer.classList.remove('on');
+  backBtn.textContent = SECTIONS[id].parent ? '← '+SECTIONS[SECTIONS[id].parent].title : '← the map';
+  setTimeout(()=>{
+    if(view!==id) return;
+    layoutSection(id);
+    sectionEnterT=performance.now();
+    subLayer.classList.add('on');
+  },240);
+}
+function enterChild(id){
+  if(!SECTIONS[id] || view===id) return;
+  markSec(id);
+  addWaypoint(rootId(id),(Math.random()-.5)*48,(Math.random()-.5)*36);
+  swapSection(id);
+}
+function leaveSection(){
+  if(view==='over') return;
+  const parent=SECTIONS[view] && SECTIONS[view].parent;
+  if(parent){ swapSection(parent); return; }
+  view='over';
+  setTrans(0,380);
+  subLayer.classList.remove('on');
+  backBtn.classList.remove('on');
+  document.body.classList.remove('insec');
+  setTimeout(()=>{ if(view==='over'){ clearSub(); nodeLayer.classList.remove('hidden'); activeSection=null; } },380);
+  /* once the map settles: whisper a next step. a due milestone isn't
+     shown here — it's scheduled to fade in later (see scheduleFlowNote),
+     so it never reads as a direct reaction to the click that just happened */
+  setTimeout(()=>{
+    if(view!=='over') return;
+    const kind=dueFlowKind();
+    if(kind) scheduleFlowNote(kind);
+    else showSuggest();
+  },750);
+}
+backBtn.addEventListener('click',leaveSection);
+
+/* ---------- animation ---------- */
+let T=0, startT=null;
+
+/* pointer parallax: near worlds drift a few px against the cursor,
+   far worlds barely — the map reads as a space, not a diagram.
+   everything (labels, threads, trails, chips) follows for free,
+   because the whole map reads each node's position every frame. */
+let paraTX=0, paraTY=0, paraX=0, paraY=0;
+window.addEventListener('pointermove',e=>{
+  if(e.pointerType==='touch') return;
+  paraTX=(e.clientX/Math.max(W,1)-.5);
+  paraTY=(e.clientY/Math.max(H,1)-.5);
+},{passive:true});
+
+function nodePos(n,t){
+  const z=nodeZ(n,t);
+  return [ n.x*W + Math.sin(t*.0002+n.seed)*6*MOT - paraX*(5+13*z)*MOT,
+           n.y*H + Math.cos(t*.00017+n.seed*1.3)*5*MOT - paraY*(4+10*z)*MOT ];
+}
+
+/* one edge's geometry, shared by the edge drawing and the signals
+   that travel along it — so a pulse never leaves its thread */
+function edgeGeom(ei,t){
+  const [a,b]=EDGES[ei];
+  const na=nodes.find(n=>n.id===a), nb=nodes.find(n=>n.id===b);
+  const [x1,y1]=nodePos(na,t), [x2,y2]=nodePos(nb,t);
+  const ang=Math.atan2(y2-y1,x2-x1);
+  return { sx:x1+Math.cos(ang)*60, sy:y1+Math.sin(ang)*33,
+           ex:x2-Math.cos(ang)*60, ey:y2-Math.sin(ang)*33,
+           bend:(ei%2?-1:1)*(16+ei*6), a, b };
+}
+function qAt(g,tt){
+  const mx=(g.sx+g.ex)/2, my=(g.sy+g.ey)/2;
+  const dx=g.ex-g.sx, dy=g.ey-g.sy, L=Math.hypot(dx,dy)||1;
+  const cxp=mx+(-dy/L)*g.bend, cyp=my+(dx/L)*g.bend;
+  const a=(1-tt)*(1-tt), b2=2*(1-tt)*tt, c=tt*tt;
+  return [a*g.sx+b2*cxp+c*g.ex, a*g.sy+b2*cyp+c*g.ey];
+}
+
+/* ---------- signals: thought travelling between the worlds ----------
+   every few seconds a small pulse of ink runs along one thread,
+   tinted by the world it left. the map is a practice in motion,
+   not a chart of one. */
+let signals=[], lastSignalT=-1e9, signalGap=2600;
+
+function drawOverview(t, alpha){
+  ctx.save();
+  ctx.globalAlpha=alpha;
+
+  /* the faint layers hold their breath until the network exists */
+  const introA = easeOut(aprog(t, introT0??t, 1500, 900));
+
+  /* learnt communities: soft shared zones beneath everything */
+  drawCommunities(t,alpha*introA);
+
+  /* faded connections in the distance */
+  ghosts.forEach(g=>{
+    const [gx1,gy1]=satXY(g.a,g.a.sats[g.ai],t,0);
+    const [gx2,gy2]=satXY(g.b,g.b.sats[g.bi],t,0);
+    ctx.strokeStyle=tintStr(g.a.id,.09*introA);
+    ctx.lineWidth=.7;
+    curve(gx1,gy1,gx2,gy2,g.bend);
+  });
+
+  /* other people's trails, fainter than the network */
+  otherTrails.forEach(tr=>drawTrail(tr,t,.11*alpha*introA,true));
+
+  EDGES.forEach(([a,b,lab,dash],ei)=>{
+    /* each thread draws itself, one after another, once its worlds exist */
+    const ep = easeOut(aprog(t, introT0??t, 1050+ei*110, 520));
+    if(ep<=0) return;
+    const g=edgeGeom(ei,t);
+    ctx.strokeStyle='rgba(10,10,10,.2)';
+    ctx.lineWidth=.7;
+    ctx.setLineDash(dash?[2,5]:[]);
+    let mx,my;
+    if(ep>=1){ [mx,my]=curve(g.sx,g.sy,g.ex,g.ey,g.bend); }
+    else { curvePartial(g.sx,g.sy,g.ex,g.ey,g.bend,ep); }
+    ctx.setLineDash([]);
+    if(ep>=1 && lab && !isMobile()){
+      const lp = aprog(t, introT0??t, 1600+ei*110, 350);
+      ctx.font='9px '+MONO;
+      const tw=ctx.measureText(lab).width;
+      ctx.fillStyle='rgba(255,255,255,'+(.92*lp)+')';
+      ctx.fillRect(mx-tw/2-4,my-8,tw+8,12);
+      ctx.fillStyle='rgba(10,10,10,'+(.4*lp)+')';
+      ctx.textAlign='center';
+      ctx.fillText(lab,mx,my+2);
+      ctx.textAlign='left';
+    }
+  });
+
+  /* signals along the threads — only while the map is at rest */
+  if(!REDUCED && trans<.05){
+    if(t-lastSignalT>signalGap && signals.length<3 && t-(introT0??t)>2400){
+      signals.push({ei:Math.floor(Math.random()*EDGES.length), t0:t,
+                    dur:1500+Math.random()*900, dir:Math.random()<.5?1:-1});
+      lastSignalT=t; signalGap=2400+Math.random()*3400;
+    }
+  }
+  for(let i=signals.length-1;i>=0;i--){
+    const s=signals[i], p=(t-s.t0)/s.dur;
+    if(p>=1){ signals.splice(i,1); continue; }
+    const g=edgeGeom(s.ei,t);
+    const src = s.dir>0? g.a : g.b;
+    const env = Math.min(1, Math.sin(p*Math.PI)*1.7);   /* fade at both ends */
+    for(let k=0;k<5;k++){
+      const tp=Math.max(0, p-k*.024);
+      const [X,Y]=qAt(g, s.dir>0? tp : 1-tp);
+      ctx.beginPath();
+      ctx.arc(X,Y, Math.max(.4,1.9-k*.34), 0, Math.PI*2);
+      ctx.fillStyle=tintStr(src,(k?.11:.4)*env);
+      ctx.fill();
+    }
+  }
+
+  /* hover lineage: how this world feeds the others */
+  nodes.forEach(n=>{
+    if(n.hover>.25 && CROSS[n.id]){
+      const [x1,y1]=nodePos(n,t);
+      CROSS[n.id].forEach(([tid,lab],k)=>{
+        const m=nodes.find(x=>x.id===tid);
+        const [x2,y2]=nodePos(m,t);
+        ctx.strokeStyle=tintStr(n.id,.5*n.hover);
+        ctx.lineWidth=.9;
+        const bend=(k%2?-1:1)*(70+k*26);
+        const [mx,my]=curve(x1,y1,x2,y2,bend);
+        /* target ring */
+        ctx.beginPath();
+        ctx.arc(x2,y2,7,0,Math.PI*2);
+        ctx.stroke();
+        if(!isMobile()){
+          ctx.font='8.5px '+MONO;
+          const tw=ctx.measureText(lab).width;
+          ctx.fillStyle='rgba(255,255,255,.9)';
+          ctx.fillRect(mx-tw/2-4,my-8,tw+8,12);
+          ctx.fillStyle=tintStr(n.id,.85*n.hover);
+          ctx.textAlign='center';
+          ctx.fillText(lab,mx,my+2);
+          ctx.textAlign='left';
+        }
+      });
+    }
+  });
+
+  /* far worlds draw first, near worlds last — so a lifted world passes in front */
+  const zOrder=nodes.slice().sort((a,b)=>nodeZ(a,t)-nodeZ(b,t));
+  zOrder.forEach(n=>{
+    const [nx,ny]=nodePos(n,t);
+    const targetHover=(hoverNode===n)?1:0;
+    n.hover+=(targetHover-n.hover)*.15;
+    /* lift eases up while dragging, settles down after */
+    n.lift+=((n.dragging?1:0)-n.lift)*(n.dragging?.12:.06);
+    const z=nodeZ(n,t), zs=zScale(z), zi=zInk(z);
+
+    /* birth: the dot lands with a tiny overshoot, everything else follows */
+    const bp = aprog(t, introT0??t, n.born||0, 480);
+    if(bp<=0){ if(n.el) n.el.style.opacity=0; return; }
+    const bornE = easeOut(bp);
+    const dotS  = easeBack(bp);
+
+    /* a ring marks the moment a world appears, then lets go */
+    const rp = aprog(t, introT0??t, (n.born||0)+40, 680);
+    if(rp>0 && rp<1){
+      ctx.beginPath();
+      ctx.arc(nx,ny, 6+easeOut(rp)*26, 0, Math.PI*2);
+      ctx.strokeStyle=tintStr(n.id,(1-rp)*.35*alpha);
+      ctx.lineWidth=1;
+      ctx.stroke();
+    }
+
+    /* a soft ground shadow that grows as the world comes nearer */
+    if(z>.35){
+      const sh=(z-.35)/.65*bornE;
+      const g=ctx.createRadialGradient(nx,ny+6*sh,0,nx,ny+6*sh,38+22*sh);
+      g.addColorStop(0,'rgba(10,10,10,'+(.045*sh*alpha)+')');
+      g.addColorStop(1,'rgba(10,10,10,0)');
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.arc(nx,ny+6*sh,38+22*sh,0,Math.PI*2); ctx.fill();
+    }
+
+    nodeSats(n,nx,ny,t).forEach(s=>{
+      if(s.b<=0) return;
+      ctx.strokeStyle='rgba(10,10,10,'+((.16+.24*n.hover)*zi*alpha*s.b)+')';
+      ctx.lineWidth=.6;
+      ctx.beginPath();ctx.moveTo(nx,ny);ctx.lineTo(s.x,s.y);ctx.stroke();
+      ctx.strokeStyle='rgba(10,10,10,'+((.4+.5*n.hover)*zi*alpha*s.b)+')';
+      ctx.lineWidth=.6+.4*z;
+      ctx.strokeRect(s.x-s.size/2, s.y-s.size/2, s.size, s.size);
+    });
+
+    ctx.beginPath();
+    ctx.arc(nx,ny,Math.max(.1,(2.4+n.hover*.8)*zs*dotS),0,Math.PI*2);
+    ctx.fillStyle=tintStr(n.id,(.6+.4*n.hover)*zi*alpha);
+    ctx.fill();
+
+    if(n.el){
+      n.el.style.transform=`translate(${nx}px,${ny+8+(1-bornE)*10}px) translateX(-50%) scale(${zs.toFixed(3)})`;
+      n.el.style.opacity=((.62+.38*zi)*bornE).toFixed(3);
+      n.el.style.zIndex=String(10+Math.round(z*20));
+    }
+  });
+
+  /* your trail, on top but quiet */
+  drawTrail(userTrail,t,.32*alpha*introA,false,true);
+
+  /* suggested next world: a slow breathing ring */
+  if(suggestNow){
+    if(t-suggestNow.t0>16000){ hideSuggest(); }
+    else{
+      const sn=nodeById(suggestNow.to);
+      if(sn){
+        const [sx,sy]=nodePos(sn,t);
+        for(let k=0;k<2;k++){
+          const p=REDUCED? .45 : (((t*.00055)+k*.5)%1);
+          ctx.beginPath();
+          ctx.arc(sx,sy,10+p*28,0,Math.PI*2);
+          ctx.strokeStyle=tintStr(suggestNow.to,(1-p)*.45*alpha);
+          ctx.lineWidth=1;
+          ctx.stroke();
+        }
+        flowHint.style.transform=`translate(${sx}px,${sy+(isMobile()?40:46)}px) translate(-50%,0)`;
+      }
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawSection(t, alpha){
+  if(!subGeom) return;
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  const hub=subGeom.hub;
+
+  /* the rest of the network, faded in the distance */
+  ghosts.forEach(g=>{
+    const [gx1,gy1]=satXY(g.a,g.a.sats[g.ai],t,0);
+    const [gx2,gy2]=satXY(g.b,g.b.sats[g.bi],t,0);
+    ctx.strokeStyle=tintStr(g.a.id,.05);
+    ctx.lineWidth=.7;
+    curve(gx1,gy1,gx2,gy2,g.bend);
+  });
+  otherTrails.forEach(tr=>drawTrail(tr,t,.05*alpha,false));
+  drawTrail(userTrail,t,.12*alpha,false,true);
+
+  /* hub dot — breathing, slowly */
+  ctx.beginPath();
+  ctx.arc(hub.x, hub.y+(isMobile()?26:34), 2.4+Math.sin(t*.0012)*.45*MOT, 0, Math.PI*2);
+  ctx.fillStyle=tintStr(rootId(view),.85);
+  ctx.fill();
+  /* every few seconds the hub lets a quiet ring go — the world is live */
+  if(!REDUCED){
+    const hp=((t-sectionEnterT)%4200)/4200;
+    if(hp<.5 && t-sectionEnterT>900){
+      const q=hp/.5;
+      ctx.beginPath();
+      ctx.arc(hub.x, hub.y+(isMobile()?26:34), 5+easeOut(q)*22, 0, Math.PI*2);
+      ctx.strokeStyle=tintStr(rootId(view),(1-q)*.22*alpha);
+      ctx.lineWidth=.8;
+      ctx.stroke();
+    }
+  }
+  const hubAnchor={x:hub.x, y:hub.y+(isMobile()?26:34)};
+
+  ctx.lineWidth=.7;
+
+  /* threads draw themselves outward from the hub */
+  let bi=0, li=0;
+  subGeom.children.forEach((c,ci)=>{
+    ctx.strokeStyle='rgba(10,10,10,.3)';
+    curvePartial(hubAnchor.x,hubAnchor.y,c.x,c.y,(bi++%2?-1:1)*22,
+      easeOut(aprog(t,sectionEnterT,80+ci*60,300)));
+    c.leaves.forEach(lf=>{
+      ctx.setLineDash([2,4]);
+      ctx.strokeStyle='rgba(10,10,10,.26)';
+      curvePartial(c.x,c.y,lf.x,lf.y,(bi++%2?-1:1)*14,
+        easeOut(aprog(t,sectionEnterT,180+(li++)*60,320)));
+      ctx.setLineDash([]);
+    });
+  });
+  subGeom.leaves.filter(lf=>!lf.parent).forEach(lf=>{
+    ctx.setLineDash([2,4]);
+    ctx.strokeStyle='rgba(10,10,10,.26)';
+    curvePartial(hubAnchor.x,hubAnchor.y,lf.x,lf.y,(bi++%2?-1:1)*18,
+      easeOut(aprog(t,sectionEnterT,180+(li++)*60,320)));
+    ctx.setLineDash([]);
+  });
+  /* threads to the doorways */
+  (subGeom.doors||[]).forEach((d,di)=>{
+    ctx.strokeStyle='rgba(10,10,10,.3)';
+    curvePartial(hubAnchor.x,hubAnchor.y,d.x,d.y,(di%2?-1:1)*14,
+      easeOut(aprog(t,sectionEnterT,140+di*60,300)));
+  });
+
+  /* position DOM elements: staggered rise-in, then gentle wobble */
+  subEls.forEach(se=>{
+    const e = easeOut(aprog(t,sectionEnterT,se.delay||0,se.dur||380));
+    se.el.style.opacity = e;
+    const wx = Math.sin(t*.0003+se.seed)*se.wob*MOT;
+    const wy = Math.cos(t*.00026+se.seed*1.4)*se.wob*.7*MOT + (1-e)*14;
+    if(se.abs){
+      se.el.style.transform=`translate(${se.bx+wx}px,${se.by+wy}px) scale(${(.95+.05*e).toFixed(3)})`;
+      se.el.style.position='fixed'; se.el.style.top='0'; se.el.style.left='0';
+    } else {
+      se.el.style.left=(se.bx+wx)+'px';
+      se.el.style.top=(se.by+wy)+'px';
+    }
+  });
+
+  ctx.restore();
+}
+
+function draw(t){
+  T=t; if(startT===null) startT=t;
+  if(introT0===null) introT0=t;
+  if(!W||!H) resize();
+  ctx.clearRect(0,0,W,H);
+
+  /* the parallax eases toward the pointer rather than tracking it */
+  paraX+=(paraTX-paraX)*.05;
+  paraY+=(paraTY-paraY)*.05;
+
+  /* fellow explorers' names fade in and out rather than snapping */
+  nameA+=((namesOn?1:0)-nameA)*(REDUCED?1:.08);
+  if(nameA<.001) nameA=0; if(nameA>.999) nameA=1;
+
+  if(trans!==transTarget){
+    const p = REDUCED ? 1 : Math.min(1,(t-transT0)/transDur);
+    trans = transFrom + (transTarget-transFrom)*easeOut(p);
+    if(p>=1) trans=transTarget;
+  }
+
+  /* overview with zoom-toward-node on transition */
+  if(trans<0.999){
+    ctx.save();
+    if(trans>0 && activeSection){
+      const [zx,zy]=nodePos(activeSection,t);
+      const s=1+trans*1.15;
+      ctx.translate(zx,zy); ctx.scale(s,s); ctx.translate(-zx,-zy);
+    }
+    drawOverview(t, 1-trans);
+    /* the ring the click released, riding the same zoom */
+    if(clickRipple){
+      const rp=aprog(t,clickRipple.t0,0,650);
+      if(rp>=1){ clickRipple=null; }
+      else{
+        const rn=nodeById(clickRipple.id);
+        if(rn){
+          const [rx,ry]=nodePos(rn,t);
+          ctx.beginPath();
+          ctx.arc(rx,ry, 10+easeOut(rp)*48, 0, Math.PI*2);
+          ctx.strokeStyle=tintStr(clickRipple.id,(1-rp)*.5*(1-trans));
+          ctx.lineWidth=1.2;
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.restore();
+  }
+
+  /* section */
+  if(trans>0.001 && view!=='over'){
+    drawSection(t, trans);
+  }
+
+  updateChip(t);
+
+  requestAnimationFrame(draw);
+}
+
+/* ---------- canvas interaction ---------- */
+
+/* =========================================================
+   DIRECTORY / ARCHIVE
+   ========================================================= */
+const DIRECTORY = [
+  {num:'01', title:'projects', groups:[
+    {g:'scenes — the participatory album', items:[L.scenesSite, L.beyond, L.decential]},
+    {g:'scenes — the process', items:[L.scBook, L.scVideo, L.scVibe, L.scProduct]},
+    {g:'alone together — the current world', items:[L.atReel, L.twoDays, L.canva, L.cheads]},
+    {g:'alone together — the process', items:[L.atFilm, L.atFindings, L.atWork, L.atConnect, L.atWorld]},
+    {g:'network archives — the meta-world', items:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
+  ]},
+  {num:'02', title:'music', groups:[
+    {g:null, items:[L.spotify, L.playlist, L.bandcamp]},
+  ]},
+  {num:'03', title:'videos', groups:[
+    {g:'music videos', items:[L.vScenes, L.vTouch, L.vFriends, L.vTraces, L.vBts]},
+    {g:'new forms — the interview series', items:[L.nf1, L.nf2, L.nf3, L.nfYancey, L.nfVivid]},
+  ]},
+  {num:'04', title:'writing', groups:[{g:null, items:[L.wPurpose, L.wCareer, L.wRhythm, L.wExpression, L.wAudience, L.wPeople, L.wFriction, L.wWorldB]}]},
+  {num:'05', title:'research', groups:[
+    {g:'music ecosystems: challenges and opportunities (springer)', items:[L.rScenes, L.rTeach]},
+    {g:'field notes', items:[L.rSprint]},
+    {g:'teaching', items:[L.rTeaching]},
+  ]},
+  {num:'06', title:'shop', groups:[{g:null, items:[L.cards, L.book, L.naObj, L.bandcamp]}]},
+];
+
+const dirRoot=document.getElementById('dirRoot');
+let dirHTML = `<div class="dir-intro">jamie reddington (sound of fractures) is a uk-based artist and researcher working at the intersection of music, memory, and participation.<br>the index — every project, record, film and essay, in one place.</div>`;
+DIRECTORY.forEach(s=>{
+  dirHTML += `<div class="dir-sect"><h2>${s.num} <span class="big">${s.title}</span></h2>`;
+  s.groups.forEach(gr=>{
+    if(gr.g) dirHTML += `<div class="dir-group">${gr.g}</div>`;
+    gr.items.forEach(it=>{
+      dirHTML += it.still
+      ? `<div class="card still">
+        <span class="thumb"><span class="noimg">${it.ph||''}</span></span>
+        <span class="meta"><span class="t">${it.ft||it.t}</span><span class="src">${it.s}</span></span>
+        <span class="arrow"></span>
+      </div>`
+      : `<a class="card" href="${it.url}" target="_blank" rel="noopener"${it.yt?` data-yt="${it.yt}" data-t="${it.t}"`:''}>
+        <span class="thumb">${it.img?`<img src="${it.img}" alt="" loading="lazy">`:`<span class="noimg">${it.ph||''}</span>`}</span>
+        <span class="meta"><span class="t">${it.ft||it.t}</span><span class="src">${it.s}</span></span>
+        <span class="arrow">${it.yt?'▶':'↗'}</span>
+      </a>`;
+    });
+  });
+  if(s.note) dirHTML += `<div class="dir-note">${s.note}</div>`;
+  dirHTML += `</div>`;
+});
+
+/* ---------- versions: the site keeping its own history ----------
+   every deployed version stays live at its own url. this is the curated
+   cut — the moments the thinking changed — and each row opens the site
+   as it was, frozen mid-thought. */
+const VERSIONS=[
+  {v:'first deploy', d:'9 aug 2026',  url:'https://sof-constellation.vercel.app',
+   t:'the whole idea was already there in one line: fragments become meaningful when you connect them.'},
+  {v:'v10', d:'10 aug 2026', url:'https://sof-studio-v10.vercel.app',
+   t:'the map stopped being mine. visitor trails are saved and drawn for whoever comes next — the site becomes a shared record.'},
+  {v:'v14', d:'11 aug 2026', url:'https://sof-studio-v14.vercel.app',
+   t:'projects grew interiors — worlds within worlds. a career as places you can enter, not lines on a cv.'},
+  {v:'v18', d:'14 aug 2026', url:'https://sof-studio-v18.vercel.app',
+   t:'the patron page. fund the experiment, not the outcome — patronage as a conversation, not a checkout.'},
+  {v:'v20', d:'14 aug 2026', url:'https://sof-studio-v20.vercel.app',
+   t:'the process became its own branch. the making is part of the work, not hidden behind it.'},
+  {v:'v29', d:'14 aug 2026', url:'https://sof-studio-v29.vercel.app',
+   t:'the site starts remembering where you’ve been and quietly suggesting a next step — a path, not a funnel.'},
+  {v:'v31', d:'15 aug 2026', url:'https://sof-studio-v31.vercel.app',
+   t:'subtle depth, draggable worlds — you can rearrange the practice with your hands.'},
+  {v:'v34', d:'18 aug 2026', url:'https://sof-studio-v34.vercel.app',
+   t:'work with me. the rule got clear: the map is proof of work — anything cv-ish lives off it.'},
+  {v:'v36', d:'21 aug 2026', url:'https://sof-studio-v36.vercel.app',
+   t:'first real visitors. things broke, the pop-up learned to whisper — the site edited by the people using it.'},
+  {v:'v38', d:'24 aug 2026', url:'https://sof-studio-v38.vercel.app',
+   t:'the studio page. the thesis in a room of its own: containers for meaning, the trap, the method, proof of work.'},
+  {v:'v39', d:'24 aug 2026', url:'https://sof-studio-v39.vercel.app',
+   t:'fellow explorers hidden by default. revealing them is a guestbook — semipublic co-signing.'},
+  {v:'v40', d:'24 aug 2026', url:'https://sof-studio-v40.vercel.app',
+   t:'the site starts leading with sound of fractures. my name moves into the running text.'},
+  {v:'v43', d:'26 aug 2026', url:'https://sof-studio-v43.vercel.app',
+   t:'proof of work rewritten in my own words — one big project a year, each both a showcase and a link in the cycle.'},
+  {v:'v47', d:'4 sep 2026', url:'https://sof-studio-v47.vercel.app',
+   t:'cut everything that sounded like selling. if you’re interested in collaborating, write to me.'},
+  {v:'v48', d:'10 sep 2026', url:'https://sof-studio-v48.vercel.app',
+   t:'the site begins keeping its own history. every version stays live — this list opens them.'},
+  {v:'v49', d:'17 sep 2026', url:'https://sof-studio-v49.vercel.app',
+   t:'"become a patron" became "become a part of the studio" — a model me and cy are working out in public.'},
+  {v:'v50', d:'18 sep 2026', url:'https://sof-studio-v50.vercel.app',
+   t:'the join page learned to speak as a studio, not as me — studio board, studio partners, and language studied against the studios that inspire this one.'},
+  {v:'v51', d:'19 sep 2026', url:'https://sof-studio-v51.vercel.app',
+   t:'the subject came into focus: experiments in human connection and participation, with music as the seed. music went first — every medium is now on the same tracks.'},
+  {v:'v52', d:'19 sep 2026', url:'https://sof-studio-v52.vercel.app',
+   t:'each page got one job — the studio says what it is; joining says how. my own voice stepped back into a single quote.'},
+  {v:'v53', d:'now', url:null,
+   t:'the missing argument landed: the ethos is the fixed point, the experiments are the variables — the studio is the container for all of it.'},
+];
+dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
+  <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
+VERSIONS.forEach(x=>{
+  dirHTML += x.url
+  ? `<a class="vrow" href="${x.url}" target="_blank" rel="noopener">
+      <span class="vv">${x.v}<span class="vd">${x.d}</span></span>
+      <span class="vt">${x.t}</span><span class="va">↗</span>
+    </a>`
+  : `<div class="vrow vnow">
+      <span class="vv">${x.v}<span class="vd">${x.d}</span></span>
+      <span class="vt">${x.t}</span><span class="va">you are here</span>
+    </div>`;
+});
+dirHTML += `</div>`;
+
+dirRoot.innerHTML = dirHTML;
+dirRoot.addEventListener('click',e=>{
+  const c=e.target.closest('.card');
+  if(c && c.dataset.yt){ e.preventDefault(); playYt(c.dataset.yt, c.dataset.t||''); }
+});
+
+/* ---------- stagger indexes: each block knows its place in line ----------
+   the CSS reads --n to cascade the pages, the menu and the index in;
+   delays are capped so long pages never keep anyone waiting */
+['patronView','studioView','workView'].forEach(id=>{
+  document.querySelectorAll('#'+id+' .patron > *').forEach((el,i)=>
+    el.style.setProperty('--n', Math.min(i,14)));
+});
+document.querySelectorAll('.menu-inner > *').forEach((el,i)=>
+  el.style.setProperty('--n', i));
+document.querySelectorAll('#dirRoot > *').forEach((el,i)=>
+  el.style.setProperty('--n', Math.min(i,8)));
+
+/* =========================================================
+   YOUTUBE LIGHTBOX — films play in the centre of the site
+   ========================================================= */
+const ytView=document.getElementById('ytView');
+function playYt(id,title){
+  document.getElementById('ytSlot').innerHTML=
+    '<iframe src="https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0" '+
+    'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  document.getElementById('ytTitle').textContent=title||'';
+  document.getElementById('ytOpen').href='https://www.youtube.com/watch?v='+id;
+  ytView.classList.add('open');
+}
+function closeYt(){
+  ytView.classList.remove('open');
+  document.getElementById('ytSlot').innerHTML='';   /* stops playback */
+}
+document.getElementById('ytClose').onclick=closeYt;
+ytView.addEventListener('click',e=>{ if(e.target===ytView) closeYt(); });
+
+/* =========================================================
+   FLOW — the map remembers what each visitor has seen and
+   suggests only what they HAVEN'T. a small hand-drawn
+   knowledge graph over the content — no chatbot, no server.
+   ========================================================= */
+
+/* seen-memory: sections entered (every depth) + links clicked */
+let seen={secs:[],items:[],rules:[]};
+try{ const s=JSON.parse(localStorage.getItem('sof_seen_v1')); if(s&&Array.isArray(s.secs)) seen=s; }catch(e){}
+seen.rules=seen.rules||[];
+function saveSeen(){ try{ localStorage.setItem('sof_seen_v1',JSON.stringify(seen)); }catch(e){} }
+const seenSec=id=>seen.secs.includes(id);
+const seenItem=k=>seen.items.includes(k);
+function markSec(id){ if(id&&!seen.secs.includes(id)){ seen.secs.push(id); saveSeen(); } }
+function markItem(k){ if(k&&!seen.items.includes(k)){ seen.items.push(k); saveSeen(); } }
+/* returning visitors: their old trail already tells us which worlds they know */
+userTrail.wps.forEach(w=>markSec(w[0]));
+
+/* the relevance graph — content-aware rules first, general hand-offs after.
+   each fires at most once ever per browser; a rule never points at
+   something the visitor has already seen. */
+const RULES=[
+  {id:'scenes-video', to:'videos',
+   text:'you’ve been inside scenes — its official video lives in videos',
+   ok:()=> (seenSec('scenes')||seenItem('scenesSite')||seenItem('beyond')) && !seenItem('vScenes') && !seenSec('musicvids')},
+  {id:'scenes-process', to:'projects',
+   text:'scenes has a making-of — “the process”, inside its world',
+   ok:()=> seenSec('scenes') && !seenSec('scenesproc')},
+  {id:'at-reel', to:'projects',
+   text:'alone together has a film — the showreel is waiting inside its world',
+   ok:()=> seenSec('alonetogether') && !seenItem('atReel')},
+  {id:'at-process', to:'projects',
+   text:'the making of alone together is documented — “the process”, inside its world',
+   ok:()=> seenSec('alonetogether') && !seenSec('atproc')},
+  {id:'newforms', to:'videos',
+   text:'these ideas get talked out loud — the new forms interviews, inside videos',
+   ok:()=> (seenSec('writing')||seenSec('research')) && !seenSec('newforms')},
+  {id:'music-writing', to:'writing',
+   text:'the context behind the music is often what makes it more meaningful — try writing next',
+   ok:()=> seenSec('music') && !seenSec('writing')},
+  {id:'arrived-research', to:'research',
+   text:'the practice is also studied and taught — research holds the chapters and teaching',
+   ok:()=> ['linkedin','google'].includes(SRC) && !seenSec('research')},
+  {id:'writing-research', to:'research',
+   text:'the essays become frameworks — research is where the practice is studied',
+   ok:()=> seenSec('writing') && !seenSec('research')},
+  {id:'videos-projects', to:'projects',
+   text:'the videos are windows into the worlds — step inside one next',
+   ok:()=> seenSec('videos') && !seenSec('projects')},
+  {id:'research-projects', to:'projects',
+   text:'the research studies the practice — see the projects themselves',
+   ok:()=> seenSec('research') && !seenSec('projects')},
+  {id:'shop-music', to:'music',
+   text:'every object here began as a song — try music next',
+   ok:()=> seenSec('shop') && !seenSec('music')},
+  {id:'writing-shop', to:'shop',
+   text:'some of this thinking became objects you can hold — the shop',
+   ok:()=> seenSec('writing') && seenSec('projects') && !seenSec('shop')},
+];
+
+/* frequency: at most one whisper every 75s, three per visit,
+   and each rule only once ever — discovery stays the point */
+let suggestNow=null, lastSuggestT=-1e9, suggestCount=0;
+const flowHint=document.getElementById('flowHint');
+flowHint.addEventListener('click',()=>{
+  if(!suggestNow) return;
+  const to=suggestNow.to;
+  hideSuggest();
+  enterSection(to);
+});
+function showSuggest(){
+  if(view!=='over') return;
+  const now=performance.now();
+  if(now-lastSuggestT<75000 || suggestCount>=3) return;
+  const r=RULES.find(r=>!seen.rules.includes(r.id) && r.ok());
+  if(!r) return;
+  seen.rules.push(r.id); saveSeen();
+  lastSuggestT=now; suggestCount++;
+  suggestNow={to:r.to, text:r.text, t0:now};
+  flowHint.textContent=r.text;
+  flowHint.style.color=tintStr(r.to,.95);
+  flowHint.classList.add('on');
+}
+function hideSuggest(){ suggestNow=null; flowHint.classList.remove('on'); }
+
+/* depth milestones — persistent, shown once each */
+let flowFlags={};
+try{ flowFlags=JSON.parse(localStorage.getItem('sof_flow_v1'))||{}; }catch(e){}
+function saveFlow(){ try{ localStorage.setItem('sof_flow_v1',JSON.stringify(flowFlags)); }catch(e){} }
+const flowNote=document.getElementById('flowNote');
+/* the ladder: name your trail + letters → subscribe → patronage.
+   depth counts every branch explored — main worlds AND sub-branches
+   (scenes, the process, new forms…) — so deep divers climb faster.
+   always the lowest unclimbed rung, one per return, each once ever. */
+function flowDepth(){ return seen.secs.length; }
+/* which milestone (if any) is due right now — no side effects */
+function dueFlowKind(){
+  const depth=flowDepth();
+  if(depth>=2 && !flowFlags.signup) return 'signup';
+  if(depth>=4 && !flowFlags.sub) return 'subscribe';
+  if(depth>=6 && !flowFlags.patron) return 'patron';
+  return null;
+}
+/* a due milestone doesn't interrupt: it waits for a quiet stretch on the
+   map, then fades in low as a footer note — never snapped open mid-click */
+let flowNoteTimer=null;
+function scheduleFlowNote(kind){
+  clearTimeout(flowNoteTimer);
+  flowNoteTimer=setTimeout(()=>{ if(view==='over') openFlowNote(kind); }, 3400);
+}
+function cancelFlowNote(){ clearTimeout(flowNoteTimer); }
+const NUMW=['','one','two','three','four','five','six','seven','eight','nine','ten'];
+function openFlowNote(kind){
+  hideSuggest();
+  const p=document.getElementById('fnText'), a=document.getElementById('fnAction'),
+        f=document.getElementById('fnForm');
+  flowNote.dataset.kind=kind;
+  f.style.display='none'; a.style.display='';
+  if(kind==='signup'){
+    const d=flowDepth();
+    p.textContent='thanks for being curious — that’s '+(NUMW[d]||d)+' branches explored so far. if you’d like to keep a thread to this place: name your trail on the map, and leave your email for occasional letters from me — jamie.';
+    a.style.display='none';
+    f.style.display='block';
+    flowFlags.signup=1;
+  } else if(kind==='subscribe'){
+    p.textContent='you’ve gone well beyond the surface. if the work resonates, a paid substack subscription is a simple way to support it.';
+    a.textContent='support on substack ↗';
+    a.href='https://soundoffractures.substack.com/subscribe';
+    a.setAttribute('target','_blank');
+    flowFlags.sub=1;
+  } else {
+    p.textContent='you clearly like to lean in deep and really explore. the studio has a way to be part of it — not a subscription, a role.';
+    a.textContent='become a part of the studio';
+    a.href='#';
+    a.removeAttribute('target');
+    flowFlags.patron=1;
+  }
+  saveFlow();
+  flowNote.classList.add('on');
+}
+document.getElementById('fnForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const email=(document.getElementById('fnEmail').value||'').trim();
+  sbSignup(email,'signup',null,ok=>{
+    if(ok){
+      document.getElementById('fnText').textContent='welcome — the first letter will find you. and your trail is on the map, waiting to be named.';
+      document.getElementById('fnForm').style.display='none';
+      setTimeout(closeFlowNote, 2800);
+    } else {
+      const inp=document.getElementById('fnEmail');
+      inp.value=''; inp.placeholder='hmm — check the address?';
+    }
+  });
+});
+function closeFlowNote(){ flowNote.classList.remove('on'); }
+document.getElementById('fnLater').onclick=closeFlowNote;
+document.getElementById('fnAction').addEventListener('click',e=>{
+  if(flowNote.dataset.kind==='patron'){
+    e.preventDefault();
+    closeFlowNote();
+    document.getElementById('patronView').classList.add('open');
+  } else {
+    closeFlowNote();
+  }
+});
+/* ---------- mode toggle ---------- */
+const mapBtn=document.getElementById('mapBtn'), dirBtn=document.getElementById('dirBtn');
+function setModes(m){
+  mapBtn.classList.toggle('active',m==='map');
+  dirBtn.classList.toggle('active',m==='directory');
+  document.body.classList.toggle('dirmode',m==='directory');
+  document.getElementById('directoryView').classList.toggle('open',m==='directory');
+  if(m==='directory'){ backBtn.classList.remove('on'); }
+  else if(view!=='over'){ backBtn.classList.add('on'); }
+}
+mapBtn.onclick=()=>{setModes('map');};
+dirBtn.onclick=()=>{setModes('directory');};
+
+/* =========================================================
+   MENU — sign up & become a patron
+   ========================================================= */
+const menuView=document.getElementById('menuView');
+const patronView=document.getElementById('patronView');
+const signupBox=document.getElementById('signupBox');
+
+function sbSignup(email,kind,note,cb){
+  fetch(SB_URL+'/rest/v1/rpc/add_signup',{
+    method:'POST', headers:SB_HDRS,
+    body:JSON.stringify({p_email:email, p_kind:kind, p_note:note||null})
+  }).then(r=>r.json()).then(ok=>cb(ok===true)).catch(()=>cb(false));
+}
+
+document.getElementById('menuBtn').onclick=()=>menuView.classList.add('open');
+document.getElementById('menuClose').onclick=()=>{
+  menuView.classList.remove('open');
+  signupBox.classList.remove('open');
+};
+menuView.addEventListener('click',e=>{
+  if(e.target===menuView){ menuView.classList.remove('open'); signupBox.classList.remove('open'); }
+});
+document.getElementById('miSignup').onclick=()=>{
+  signupBox.classList.toggle('open');
+  if(signupBox.classList.contains('open')){
+    const inp=document.getElementById('suEmail');
+    if(inp) setTimeout(()=>inp.focus(),60);
+  }
+};
+document.getElementById('miPatron').onclick=()=>{
+  menuView.classList.remove('open');
+  patronView.classList.add('open');
+};
+document.getElementById('patronBack').onclick=()=>patronView.classList.remove('open');
+const workView=document.getElementById('workView');
+document.getElementById('miWork').onclick=()=>{
+  menuView.classList.remove('open');
+  workView.classList.add('open');
+};
+document.getElementById('workBack').onclick=()=>workView.classList.remove('open');
+const studioView=document.getElementById('studioView');
+document.getElementById('miStudio').onclick=()=>{
+  menuView.classList.remove('open');
+  studioView.classList.add('open');
+};
+document.getElementById('studioBack').onclick=()=>studioView.classList.remove('open');
+document.getElementById('sdPatron').onclick=e=>{
+  e.preventDefault();
+  studioView.classList.remove('open');
+  patronView.classList.add('open');
+};
+document.getElementById('sdWork').onclick=e=>{
+  e.preventDefault();
+  studioView.classList.remove('open');
+  workView.classList.add('open');
+};
+document.getElementById('wkStudioLink').onclick=e=>{
+  e.preventDefault();
+  workView.classList.remove('open');
+  studioView.classList.add('open');
+};
+document.getElementById('workForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const hp=document.getElementById('wkWeb');
+  const email=(document.getElementById('wkEmail').value||'').trim();
+  const note=(document.getElementById('wkNote').value||'').trim();
+  const form=document.getElementById('workForm');
+  const finish=()=>{ form.innerHTML='<div class="pdone">thank you — jamie reads every one of these and will reply to you directly.</div>'; };
+  if(hp && hp.value){ finish(); return; }
+  sbSignup(email,'work',note,ok=>{
+    if(ok) finish();
+    else{ const b=form.querySelector('.send'); if(b) b.textContent='try again'; }
+  });
+});
+
+document.getElementById('signupForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const hp=document.getElementById('suWeb');
+  const email=(document.getElementById('suEmail').value||'').trim();
+  const finish=()=>{
+    signupBox.innerHTML='<div class="done">welcome — the first letter will find you.<br>'+
+      '<a class="alt" href="https://soundoffractures.substack.com" target="_blank" rel="noopener">read the writing so far ↗</a></div>';
+    addWaypoint('writing',(Math.random()-.5)*60,(Math.random()-.5)*44);
+  };
+  if(hp && hp.value){ finish(); return; }   /* bots think they succeeded */
+  sbSignup(email,'signup',null,ok=>{
+    if(ok) finish();
+    else document.getElementById('suPromise').textContent='hmm — that didn’t go through. check the address and try again?';
+  });
+});
+
+document.getElementById('patronForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const hp=document.getElementById('ptWeb');
+  const email=(document.getElementById('ptEmail').value||'').trim();
+  const note=(document.getElementById('ptNote').value||'').trim();
+  const form=document.getElementById('patronForm');
+  const finish=()=>{
+    form.innerHTML='<div class="pdone">thank you — the conversation is open.<br>jamie reads every one of these and will reply to you directly.</div>';
+  };
+  if(hp && hp.value){ finish(); return; }
+  sbSignup(email,'patron',note,ok=>{
+    if(ok) finish();
+    else{
+      const b=form.querySelector('.send');
+      if(b) b.textContent='try again';
+    }
+  });
+});
+
+/* ---------- leave a trace ---------- */
+window.addEventListener('keydown',e=>{
+  if(e.key!=='Escape' || chipEditing) return;
+  if(ytView.classList.contains('open')){ closeYt(); return; }
+  if(flowNote.classList.contains('on')){ closeFlowNote(); return; }
+  if(patronView.classList.contains('open')){ patronView.classList.remove('open'); return; }
+  if(workView.classList.contains('open')){ workView.classList.remove('open'); return; }
+  if(studioView.classList.contains('open')){ studioView.classList.remove('open'); return; }
+  if(menuView.classList.contains('open')){ menuView.classList.remove('open'); signupBox.classList.remove('open'); return; }
+  leaveSection();
+});
+
+requestAnimationFrame(draw);
+
+/* deep links — ?go=work / ?go=patron / ?go=<branch> lands the visitor somewhere specific
+   after a conversation: the map, already opened to the relevant place) */
+(()=>{try{
+  const go=(new URL(location.href).searchParams.get('go')||'').toLowerCase().replace(/[^a-z]/g,'');
+  if(go==='work'){ setTimeout(()=>workView.classList.add('open'),400); return; }
+  if(go==='patron'){ setTimeout(()=>patronView.classList.add('open'),400); return; }
+  if(go==='studio'){ setTimeout(()=>studioView.classList.add('open'),400); return; }
+  if(!go || !SECTIONS[go]) return;
+  const root=rootId(go);
+  setTimeout(()=>{ if(view==='over') enterSection(root); },900);
+  if(go!==root) setTimeout(()=>{ if(view===root) enterChild(go); },1700);
+}catch(e){}})();
+</script>
+</body>
+</html>
