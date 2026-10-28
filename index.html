@@ -1151,6 +1151,8 @@ const L = {
     img:'https://substackcdn.com/image/fetch/$s_!yVBD!,w_600,h_338,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2c2b234e-1cbe-46b3-9d48-7babd908fe05_1583x1600.jpeg'},
   decential:{t:'listening to scenes', s:'decential · press', url:'https://www.decential.io/articles/listening-to-scenes-the-connective-experiment-from-sound-of-fractures-that-reminds-us-what-were-doing-here',
     img:'https://static1.squarespace.com/static/625d6a69c3ee27183378cba8/625d6e41fc379b2c562e4af4/65de6d8eb726eb498ad2a602/1714108277301/Jamie+Reddington.jpg?format=750w'},
+  atTogether:{t:'we are making this together', s:'substack · essay', url:'https://soundoffractures.substack.com/p/we-are-making-this-together',
+    img:'https://substackcdn.com/image/fetch/$s_!ziWl!,w_600,h_338,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe580cb87-fcbd-4f2b-a3eb-09c9d2d832f9_1536x2048.jpeg'},
   twoDays:{t:'alone together: two days later', s:'substack · essay', url:'https://soundoffractures.substack.com/p/alone-together-building-for-depth',
     img:'https://substackcdn.com/image/fetch/$s_!IAmd!,w_600,h_338,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2b967c12-3be1-4b84-b4b3-193e103b3807_3184x1660.jpeg'},
   canva:{t:'event 2 — photo deck', s:'canva · photos', url:'https://alonetogetherpatrons.my.canva.site/alone-together-event-2', img:null, ph:'photo deck'},
@@ -1273,7 +1275,7 @@ const SECTIONS = {
   projects:{ num:'01', title:'projects', d:'each project is a world — a container for meaning',
     children:[
       {id:'scenes', label:'scenes', x:.22, y:.32, mx:.5, my:.17, leaves:[L.scenesSite, L.beyond, L.decential]},
-      {id:'alonetogether', label:'alone together', x:.78, y:.40, mx:.5, my:.58, leaves:[L.atReel, L.twoDays, L.canva, L.cheads]},
+      {id:'alonetogether', label:'alone together', x:.78, y:.40, mx:.5, my:.58, leaves:[L.atReel, L.atTogether, L.twoDays, L.canva, L.cheads]},
       {id:'networkarchives', label:'network archives', x:.50, y:.80, mx:.5, my:.85, leaves:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
     ]},
   networkarchives:{ num:'01', title:'network archives', d:'the meta-world — a directory of inspiration, made with metalabel', parent:'projects',
@@ -1281,7 +1283,7 @@ const SECTIONS = {
   scenes:{ num:'01', title:'scenes', d:'the participatory album', parent:'projects', proc:'scenesproc',
     leaves:[L.scenesSite, L.beyond, L.decential]},
   alonetogether:{ num:'01', title:'alone together', d:'the current world', parent:'projects', proc:'atproc',
-    leaves:[L.atReel, L.twoDays, L.canva, L.cheads]},
+    leaves:[L.atReel, L.atTogether, L.twoDays, L.canva, L.cheads]},
   scenesproc:{ num:'01', title:'the process', d:'notes from the making of scenes', parent:'scenes',
     leaves:[L.scBook, L.scVideo, L.scVibe, L.scProduct]},
   atproc:{ num:'01', title:'the process', d:'notes from the making of alone together', parent:'alonetogether',
@@ -2493,7 +2495,7 @@ const DIRECTORY = [
   {num:'01', title:'projects', groups:[
     {g:'scenes — the participatory album', items:[L.scenesSite, L.beyond, L.decential]},
     {g:'scenes — the process', items:[L.scBook, L.scVideo, L.scVibe, L.scProduct]},
-    {g:'alone together — the current world', items:[L.atReel, L.twoDays, L.canva, L.cheads]},
+    {g:'alone together — the current world', items:[L.atReel, L.atTogether, L.twoDays, L.canva, L.cheads]},
     {g:'alone together — the process', items:[L.atFilm, L.atFindings, L.atWork, L.atConnect, L.atWorld]},
     {g:'network archives — the meta-world', items:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
   ]},
@@ -2632,8 +2634,10 @@ const VERSIONS=[
    t:'the room tone kept in key: every loop returns over its own harmony, grains move only by octaves and fifths, the rooms ring with no pitch of their own.'},
   {v:'v78', d:'28 oct 2026', url:'https://sof-studio-v78.vercel.app',
    t:'the mark sits at the top and listens: each petal lights with its part of the sound. click it for a new mix, double-click to let it fall quiet.'},
-  {v:'v79', d:'now', url:null,
+  {v:'v79', d:'28 oct 2026', url:'https://sof-studio-v79.vercel.app',
    t:'the room tone sits lower, and a click on the mark moves on to the next song.'},
+  {v:'v80', d:'now', url:null,
+   t:'alone together gains a new essay from the fujifilm lates week: we are making this together.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
