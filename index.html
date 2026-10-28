@@ -154,6 +154,11 @@
   .wordmark .line{transition:opacity .35s;}
   body.dirmode .wordmark .line,body.insec .wordmark .line{opacity:0;pointer-events:none;}
   @media (max-width:640px){ .wordmark .line{max-width:210px;font-size:9.5px;margin-top:10px;} }
+  /* the line stays folded under the name: hover it (desktop) or tap it (phone) to read it */
+  .wordmark .jr{cursor:pointer;}
+  .wordmark .line{opacity:0;pointer-events:none;transform:translateY(-4px);transition:opacity .35s,transform .35s;}
+  .wordmark:hover .line,.wordmark.open .line{opacity:1;pointer-events:auto;transform:none;}
+  @media (hover:none){ .wordmark .jr{display:inline-block;border-bottom:1px dotted var(--g25);padding-bottom:2px;} }
   .wordmark .mail{display:inline-block;margin-top:8px;font-size:9.5px;color:var(--g40);letter-spacing:.05em;text-decoration:none;border-bottom:1px dotted var(--g25);}
   .wordmark .mail:hover{color:var(--ink);border-color:var(--ink);}
   .modes{pointer-events:auto;font-size:11px;display:flex;gap:16px;align-items:center;}
@@ -2114,8 +2119,10 @@ const VERSIONS=[
    t:'the studio page started speaking as seams — a name tried out in public.'},
   {v:'v61', d:'28 oct 2026', url:'https://sof-studio-v61.vercel.app',
    t:'a different picture behind the map: traces.'},
-  {v:'v62', d:'now', url:null,
+  {v:'v62', d:'28 oct 2026', url:'https://sof-studio-v62.vercel.app',
    t:'the words on the threads lost their boxes and sit on the picture like everything else.'},
+  {v:'v63', d:'now', url:null,
+   t:'the line under the name folded away — it opens when you reach for the name.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2456,6 +2463,17 @@ window.addEventListener('keydown',e=>{
   if(menuView.classList.contains('open')){ menuView.classList.remove('open'); signupBox.classList.remove('open'); return; }
   leaveSection();
 });
+
+/* ---------- the name opens the line: hover on desktop, tap on a phone, tap anywhere else to fold it ---------- */
+(()=>{
+  const wm=document.querySelector('.wordmark'), jr=wm&&wm.querySelector('.jr');
+  if(!jr) return;
+  jr.setAttribute('role','button'); jr.setAttribute('tabindex','0'); jr.setAttribute('aria-expanded','false');
+  const set=o=>{ wm.classList.toggle('open',o); jr.setAttribute('aria-expanded',o?'true':'false'); };
+  jr.addEventListener('click',e=>{ e.stopPropagation(); set(!wm.classList.contains('open')); });
+  jr.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(!wm.classList.contains('open')); } });
+  document.addEventListener('pointerdown',e=>{ if(!wm.contains(e.target)) set(false); });
+})();
 
 requestAnimationFrame(draw);
 
