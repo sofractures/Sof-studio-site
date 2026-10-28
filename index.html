@@ -763,6 +763,22 @@
   /* v68 — a film only shows once it is actually playing, so youtube's play/pause marks never show */
   .vslide iframe,#pgvid iframe{opacity:0;transition:opacity .6s ease;}
   .vslide.live iframe,#pgvid.live iframe{opacity:1;}
+
+  /* v69 — the menu is a light veil rather than a dark box; socials as icons
+     (simple-icons, drawn in the ink colour through a mask) */
+  #menuView{background:rgba(10,10,10,.28);border-color:rgba(242,242,240,.14);
+    -webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);}
+  .menu-side{border-top-color:rgba(242,242,240,.1);}
+  .msocial{display:flex;gap:16px;align-items:center;margin:2px 0 6px;}
+  .menu-side a.si{
+    display:inline-block;width:15px;height:15px;padding:0;border:none;
+    background:var(--g60);transition:background .2s,transform .2s;
+    -webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat;
+  }
+  .menu-side a.si:hover,.menu-side a.si:focus-visible{background:var(--ink);transform:translateY(-1px);}
+  .si-substack{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/substack.svg");}
+  .si-instagram{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/instagram.svg");}
+  .si-spotify{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/spotify.svg");}
 </style>
 </head>
 <body>
@@ -823,7 +839,11 @@
     <button class="mi" id="miWork"><span class="u">work with me</span></button>
   </nav>
   <div class="menu-side">
-    <a href="https://soundoffractures.substack.com/p/musician-artist" target="_blank" rel="noopener">substack ↗</a>
+    <div class="msocial">
+      <a class="si si-substack" href="https://soundoffractures.substack.com" target="_blank" rel="noopener" aria-label="substack" title="substack"></a>
+      <a class="si si-instagram" href="https://instagram.com/sofractures" target="_blank" rel="noopener" aria-label="instagram" title="instagram"></a>
+      <a class="si si-spotify" href="https://open.spotify.com/artist/4syKpCOJEOnegH5QmuGnKk" target="_blank" rel="noopener" aria-label="spotify" title="spotify"></a>
+    </div>
     <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a>
   </div>
   <div class="menu-mark" aria-hidden="true">sound of fractures</div>
@@ -2421,8 +2441,10 @@ const VERSIONS=[
    t:'the map stays still and the films scroll beneath it, four of them, one after another.'},
   {v:'v67', d:'28 oct 2026', url:'https://sof-studio-v67.vercel.app',
    t:'the menu went back to being small: it drops down from the corner, and the page titles came down to size.'},
-  {v:'v68', d:'now', url:null,
+  {v:'v68', d:'28 oct 2026', url:'https://sof-studio-v68.vercel.app',
    t:'the films stopped showing their buttons; the sun became a faint star of crossing lines that settles on a world when you point at it.'},
+  {v:'v69', d:'now', url:null,
+   t:'the menu turned into a light veil over the map, with substack, instagram and spotify as small marks.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
