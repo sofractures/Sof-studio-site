@@ -918,7 +918,7 @@
 </svg><span class="cnt"></span></button>
 
 <header>
-  <button class="mixLogo" id="sndBtn" aria-label="sound: click for a new mix, double-click to mute" title="click — a new mix · double-click — mute"><canvas aria-hidden="true"></canvas><span class="mixCap">new mix · double-click to mute</span></button>
+  <button class="mixLogo" id="sndBtn" aria-label="sound: click for the next song, double-click to mute" title="click — next song · double-click — mute"><canvas aria-hidden="true"></canvas><span class="mixCap">next song · double-click to mute</span></button>
   <div class="wordmark">
     <div class="jr">sound of fractures</div>
     <p class="line">jamie reddington (sound of fractures) is a <span class="nb">uk-based</span> artist and researcher working at the intersection of music, memory, and participation.</p>
@@ -2630,8 +2630,10 @@ const VERSIONS=[
    t:'the site has a room tone: one song at a time, rebuilt live from its stems, drifting, then giving way to the next.'},
   {v:'v77', d:'28 oct 2026', url:'https://sof-studio-v77.vercel.app',
    t:'the room tone kept in key: every loop returns over its own harmony, grains move only by octaves and fifths, the rooms ring with no pitch of their own.'},
-  {v:'v78', d:'now', url:null,
+  {v:'v78', d:'28 oct 2026', url:'https://sof-studio-v78.vercel.app',
    t:'the mark sits at the top and listens: each petal lights with its part of the sound. click it for a new mix, double-click to let it fall quiet.'},
+  {v:'v79', d:'now', url:null,
+   t:'the room tone sits lower, and a click on the mark moves on to the next song.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3445,6 +3447,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
   const btn=document.getElementById('sndBtn'), lcv=btn.querySelector('canvas'), lctx=lcv.getContext('2d');
   const LS='sof_sound';
+  const VOL=.31;   /* overall level of the room tone — kept well under the page */
   let wantOn=true; try{ wantOn=localStorage.getItem(LS)!=='off'; }catch(e){}
   let ctx=null, master=null, comp=null, IR={}, started=false, current=null, nextTimer=0, ticker=0, lastSong=-1, an=null, fbins=null;
   const R=(a,b)=>a+Math.random()*(b-a);
@@ -3613,14 +3616,18 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     nextTimer=setTimeout(nextSong,stay);
     return true;
   }
-  function nextSong(){
-    if(SONGS.length<2){ playSong(lastSong,14); return; }
-    let j; do{ j=Math.floor(Math.random()*SONGS.length); }while(j===lastSong);
-    loadSong(j).then(()=>playSong(j,14));
+  let switching=false, queue=[];
+  function nextSong(fade){
+    fade=fade||14;
+    if(switching) return; switching=true;
+    /* a shuffled order: every song comes round before any repeats */
+    if(!queue.length){ queue=SONGS.map((_,k)=>k).filter(k=>k!==lastSong||SONGS.length===1); for(let a=queue.length-1;a>0;a--){ const b=Math.floor(Math.random()*(a+1)); [queue[a],queue[b]]=[queue[b],queue[a]]; } }
+    const j=queue.shift();
+    loadSong(j).then(()=>playSong(j,fade)).finally(()=>{ switching=false; });
   }
 
   function setBtn(){ btn.classList.toggle('on',wantOn&&started); btn.classList.toggle('muted',!wantOn); btn.setAttribute('aria-pressed',String(wantOn));
-    btn.setAttribute('aria-label',wantOn?'sound on: click for a new mix, double-click to mute':'sound off: double-click to turn the sound back on'); }
+    btn.setAttribute('aria-label',wantOn?'sound on: click for the next song, double-click to mute':'sound off: double-click to turn the sound back on'); }
   async function start(){
     if(!wantOn) return;
     ensureCtx();
@@ -3634,7 +3641,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
       btn.classList.add('hint'); setTimeout(()=>btn.classList.remove('hint'),4500);
     }
     const now=ctx.currentTime; master.gain.cancelScheduledValues(now);
-    master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(.62,now+5);
+    master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(VOL,now+5);
     setBtn();
   }
   function silence(sec){
@@ -3643,13 +3650,13 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(0,now+sec);
     setTimeout(()=>{ if(!wantOn||document.hidden) ctx.suspend(); },sec*1000+100);
   }
-  /* one click: a new mix of the same song (it fades through itself with fresh random settings).
+  /* one click: the next song, with fresh random settings, handing over in a couple of seconds.
      two clicks: mute / unmute. the single click waits a moment in case a second one follows */
   let clickT=0, lastClick=0;
   function reroll(){
     if(!wantOn) return;
     if(!started){ start(); return; }
-    if(current){ playSong(current.i,3.5); burst=performance.now(); }
+    if(current){ nextSong(2.5); burst=performance.now(); }
   }
   function toggle(){
     wantOn=!wantOn; try{ localStorage.setItem(LS,wantOn?'on':'off'); }catch(err){}
