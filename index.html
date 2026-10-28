@@ -28,6 +28,8 @@
   #nodeLayer{position:fixed;inset:0;pointer-events:none;z-index:10;transition:opacity .35s;}
   #nodeLayer.hidden{opacity:0;pointer-events:none;}
   #nodeLayer.hidden .node{pointer-events:none;}
+  #nodeLayer.turning{transition:none;}
+  #nodeLayer.turning .node{pointer-events:none;}
   .node{
     position:fixed;top:0;left:0;pointer-events:auto;
     background:none;border:none;cursor:grab;text-align:center;
@@ -1359,7 +1361,7 @@ function nodeZ(n,t){
 const zScale = z => .9 + z*.22;           /* 0.90 → 1.12 */
 const zInk   = z => .55 + z*.45;          /* alpha multiplier */
 function nodeSats(n,nx,ny,t){
-  const z=nodeZ(n,t), zs=zScale(z);
+  const z=nodeZ(n,t), zs=zScale(z)*(n._k||1);
   return n.sats.map(s=>{
     const wob=Math.sin(t*.00035+s.seed)*3*MOT;
     return {x:nx+Math.cos(s.a)*(s.dist+wob)*zs*(1+n.hover*.08),
@@ -1664,7 +1666,7 @@ for(let i=0;i<14;i++){
 }
 function satXY(n,s,t,hov){
   const [nx,ny]=nodePos(n,t);
-  const zs=zScale(nodeZ(n,t));
+  const zs=zScale(nodeZ(n,t))*(n._k||1);
   const wob=Math.sin(t*.00035+s.seed)*3*MOT;
   return [ nx+Math.cos(s.a)*(s.dist+wob)*zs*(1+hov*.08), ny+Math.sin(s.a)*(s.dist*.72+wob)*zs*(1+hov*.08) ];
 }
@@ -2005,12 +2007,15 @@ function enterSection(id){
   cancelFlowNote();
   closeFlowNote();
   activeSection=nodes.find(n=>n.id===id);
-  setTrans(1,480);
-  sectionEnterT=performance.now();
+  const TURN=REDUCED?480:1250;
+  setTrans(1,TURN);
+  sectionEnterT=performance.now()+(REDUCED?0:TURN*.62);
   layoutSection(id);
   view=id;
-  nodeLayer.classList.add('hidden');
-  setTimeout(()=>{subLayer.classList.add('on');},220);
+  /* the labels ride the turn and fade with it; they stop taking clicks at once */
+  nodeLayer.classList.add('turning');
+  setTimeout(()=>{ if(view===id){ nodeLayer.classList.add('hidden'); } nodeLayer.classList.remove('turning'); },REDUCED?0:TURN*.8);
+  setTimeout(()=>{subLayer.classList.add('on');},REDUCED?220:TURN*.6);
   backBtn.textContent='← the map';
   backBtn.classList.add('on');
   document.body.classList.add('insec');
@@ -2040,11 +2045,14 @@ function leaveSection(){
   const parent=SECTIONS[view] && SECTIONS[view].parent;
   if(parent){ swapSection(parent); return; }
   view='over';
-  setTrans(0,380);
+  const BACK=REDUCED?380:1000;
+  setTrans(0,BACK);
   subLayer.classList.remove('on');
   backBtn.classList.remove('on');
   document.body.classList.remove('insec');
-  setTimeout(()=>{ if(view==='over'){ clearSub(); nodeLayer.classList.remove('hidden'); activeSection=null; } },380);
+  nodeLayer.classList.remove('hidden');
+  if(!REDUCED){ nodeLayer.classList.add('turning'); }
+  setTimeout(()=>{ nodeLayer.classList.remove('turning'); if(view==='over'){ clearSub(); activeSection=null; } },BACK);
   /* once the map settles: whisper a next step. a due milestone isn't
      shown here — it's scheduled to fade in later (see scheduleFlowNote),
      so it never reads as a direct reaction to the click that just happened */
@@ -2053,15 +2061,61 @@ function leaveSection(){
     const kind=dueFlowKind();
     if(kind) scheduleFlowNote(kind);
     else showSuggest();
-  },750);
+  },REDUCED?750:1350);
 }
 backBtn.addEventListener('click',leaveSection);
 
 /* ---------- animation ---------- */
 let T=0, startT=null;
 
-function nodePos(n,t){
+function nodeBase(n,t){
   return [ n.x*W + Math.sin(t*.0002+n.seed)*6*MOT, n.y*H + Math.cos(t*.00017+n.seed*1.3)*5*MOT ];
+}
+function nodePos(n,t){
+  const b=nodeBase(n,t);
+  if(!(R3.e>.0005)){ n._k=1; n._f=1; n._d=0; return b; }
+  return project3(n,b[0],b[1],t);
+}
+
+/* ---------- the turn: choosing a world turns the whole network like an object in space.
+   every world has a depth; the map yaws and pitches about its centre, with perspective,
+   until the chosen world has come round and up to the front — exactly where its page's
+   hub sits — and the page grows out of it. going back turns it home again ---------- */
+var R3={e:0,yaw:0,pitch:0,cyw:1,syw:0,cp:1,sp:0,zoom:1,f:1200,dm:300,cx:0,cy:0,ox:0,oy:0};
+function depthOf(n,t){ return (Math.sin(n.seed*7.31+1.7)*.8 + (nodeZ(n,t)-.5)*.5)*R3.dm; }
+function project3(n,bx,by,t){
+  const x=bx-R3.cx, y=by-R3.cy, z=depthOf(n,t);
+  const x1=x*R3.cyw - z*R3.syw, z1=x*R3.syw + z*R3.cyw;
+  const y2=y*R3.cp - z1*R3.sp,  z2=y*R3.sp + z1*R3.cp;
+  const kk=R3.f/Math.max(R3.f*.3, R3.f - z2);
+  const k=(1+(kk-1)*R3.e)*R3.zoom;
+  n._k=k; n._d=z2;
+  n._f=1 - R3.e*Math.max(0,Math.min(1,(-z2/R3.dm+.15)))*.8;   /* the far side fades, like fog */
+  return [R3.cx + x1*k + R3.ox, R3.cy + y2*k + R3.oy];
+}
+const smooth01=v=>{ v=Math.max(0,Math.min(1,v)); return v*v*(3-2*v); };
+function setupTurn(t){
+  const A=activeSection;
+  if(REDUCED || !A || trans<=.0005){ R3.e=0; return; }
+  const e=smooth01(trans);
+  R3.cx=W/2; R3.cy=H/2; R3.dm=.42*Math.min(W,H); R3.f=1.5*Math.max(W,H);
+  const [bxA,byA]=nodeBase(A,t);
+  const xA=bxA-R3.cx, yA=byA-R3.cy, zA=depthOf(A,t);
+  /* always a real turn: at least ~45° round, never more than ~100° */
+  const yr=Math.atan2(xA, zA), ys=(xA>=0?1:-1);
+  const yaw=ys*Math.min(1.75,Math.max(.8,Math.abs(yr)));
+  const z1A=xA*Math.sin(yaw)+zA*Math.cos(yaw);
+  let pitch=Math.atan2(yA, Math.max(40,Math.abs(z1A)));
+  pitch=(pitch>=0?1:-1)*Math.min(.7,Math.max(.22,Math.abs(pitch)));
+  R3.e=e; R3.yaw=yaw; R3.pitch=pitch;
+  R3.cyw=Math.cos(yaw*e); R3.syw=Math.sin(yaw*e); R3.cp=Math.cos(pitch*e); R3.sp=Math.sin(pitch*e);
+  R3.zoom=1+e*.6; R3.ox=0; R3.oy=0;
+  /* then steer: the chosen world lands on the page's hub */
+  const [px,py]=project3(A,bxA,byA,t);
+  const hub=subGeom?subGeom.hub:{x:W/2,y:.48*H};
+  const hy=hub.y+(isMobile()?26:34);
+  R3.ox=(hub.x-px)*e; R3.oy=(hy-py)*e;
+  nodes.forEach(n=>nodePos(n,t));
 }
 
 
@@ -2210,14 +2264,14 @@ function drawOverview(t, alpha){
   });
 
   /* far worlds draw first, near worlds last — so a lifted world passes in front */
-  const zOrder=nodes.slice().sort((a,b)=>nodeZ(a,t)-nodeZ(b,t));
+  const zOrder=nodes.slice().sort((a,b)=>R3.e>0?(a._d-b._d):(nodeZ(a,t)-nodeZ(b,t)));
   zOrder.forEach(n=>{
     const [nx,ny]=nodePos(n,t);
     const targetHover=(hoverNode===n)?1:0;
     n.hover+=(targetHover-n.hover)*.15;
     /* lift eases up while dragging, settles down after */
     n.lift+=((n.dragging?1:0)-n.lift)*(n.dragging?.12:.06);
-    const z=nodeZ(n,t), zs=zScale(z), zi=zInk(z);
+    const z=nodeZ(n,t), zs=zScale(z)*(n._k||1), zi=zInk(z)*(n._f==null?1:n._f);
 
     /* a soft ground shadow that grows as the world comes nearer */
     if(z>.35){
@@ -2245,7 +2299,7 @@ function drawOverview(t, alpha){
 
     if(n.el){
       n.el.style.transform=`translate(${nx}px,${ny+8}px) translateX(-50%) scale(${zs.toFixed(3)})`;
-      n.el.style.opacity=(.62+.38*zi).toFixed(3);
+      n.el.style.opacity=((.62+.38*zi)*alpha).toFixed(3);
       n.el.style.zIndex=String(10+Math.round(z*20));
     }
   });
@@ -2365,21 +2419,19 @@ function draw(t){
     if(p>=1) trans=transTarget;
   }
 
-  /* overview with zoom-toward-node on transition */
-  if(trans<0.999){
+  /* overview — turning in space while a world is chosen (or turning back) */
+  setupTurn(t);
+  const ovA = REDUCED ? 1-trans : 1-smooth01((trans-.6)/.4);
+  if(ovA>0.001){
     ctx.save();
-    if(trans>0 && activeSection){
-      const [zx,zy]=nodePos(activeSection,t);
-      const s=1+trans*1.15;
-      ctx.translate(zx,zy); ctx.scale(s,s); ctx.translate(-zx,-zy);
-    }
-    drawOverview(t, 1-trans);
+    drawOverview(t, ovA);
     ctx.restore();
   }
 
-  /* section */
-  if(trans>0.001 && view!=='over'){
-    drawSection(t, trans);
+  /* section — grows out of the world once it has come to the front */
+  const secA = REDUCED ? trans : smooth01((trans-.55)/.45);
+  if(secA>0.001 && view!=='over'){
+    drawSection(t, secA);
   }
 
   updateChip(t);
@@ -2521,8 +2573,10 @@ const VERSIONS=[
    t:'the menu opens as you reach for it; fellow explorers became people holding hands, printed in dots; grain over everything, and the name in a light grotesk.'},
   {v:'v71', d:'28 oct 2026', url:'https://sof-studio-v71.vercel.app',
    t:'the door became the logo: the film behind it, the name in the corner, and the mark folding into its centre as the photographs pass.'},
-  {v:'v72', d:'now', url:null,
+  {v:'v72', d:'28 oct 2026', url:'https://sof-studio-v72.vercel.app',
    t:'the mark is made of pixels now: it unfolds out of a point, leans away from your hand, and folds back into it on the way in.'},
+  {v:'v73', d:'now', url:null,
+   t:'choosing a world turns the whole network in space, bringing that world round and up to the front before it opens.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
