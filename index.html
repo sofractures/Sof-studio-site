@@ -903,6 +903,44 @@
 
 <div id="bgvid"><div id="vtrack">
   <div class="vslide"><div id="ytbg"></div></div>
+  <script>
+  /* portrait screens: the first film is the traces clip, a silent looping file that phones autoplay.
+     it is made here, as the page arrives, not after the whole page and its code have loaded — so it
+     starts as soon as the phone allows. its own first frame shows at once as a still; the film fades
+     in over it only once it is truly playing (low power mode can still refuse — then the frame holds) */
+  (()=>{
+    if(innerHeight<=innerWidth) return;
+    const sl=document.currentScript.previousElementSibling; if(!sl) return;
+    sl.classList.add('clipmode');
+    const st=document.createElement('div'); st.className='vstill ready';
+    st.style.cssText='background-image:url("media/intro-traces-poster.jpg");inset:0;animation:none;filter:saturate(.95);opacity:1';
+    sl.insertBefore(st,sl.firstChild);
+    const v=document.createElement('video'); v.className='vclip';
+    v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
+    ['muted','playsinline','webkit-playsinline','autoplay','loop'].forEach(a=>v.setAttribute(a,''));
+    v.preload='auto';
+    const big=innerWidth>=700 && (window.devicePixelRatio||1)>=2;
+    v.src=big?'media/intro-traces-720.mp4':'media/intro-traces-540.mp4';
+    sl.insertBefore(v, st.nextSibling);
+    v.addEventListener('playing',()=>v.classList.add('on'));
+    let lastErr='';
+    const go=()=>{ if(!v.paused) return; try{ const p=v.play(); if(p&&p.catch) p.catch(e=>{ lastErr=e&&e.name||'refused'; }); }catch(e){ lastErr=e.name; } };
+    go(); ['loadedmetadata','loadeddata','canplay','canplaythrough'].forEach(ev=>v.addEventListener(ev,go));
+    let tries=0; const iv=setInterval(()=>{ if(!v.paused||++tries>30){ clearInterval(iv); return; } go(); },400);
+    ['touchend','click','pointerdown'].forEach(g=>document.addEventListener(g,go,{once:true,capture:true}));
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) go(); });
+    window.__clipV=v;
+    /* ?clipdebug shows what the clip is doing, for checking on a real phone */
+    if(/[?&]clipdebug/.test(location.search)){
+      const d=document.createElement('div'); d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:9999;font:10px/1.4 monospace;color:#f2f2f0;background:rgba(10,10,10,.6);padding:4px 6px;pointer-events:none';
+      document.body.appendChild(d);
+      const t0=performance.now(), states=['nothing','metadata','current','future','enough'];
+      let firstPlay=null; v.addEventListener('playing',()=>{ if(firstPlay===null) firstPlay=((performance.now()-t0)/1000).toFixed(1); });
+      setInterval(()=>{ const b=v.buffered.length?v.buffered.end(v.buffered.length-1).toFixed(1):'0';
+        d.textContent=`clip ${v.paused?'PAUSED':'playing'}${firstPlay?' (started '+firstPlay+'s)':''} · data ${states[v.readyState]} · buffered ${b}s · ${lastErr||'no refusal'}`; },250);
+    }
+  })();
+  </script>
   <div class="vslide"><div id="ytbg1"></div></div>
   <div class="vslide"><div id="ytbg2"></div></div>
   <div class="vslide"><div id="ytbg3"></div></div>
@@ -2695,8 +2733,10 @@ const VERSIONS=[
    t:'traces shows its own first frame from the start and keeps asking to play as it loads.'},
   {v:'v90', d:'28 oct 2026', url:'https://sof-studio-v90.vercel.app',
    t:'the first frame of traces holds still until the film is truly playing, then the film fades in — no play symbol.'},
-  {v:'v91', d:'now', url:null,
+  {v:'v91', d:'28 oct 2026', url:'https://sof-studio-v91.vercel.app',
    t:'opening a main world moves the music on to the next song, as a click on the mark does.'},
+  {v:'v92', d:'now', url:null,
+   t:'the music begins only as you enter; on phones the film starts the moment the page arrives.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3311,6 +3351,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
      some films, and youtube then returns a tiny grey placeholder, so check the size) */
   slides.forEach((sl,k)=>{
     const id=MAIN_VIDEOS[k]; if(!id) return;
+    if(sl.classList.contains('clipmode')) return;   /* the traces clip brought its own still, earlier */
     const st=document.createElement('div'); st.className='vstill'; sl.insertBefore(st,sl.firstChild);
     const set=u=>{ if(st.dataset.clip) return; st.style.backgroundImage='url("'+u+'")'; st.classList.add('ready'); };
     const im=new Image();
@@ -3318,38 +3359,6 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     im.onerror=()=>set('https://i.ytimg.com/vi/'+id+'/hqdefault.jpg');
     im.src='https://i.ytimg.com/vi/'+id+'/maxresdefault.jpg';
   });
-  /* portrait screens: the first film is the traces clip, a silent looping file that phones
-     autoplay (low power mode can still refuse — then the still holds until the first tap) */
-  if(innerHeight>innerWidth){
-    const sl=slides[0]; sl.classList.add('clipmode');
-    const v=document.createElement('video'); v.className='vclip';
-    v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
-    ['muted','playsinline','webkit-playsinline','autoplay','loop'].forEach(a=>v.setAttribute(a,''));
-    v.preload='auto';
-    const big=innerWidth>=700 && (window.devicePixelRatio||1)>=2;
-    v.src=big?'media/intro-traces-720.mp4':'media/intro-traces-540.mp4';
-    const st=sl.querySelector('.vstill'); sl.insertBefore(v, st?st.nextSibling:sl.firstChild);
-    /* the still under the clip is the clip's own first frame, so the hold and the start match */
-    if(st){ st.dataset.clip='1'; st.style.backgroundImage='url("media/intro-traces-poster.jpg")'; st.classList.add('ready'); st.style.filter='saturate(.95)'; st.style.inset='0'; st.style.animation='none'; }
-    v.addEventListener('playing',()=>v.classList.add('on'));
-    v.removeAttribute('poster');
-    let lastErr='';
-    const go=()=>{ if(!v.paused) return; try{ const p=v.play(); if(p&&p.catch) p.catch(e=>{ lastErr=e&&e.name||'refused'; }); }catch(e){ lastErr=e.name; } };
-    /* ask again as data arrives — an early play() before any frames can be turned down — and keep
-       asking for a few seconds; a tap anywhere also starts it */
-    go(); ['loadedmetadata','loadeddata','canplay','canplaythrough'].forEach(ev=>v.addEventListener(ev,go));
-    let tries=0; const iv=setInterval(()=>{ if(!v.paused||++tries>20){ clearInterval(iv); return; } go(); },500);
-    ['touchend','click','pointerdown'].forEach(g=>document.addEventListener(g,go,{once:true,capture:true}));
-    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) go(); });
-    /* ?clipdebug shows what the clip is doing, for checking on a real phone */
-    if(/[?&]clipdebug/.test(location.search)){
-      const d=document.createElement('div'); d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:9999;font:10px/1.4 monospace;color:#f2f2f0;background:rgba(10,10,10,.6);padding:4px 6px;pointer-events:none';
-      document.body.appendChild(d);
-      const t0=performance.now(), states=['nothing','metadata','current','future','enough'];
-      setInterval(()=>{ const b=v.buffered.length?v.buffered.end(v.buffered.length-1).toFixed(1):'0';
-        d.textContent=`clip ${v.paused?'PAUSED':'playing'} · t ${v.currentTime.toFixed(1)}s · data ${states[v.readyState]} · buffered ${b}s · ${lastErr||'no refusal'} · ${((performance.now()-t0)/1000).toFixed(0)}s since load`; },250);
-    }
-  }
   function watch(p,k){
     if(!p||p._watched||!p.addEventListener) return; p._watched=1;
     try{ p.addEventListener('onStateChange',e=>{
@@ -3888,7 +3897,12 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   const GEST=['pointerdown','touchend','click','keydown'];
   const first=()=>{
     if(!wantOn) return;
-    unlock(); if(!started) start();
+    unlock();
+    /* while the door is up, the music waits for the click on the mark itself (run() starts it);
+       a touch elsewhere only prepares the audio, silently */
+    const door=document.getElementById('intro');
+    if(door && door.classList.contains('on') && !door.classList.contains('clear')) return;
+    if(!started) start();
     if(ctx && ctx.state==='running') GEST.forEach(g=>document.removeEventListener(g,first,true));
   };
   GEST.forEach(g=>document.addEventListener(g,first,true));
