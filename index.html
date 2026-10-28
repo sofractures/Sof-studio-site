@@ -891,8 +891,11 @@
 
   /* v88 — on portrait screens the first film is a real, silent video file: phones autoplay it
      on arrival, no youtube marks, no waiting for a tap. the youtube film stays hidden underneath */
-  /* visible from the start, showing its own first frame — some safari versions won't autoplay a video they think is hidden */
-  .vclip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none;background:transparent;}
+  /* the clip stays out of sight until it is actually playing, then fades in; until then its own first
+     frame holds as a still beneath it — never a paused video, so never the phone's play symbol */
+  .vclip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none;background:transparent;opacity:0;transition:opacity .8s ease;}
+  .vclip.on{opacity:1;}
+  .vclip::-webkit-media-controls,.vclip::-webkit-media-controls-start-playback-button,.vclip::-webkit-media-controls-overlay-play-button{display:none !important;-webkit-appearance:none;opacity:0 !important;}
   .vslide.clipmode iframe{display:none !important;}
 </style>
 </head>
@@ -2686,8 +2689,10 @@ const VERSIONS=[
    t:'pressing the mark no longer flashes a dark box around it.'},
   {v:'v88', d:'28 oct 2026', url:'https://sof-studio-v88.vercel.app',
    t:'on phones the door opens onto traces — a real film loop that plays the moment you arrive.'},
-  {v:'v89', d:'now', url:null,
+  {v:'v89', d:'28 oct 2026', url:'https://sof-studio-v89.vercel.app',
    t:'traces shows its own first frame from the start and keeps asking to play as it loads.'},
+  {v:'v90', d:'now', url:null,
+   t:'the first frame of traces holds still until the film is truly playing, then the film fades in — no play symbol.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3303,7 +3308,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   slides.forEach((sl,k)=>{
     const id=MAIN_VIDEOS[k]; if(!id) return;
     const st=document.createElement('div'); st.className='vstill'; sl.insertBefore(st,sl.firstChild);
-    const set=u=>{ st.style.backgroundImage='url("'+u+'")'; st.classList.add('ready'); };
+    const set=u=>{ if(st.dataset.clip) return; st.style.backgroundImage='url("'+u+'")'; st.classList.add('ready'); };
     const im=new Image();
     im.onload=()=>{ if(im.naturalWidth>200) set(im.src); else set('https://i.ytimg.com/vi/'+id+'/hqdefault.jpg'); };
     im.onerror=()=>set('https://i.ytimg.com/vi/'+id+'/hqdefault.jpg');
@@ -3316,10 +3321,14 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     const v=document.createElement('video'); v.className='vclip';
     v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
     ['muted','playsinline','webkit-playsinline','autoplay','loop'].forEach(a=>v.setAttribute(a,''));
-    v.preload='auto'; v.poster='media/intro-traces-poster.jpg';
+    v.preload='auto';
     const big=innerWidth>=700 && (window.devicePixelRatio||1)>=2;
     v.src=big?'media/intro-traces-720.mp4':'media/intro-traces-540.mp4';
     const st=sl.querySelector('.vstill'); sl.insertBefore(v, st?st.nextSibling:sl.firstChild);
+    /* the still under the clip is the clip's own first frame, so the hold and the start match */
+    if(st){ st.dataset.clip='1'; st.style.backgroundImage='url("media/intro-traces-poster.jpg")'; st.classList.add('ready'); st.style.filter='saturate(.95)'; st.style.inset='0'; st.style.animation='none'; }
+    v.addEventListener('playing',()=>v.classList.add('on'));
+    v.removeAttribute('poster');
     let lastErr='';
     const go=()=>{ if(!v.paused) return; try{ const p=v.play(); if(p&&p.catch) p.catch(e=>{ lastErr=e&&e.name||'refused'; }); }catch(e){ lastErr=e.name; } };
     /* ask again as data arrives — an early play() before any frames can be turned down — and keep
