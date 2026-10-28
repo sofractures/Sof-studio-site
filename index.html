@@ -881,6 +881,8 @@
     -webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);
   }
   #flowNote{border-color:rgba(242,242,240,.14);}
+  /* on a phone the mark lives at the bottom centre, so the note sits just above it */
+  @media (max-width:640px){ #flowNote{bottom:calc(max(16px,env(safe-area-inset-bottom)) + 52px);} }
 </style>
 </head>
 <body class="introon">
@@ -1677,7 +1679,7 @@ function updateChip(t){
   }
   trailChip.style.color=trailCol(userTrail.dispH!=null?userTrail.dispH:userTrail.h,.95);
   if(trailHint){
-    const showHint = !chipEditing && !userTrail.name && !trailHinted;
+    const showHint = !chipEditing && !userTrail.name && !trailHinted && !document.getElementById('flowNote').classList.contains('on');   /* holds while the note speaks */
     if(showHint){
       if(hintShownAt===null) hintShownAt=t;
       if(t-hintShownAt>9000){ markTrailHinted(); trailHint.classList.remove('on'); }
@@ -2665,8 +2667,10 @@ const VERSIONS=[
    t:'the mark no longer folds away; it fades in a breath and leaves the photographs to carry you in.'},
   {v:'v84', d:'28 oct 2026', url:'https://sof-studio-v84.vercel.app',
    t:'the mark holds still and the first photograph rises over it, wiping it away along its edge.'},
-  {v:'v85', d:'now', url:null,
+  {v:'v85', d:'28 oct 2026', url:'https://sof-studio-v85.vercel.app',
    t:'no more black boxes behind words: buttons, hints and notes sit on the same light veil as the menu.'},
+  {v:'v86', d:'now', url:null,
+   t:'one voice at a time: the note waits until no other hint is showing, and the others hold while it speaks.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2779,7 +2783,7 @@ flowHint.addEventListener('click',()=>{
   enterSection(to);
 });
 function showSuggest(){
-  if(view!=='over') return;
+  if(view!=='over' || flowNote.classList.contains('on')) return;
   const now=performance.now();
   if(now-lastSuggestT<75000 || suggestCount>=3) return;
   const r=RULES.find(r=>!seen.rules.includes(r.id) && r.ok());
@@ -2814,9 +2818,28 @@ function dueFlowKind(){
 /* a due milestone doesn't interrupt: it waits for a quiet stretch on the
    map, then fades in low as a footer note — never snapped open mid-click */
 let flowNoteTimer=null;
+/* one voice at a time: the note only speaks when nothing else is on screen — no name hint,
+   no suggestion, no caption under the mark, no menu, no page — and has stayed that way for a
+   couple of seconds; otherwise it holds and checks again */
+function othersShowing(){
+  const b=document.body;
+  return (trailHint&&trailHint.classList.contains('on')) || flowHint.classList.contains('on') ||
+         !!document.querySelector('.mixLogo.hint') || b.classList.contains('menuopen') ||
+         b.classList.contains('inpage') || b.classList.contains('dirmode') || b.classList.contains('introon');
+}
+let calmSince=0;
 function scheduleFlowNote(kind){
   clearTimeout(flowNoteTimer);
-  flowNoteTimer=setTimeout(()=>{ if(view==='over') openFlowNote(kind); }, 3400);
+  calmSince=0;
+  const tick=()=>{
+    if(view!=='over' || flowNote.classList.contains('on')) return;
+    const now=performance.now();
+    if(othersShowing()){ calmSince=0; flowNoteTimer=setTimeout(tick,1000); return; }
+    if(!calmSince) calmSince=now;
+    if(now-calmSince<2000){ flowNoteTimer=setTimeout(tick,500); return; }
+    openFlowNote(kind);
+  };
+  flowNoteTimer=setTimeout(tick, 3400);
 }
 function cancelFlowNote(){ clearTimeout(flowNoteTimer); }
 const NUMW=['','one','two','three','four','five','six','seven','eight','nine','ten'];
@@ -3704,7 +3727,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
       btn.classList.remove('loading');
       ticker=setInterval(()=>{ if(current&&ctx.state==='running') current.step(); },100);
       /* the first time, say what the mark does, then let it go quiet */
-      btn.classList.add('hint'); setTimeout(()=>btn.classList.remove('hint'),4500);
+      if(!document.querySelector('#flowNote.on')){ btn.classList.add('hint'); setTimeout(()=>btn.classList.remove('hint'),4500); }
     }
     const now=ctx.currentTime; master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(VOL,now+5);
