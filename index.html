@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>jamie reddington / sound of fractures studios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0a0a0a;
@@ -779,6 +781,33 @@
   .si-substack{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/substack.svg");}
   .si-instagram{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/instagram.svg");}
   .si-spotify{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/spotify.svg");}
+
+  /* v70 — fellow explorers as a halftone symbol: figures holding hands */
+  #expBtn{background:none;padding:4px 2px;color:var(--g40);display:flex;align-items:flex-end;gap:5px;}
+  #expBtn svg{width:46px;height:19px;display:block;fill:currentColor;transition:transform .3s;}
+  #expBtn:hover,#expBtn.on,#expBtn:focus-visible{color:var(--ink);}
+  #expBtn:hover svg{transform:translateY(-1px);}
+  #expBtn .cnt{font-size:8.5px;letter-spacing:.06em;line-height:1;margin-bottom:1px;}
+  @media (max-width:640px){ #expBtn svg{width:40px;height:16px;} }
+
+  /* v70 — grain: heavy static on the door, a faint film of it over everything;
+     the name set in a light, tight grotesk */
+  #intro .grain{opacity:.26;animation-duration:.6s;}
+  #grainAll{
+    position:fixed;inset:-100%;z-index:60;pointer-events:none;opacity:.07;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+    background-size:300px 300px;animation:grainCrawl .8s steps(6) infinite;
+  }
+  @media (prefers-reduced-motion:reduce){ #grainAll{animation:none;} }
+  #intro .head h1{
+    font-family:'Inter Tight','Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:300;
+    font-size:clamp(38px,7.4vw,104px);letter-spacing:-.035em;line-height:1;
+  }
+  .wordmark .jr{
+    font-family:'Inter Tight','Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:400;
+    font-size:17px;letter-spacing:-.015em;
+  }
+  @media (max-width:640px){ .wordmark .jr{font-size:16px;} }
 </style>
 </head>
 <body>
@@ -806,6 +835,7 @@
   <div class="layers" id="introLayers"></div>
   <div class="grain" aria-hidden="true"></div>
 </div>
+<div id="grainAll" aria-hidden="true"></div>
 
 <canvas id="map"></canvas>
 <div id="nodeLayer"></div>
@@ -814,7 +844,23 @@
 
 <div id="trailChip"></div>
 <div id="trailHint">leave your real name, if you like — it becomes part of the map's record</div>
-<button id="expBtn"><span class="u">show fellow explorers</span></button>
+<button id="expBtn" aria-label="show fellow explorers" title="show fellow explorers"><svg viewBox="0 0 54 22" aria-hidden="true">
+  <defs>
+    <pattern id="htDots" width="1.7" height="1.7" patternUnits="userSpaceOnUse"><circle cx=".85" cy=".85" r=".64"/></pattern>
+    <mask id="htPeople" maskUnits="userSpaceOnUse" x="0" y="0" width="54" height="22">
+      <g fill="#fff">
+        <circle cx="9" cy="3.6" r="3.1"/><circle cx="27" cy="3.6" r="3.1"/><circle cx="45" cy="3.6" r="3.1"/>
+        <rect x="5.4" y="7.6" width="7.2" height="7.4" rx="1.6"/><rect x="23.4" y="7.6" width="7.2" height="7.4" rx="1.6"/><rect x="41.4" y="7.6" width="7.2" height="7.4" rx="1.6"/>
+        <rect x="5.6" y="13.6" width="2.9" height="8.2" rx="1.1"/><rect x="9.5" y="13.6" width="2.9" height="8.2" rx="1.1"/>
+        <rect x="23.6" y="13.6" width="2.9" height="8.2" rx="1.1"/><rect x="27.5" y="13.6" width="2.9" height="8.2" rx="1.1"/>
+        <rect x="41.6" y="13.6" width="2.9" height="8.2" rx="1.1"/><rect x="45.5" y="13.6" width="2.9" height="8.2" rx="1.1"/>
+        <path d="M1.2 13.4 L5.8 8.6 L6.9 10.4 L3.2 14.6 Z"/><path d="M52.8 13.4 L48.2 8.6 L47.1 10.4 L50.8 14.6 Z"/>
+        <path d="M12 8.6 L18 13.2 L24 8.6 L25 10.5 L18 15.6 L11 10.5 Z"/><path d="M30 8.6 L36 13.2 L42 8.6 L43 10.5 L36 15.6 L29 10.5 Z"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="54" height="22" fill="url(#htDots)" mask="url(#htPeople)"/>
+</svg><span class="cnt"></span></button>
 
 <header>
   <div class="wordmark">
@@ -1517,8 +1563,11 @@ let namesOn=false, nameA=0;
 const expBtn=document.getElementById('expBtn');
 function expLabel(){
   const n=otherTrails.filter(tr=>tr.name).length;
-  expBtn.querySelector('.u').textContent=
-    (namesOn?'hide fellow explorers':'show fellow explorers')+(n?' ('+n+')':'');
+  const lab=(namesOn?'hide fellow explorers':'show fellow explorers')+(n?' ('+n+')':'');
+  expBtn.setAttribute('aria-label',lab); expBtn.title=lab;
+  expBtn.setAttribute('aria-pressed',namesOn?'true':'false');
+  expBtn.classList.toggle('on',namesOn);
+  const c=expBtn.querySelector('.cnt'); if(c) c.textContent=n?String(n):'';
 }
 expBtn.onclick=()=>{ namesOn=!namesOn; expLabel(); };
 expLabel();
@@ -2443,8 +2492,10 @@ const VERSIONS=[
    t:'the menu went back to being small: it drops down from the corner, and the page titles came down to size.'},
   {v:'v68', d:'28 oct 2026', url:'https://sof-studio-v68.vercel.app',
    t:'the films stopped showing their buttons; the sun became a faint star of crossing lines that settles on a world when you point at it.'},
-  {v:'v69', d:'now', url:null,
+  {v:'v69', d:'28 oct 2026', url:'https://sof-studio-v69.vercel.app',
    t:'the menu turned into a light veil over the map, with substack, instagram and spotify as small marks.'},
+  {v:'v70', d:'now', url:null,
+   t:'the menu opens as you reach for it; fellow explorers became people holding hands, printed in dots; grain over everything, and the name in a light grotesk.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2681,7 +2732,19 @@ function sbSignup(email,kind,note,cb){
   }).then(r=>r.json()).then(ok=>cb(ok===true)).catch(()=>cb(false));
 }
 
-document.getElementById('menuBtn').onclick=()=>menuView.classList.toggle('open');
+/* desktop: hovering the button (or the open menu) drops it; moving away folds it.
+   a click still works, and right after a hover-open it keeps the menu open rather than closing it */
+let menuHoverAt=0, menuLeaveT=0;
+document.getElementById('menuBtn').onclick=()=>{
+  if(menuView.classList.contains('open') && performance.now()-menuHoverAt<700) return;
+  menuView.classList.toggle('open');
+};
+if(matchMedia('(hover:hover)').matches){
+  const mb=document.getElementById('menuBtn');
+  const enter=()=>{ clearTimeout(menuLeaveT); if(!menuView.classList.contains('open')){ menuView.classList.add('open'); menuHoverAt=performance.now(); } };
+  const leave=()=>{ clearTimeout(menuLeaveT); menuLeaveT=setTimeout(()=>menuView.classList.remove('open'),320); };
+  [mb,menuView].forEach(el=>{ el.addEventListener('mouseenter',enter); el.addEventListener('mouseleave',leave); });
+}
 /* a tap or click anywhere outside the menu and its button folds it */
 document.addEventListener('pointerdown',e=>{ if(menuView.classList.contains('open') && !menuView.contains(e.target) && !e.target.closest('#menuBtn')) menuView.classList.remove('open'); });
 new MutationObserver(()=>{ const o=menuView.classList.contains('open'); menuView.setAttribute('aria-hidden',o?'false':'true'); document.body.classList.toggle('menuopen',o); }).observe(menuView,{attributes:true,attributeFilter:['class']});
