@@ -872,6 +872,15 @@
   .vslide>iframe{z-index:1;}   /* the film sits over its still once it plays */
   @keyframes vdrift{0%{transform:scale(1.02) translate3d(-1%,0,0);}100%{transform:scale(1.12) translate3d(1.5%,-1%,0);}}
   @media (prefers-reduced-motion:reduce){ .vstill{animation:none;} }
+
+  /* v85 — no solid black boxes behind text: every label, hint, note and button that sat on a
+     dark block now sits on the same light veil as the menu — translucent, with a soft blur */
+  .backmap,.pback,.childlbl,#trailChip,#trailHint,#expBtn,#flowHint,#flowNote,
+  #signupBox .join,.pform .send,.leave button,.fn-box .fna,.trace-box button{
+    background:rgba(10,10,10,.28);
+    -webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);
+  }
+  #flowNote{border-color:rgba(242,242,240,.14);}
 </style>
 </head>
 <body class="introon">
@@ -2654,8 +2663,10 @@ const VERSIONS=[
    t:'the room tone plays on iphones, silent switch or not, and sits a little louder on small speakers.'},
   {v:'v83', d:'28 oct 2026', url:'https://sof-studio-v83.vercel.app',
    t:'the mark no longer folds away; it fades in a breath and leaves the photographs to carry you in.'},
-  {v:'v84', d:'now', url:null,
+  {v:'v84', d:'28 oct 2026', url:'https://sof-studio-v84.vercel.app',
    t:'the mark holds still and the first photograph rises over it, wiping it away along its edge.'},
+  {v:'v85', d:'now', url:null,
+   t:'no more black boxes behind words: buttons, hints and notes sit on the same light veil as the menu.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
