@@ -759,6 +759,10 @@
     .menu-inner .mi{font-size:14px;margin-bottom:0;}
     .patron h1{font-size:clamp(28px,9vw,40px);}
   }
+
+  /* v68 — a film only shows once it is actually playing, so youtube's play/pause marks never show */
+  .vslide iframe,#pgvid iframe{opacity:0;transition:opacity .6s ease;}
+  .vslide.live iframe,#pgvid.live iframe{opacity:1;}
 </style>
 </head>
 <body>
@@ -2008,12 +2012,17 @@ function drawSeeker(t,alpha){
   if(live){
     if(seek.x===null){ seek.sx=ptr.x; seek.sy=ptr.y; }
     seek.sx+=(ptr.x-seek.sx)*.12; seek.sy+=(ptr.y-seek.sy)*.12;
-    const n=nearestOnNet(seek.sx,seek.sy,t);
-    const reach=isMobile()?110:140;
-    const want=ptr.on && n && n.d<reach;
+    /* over a world, it goes to that world's centre; otherwise it keeps to the nearest thread */
+    let n=null;
+    if(hoverNode){ const [hx,hy]=nodePos(hoverNode,t); n={x:hx,y:hy,d:0}; }
+    else{
+      n=nearestOnNet(seek.sx,seek.sy,t);
+      if(!(ptr.on && n && n.d<(isMobile()?110:140))) n=null;
+    }
+    const want=!!n;
     if(want){
       if(seek.x===null){ seek.x=n.x; seek.y=n.y; }
-      const k=REDUCED?1:.22;
+      const k=REDUCED?1:.2;
       seek.x+=(n.x-seek.x)*k; seek.y+=(n.y-seek.y)*k;
     }
     seek.a+=((want?1:0)-seek.a)*(want?.1:.04);
@@ -2026,18 +2035,16 @@ function drawSeeker(t,alpha){
   for(let i=0;i<seek.trail.length-1;i++){
     const [tx,ty]=seek.trail[i], f=i/seek.trail.length;
     ctx.beginPath(); ctx.arc(tx,ty,.6+f*1.1,0,Math.PI*2);
-    ctx.fillStyle='rgba(242,242,240,'+(f*.28*seek.a*alpha)+')'; ctx.fill();
+    ctx.fillStyle='rgba(242,242,240,'+(f*.12*seek.a*alpha)+')'; ctx.fill();
   }
-  /* the sun: a dot and eight short rays, turning slowly */
-  seek.spin+=REDUCED?0:.012;
+  /* the star: four thin lines crossing at the centre, long on the axes, short on the diagonals */
+  seek.spin+=REDUCED?0:.006;
   const X=seek.x, Y=seek.y, A=seek.a*alpha;
   ctx.save(); ctx.translate(X,Y); ctx.rotate(seek.spin);
-  ctx.beginPath(); ctx.arc(0,0,2.6,0,Math.PI*2);
-  ctx.fillStyle='rgba(242,242,240,'+(.95*A)+')'; ctx.fill();
-  ctx.strokeStyle='rgba(242,242,240,'+(.85*A)+')'; ctx.lineWidth=1;
-  for(let r=0;r<8;r++){
-    const g=r*Math.PI/4;
-    ctx.beginPath(); ctx.moveTo(Math.cos(g)*4.6,Math.sin(g)*4.6); ctx.lineTo(Math.cos(g)*7.4,Math.sin(g)*7.4); ctx.stroke();
+  ctx.strokeStyle='rgba(242,242,240,'+(.5*A)+')'; ctx.lineWidth=.8;
+  for(let r=0;r<4;r++){
+    const g=r*Math.PI/4, L=(r%2)?4.2:7.5;
+    ctx.beginPath(); ctx.moveTo(-Math.cos(g)*L,-Math.sin(g)*L); ctx.lineTo(Math.cos(g)*L,Math.sin(g)*L); ctx.stroke();
   }
   ctx.restore();
 }
@@ -2412,8 +2419,10 @@ const VERSIONS=[
    t:'map and index scatter and come together when you reach for them; a small sun runs the threads toward your hand.'},
   {v:'v66', d:'28 oct 2026', url:'https://sof-studio-v66.vercel.app',
    t:'the map stays still and the films scroll beneath it, four of them, one after another.'},
-  {v:'v67', d:'now', url:null,
+  {v:'v67', d:'28 oct 2026', url:'https://sof-studio-v67.vercel.app',
    t:'the menu went back to being small: it drops down from the corner, and the page titles came down to size.'},
+  {v:'v68', d:'now', url:null,
+   t:'the films stopped showing their buttons; the sun became a faint star of crossing lines that settles on a world when you point at it.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2795,13 +2804,17 @@ const PAGE_VIDEOS = {
         playerVars:{autoplay:1,mute:1,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,disablekb:1,fs:0},
         events:{
           onReady:e=>{ e.target.mute(); if(want) e.target.playVideo(); },
-          onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED){ e.target.seekTo(0); e.target.playVideo(); } }
+          onStateChange:e=>{
+            if(e.data===YT.PlayerState.ENDED){ e.target.seekTo(0); e.target.playVideo(); }
+            if(e.data===YT.PlayerState.PLAYING) el.classList.add('live');
+            else if(e.data!==YT.PlayerState.BUFFERING) el.classList.remove('live');
+          }
         }
       });
       player._id=want; return;
     }
     try{
-      if(player._id!==want && player.loadVideoById){ player._id=want; player.loadVideoById(want); player.mute(); }
+      if(player._id!==want && player.loadVideoById){ el.classList.remove('live'); player._id=want; player.loadVideoById(want); player.mute(); }
       else if(player.playVideo){ player.mute(); player.playVideo(); }
     }catch(e){}
   }
@@ -2979,16 +2992,42 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   let cur=0, raf=0;
   const H=()=>first.offsetHeight||window.innerHeight;
   function mark(){ [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===cur)); }
-  function play(){
-    if(!players[0] && window.__bg0) players[0]=window.__bg0;
-    players.forEach((p,k)=>{ if(!p||!p.playVideo) return; try{ if(k===cur){ p.mute(); p.playVideo(); } else p.pauseVideo(); }catch(e){} });
+  /* youtube draws its own play/pause marks over a film that isn't playing, so a film
+     stays invisible until it is actually playing; a film starts as soon as any of it
+     scrolls into view, and is paused only once it is fully out of view */
+  const slides=[...track.querySelectorAll('.vslide')];
+  function watch(p,k){
+    if(!p||p._watched||!p.addEventListener) return; p._watched=1;
+    try{ p.addEventListener('onStateChange',e=>{
+      if(e.data===YT.PlayerState.PLAYING) slides[k].classList.add('live');
+      else if(e.data!==YT.PlayerState.BUFFERING) slides[k].classList.remove('live');
+    }); }catch(e){}
+    try{ if(p.getPlayerState && p.getPlayerState()===1) slides[k].classList.add('live'); }catch(e){}
   }
+  const inView=(k,y)=>Math.abs(k*H()-y)<H()-1;
+  let settle=0, lastKey='';
+  function play(force){
+    if(!players[0] && window.__bg0) players[0]=window.__bg0;
+    const y=window.scrollY||0;
+    const key=players.map((p,k)=>inView(k,y)?k:'').join(',');
+    if(key!==lastKey || force){
+      lastKey=key;
+      players.forEach((p,k)=>{ if(!p||!p.playVideo) return; watch(p,k);
+        try{ if(inView(k,y) && p.getPlayerState && p.getPlayerState()!==1){ p.mute(); p.playVideo(); } }catch(e){} });
+    }
+    clearTimeout(settle);
+    settle=setTimeout(()=>{ const y2=window.scrollY||0;
+      players.forEach((p,k)=>{ if(!p||!p.pauseVideo) return; try{ if(!inView(k,y2) && p.getPlayerState && p.getPlayerState()===1) p.pauseVideo(); }catch(e){} });
+    },400);
+  }
+  const w0=setInterval(()=>{ if(window.__bg0 && window.__bg0.getPlayerState){ players[0]=window.__bg0; watch(players[0],0); clearInterval(w0); } },300);
   function place(){
     raf=0;
     const y=window.scrollY||document.documentElement.scrollTop||0;
     track.style.transform='translate3d(0,'+(-y)+'px,0)';
     const i=Math.max(0,Math.min(N-1,Math.round(y/H())));
-    if(i!==cur){ cur=i; mark(); play(); }
+    if(i!==cur){ cur=i; mark(); }
+    play();
   }
   window.addEventListener('scroll',()=>{ if(!raf) raf=requestAnimationFrame(place); },{passive:true});
   window.addEventListener('resize',place);
@@ -3000,14 +3039,14 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
         host:'https://www.youtube-nocookie.com', videoId:id,
         playerVars:{autoplay:0,mute:1,loop:1,playlist:id,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,disablekb:1,fs:0},
         events:{
-          onReady:e=>{ e.target.mute(); if(k===cur) e.target.playVideo(); },
-          onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED && k===cur) e.target.playVideo(); }
+          onReady:e=>{ e.target.mute(); watch(e.target,k); if(inView(k,window.scrollY||0)) e.target.playVideo(); },
+          onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED && inView(k,window.scrollY||0)) e.target.playVideo(); }
         }
       });
     }
   }
   make();
-  document.addEventListener('pointerdown',()=>setTimeout(play,60),{passive:true});
+  document.addEventListener('pointerdown',()=>setTimeout(()=>play(true),60),{passive:true});
   dots.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) window.scrollTo({top:(+b.dataset.i)*H(),behavior:'smooth'}); });
   /* while a page, the menu, the index or the door owns the screen, the films hold still */
   const intro=document.getElementById('intro');
