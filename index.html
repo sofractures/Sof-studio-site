@@ -2648,8 +2648,10 @@ const VERSIONS=[
    t:'the room tone sits lower, and a click on the mark moves on to the next song.'},
   {v:'v80', d:'28 oct 2026', url:'https://sof-studio-v80.vercel.app',
    t:'alone together gains a new essay from the fujifilm lates week: we are making this together.'},
-  {v:'v81', d:'now', url:null,
+  {v:'v81', d:'28 oct 2026', url:'https://sof-studio-v81.vercel.app',
    t:'every film has its own still drifting underneath, so phones show the film even before it can play.'},
+  {v:'v82', d:'now', url:null,
+   t:'the room tone plays on iphones, silent switch or not, and sits a little louder on small speakers.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3472,9 +3474,24 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
 (()=>{
   const SONGS=[{"id":"s1","bpm":131,"stems":[{"f":"s1-drums","bars":16,"role":"perc","g":0.7362},{"f":"s1-synths","bars":32,"role":"tonal","g":0.8266},{"f":"s1-vocal","bars":16,"role":"voice","g":0.1522},{"f":"s1-heartbeat","bars":4,"role":"perc","g":1.4301},{"f":"s1-bass","bars":8,"role":"bass","g":1.4885}],"sg":0.118},{"id":"s2","bpm":128,"stems":[{"f":"s2-chords","bars":8,"role":"tonal","g":0.2644},{"f":"s2-extra","bars":64,"role":"tonal","g":0.1044},{"f":"s2-family","bars":16,"role":"voice","g":0.5212},{"f":"s2-arp","bars":8,"role":"tonal","g":0.3473},{"f":"s2-perc","bars":8,"role":"perc","g":0.1246}],"sg":1.286},{"id":"s3","bpm":132,"stems":[{"f":"s3-arps","bars":8,"role":"tonal","g":0.0746},{"f":"s3-bass","bars":8,"role":"bass","g":0.0732},{"f":"s3-music","bars":8,"role":"tonal","g":0.2145},{"f":"s3-chords","bars":2,"role":"tonal","g":0.0301},{"f":"s3-talking","bars":32,"role":"voice","g":0.4544},{"f":"s3-plops","bars":32,"role":"tonal","g":1.5528}],"sg":0.419}];
   const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+  /* iphones treat web audio as an ambient sound that the silent switch mutes; this is music,
+     so ask for the playback category (safari 17+), and for older ios keep a silent media
+     element playing, which moves the page into the same category */
+  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}
+  const SILENT='data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YUAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+  let tag=null;
+  function unlock(){
+    ensureCtx();
+    try{ ctx.resume(); }catch(e){}
+    try{ const b=ctx.createBuffer(1,1,22050), s0=ctx.createBufferSource(); s0.buffer=b; s0.connect(ctx.destination); s0.start(0); }catch(e){}
+    try{ if(!tag){ tag=new Audio(SILENT); tag.loop=true; tag.setAttribute('playsinline',''); tag.preload='auto'; }
+         if(tag.paused) tag.play().catch(()=>{}); }catch(e){}
+  }
   const btn=document.getElementById('sndBtn'), lcv=btn.querySelector('canvas'), lctx=lcv.getContext('2d');
   const LS='sof_sound';
-  const VOL=.31;   /* overall level of the room tone — kept well under the page */
+  /* overall level of the room tone — kept well under the page; a little higher on phones,
+     whose small speakers lose most of the low end */
+  const VOL=matchMedia('(hover:none)').matches?.44:.31;
   let wantOn=true; try{ wantOn=localStorage.getItem(LS)!=='off'; }catch(e){}
   let ctx=null, master=null, comp=null, IR={}, started=false, current=null, nextTimer=0, ticker=0, lastSong=-1, an=null, fbins=null;
   const R=(a,b)=>a+Math.random()*(b-a);
@@ -3657,7 +3674,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     btn.setAttribute('aria-label',wantOn?'sound on: click for the next song, double-click to mute':'sound off: double-click to turn the sound back on'); }
   async function start(){
     if(!wantOn) return;
-    ensureCtx();
+    unlock();
     try{ await ctx.resume(); }catch(e){}
     if(!started){
       started=true; btn.classList.add('loading');
@@ -3675,7 +3692,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     if(!ctx) return;
     const now=ctx.currentTime; master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(0,now+sec);
-    setTimeout(()=>{ if(!wantOn||document.hidden) ctx.suspend(); },sec*1000+100);
+    setTimeout(()=>{ if(!wantOn||document.hidden){ ctx.suspend(); try{ tag&&tag.pause(); }catch(e){} } },sec*1000+100);
   }
   /* one click: the next song, with fresh random settings, handing over in a couple of seconds.
      two clicks: mute / unmute. the single click waits a moment in case a second one follows */
@@ -3762,9 +3779,15 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   const firstSong=Math.floor(Math.random()*SONGS.length);
   ensureCtx(); loadSong(firstSong);
   /* no door (deep links): the first touch anywhere starts it */
-  const first=()=>{ if(!started) start(); };
-  document.addEventListener('pointerdown',first,{once:true,capture:true});
-  document.addEventListener('keydown',first,{once:true,capture:true});
+  /* ios only lets sound start on certain gestures (a finished tap or click, not a finger landing),
+     so listen to all of them until the audio is actually running */
+  const GEST=['pointerdown','touchend','click','keydown'];
+  const first=()=>{
+    if(!wantOn) return;
+    unlock(); if(!started) start();
+    if(ctx && ctx.state==='running') GEST.forEach(g=>document.removeEventListener(g,first,true));
+  };
+  GEST.forEach(g=>document.addEventListener(g,first,true));
   window.__sound={start, _out:()=>master.__lim, state:()=>({started,on:wantOn,song:current?SONGS[current.i].id:null,room:current?current.room:null,ctx:ctx?ctx.state:null}),
     _tap:()=>master, _play:i=>playSong(i,2)};
   setBtn();
