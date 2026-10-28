@@ -862,6 +862,16 @@
     .mixLogo{position:fixed;top:auto;bottom:max(16px,env(safe-area-inset-bottom));width:30px;height:38px;}
     .mixCap{top:auto;bottom:100%;margin:0 0 6px;}
   }
+
+  /* v81 — every film has its own still underneath, drifting slowly, so a phone that won't
+     start a video before you touch the page still shows the film's world; the video fades in over it */
+  .vstill{position:absolute;inset:-8%;background-size:cover;background-position:50% 50%;
+    filter:blur(1.2px) saturate(.9);opacity:0;transition:opacity 1.2s ease;
+    animation:vdrift 38s ease-in-out infinite alternate;will-change:transform;}
+  .vstill.ready{opacity:1;}
+  .vslide>iframe{z-index:1;}   /* the film sits over its still once it plays */
+  @keyframes vdrift{0%{transform:scale(1.02) translate3d(-1%,0,0);}100%{transform:scale(1.12) translate3d(1.5%,-1%,0);}}
+  @media (prefers-reduced-motion:reduce){ .vstill{animation:none;} }
 </style>
 </head>
 <body class="introon">
@@ -2636,8 +2646,10 @@ const VERSIONS=[
    t:'the mark sits at the top and listens: each petal lights with its part of the sound. click it for a new mix, double-click to let it fall quiet.'},
   {v:'v79', d:'28 oct 2026', url:'https://sof-studio-v79.vercel.app',
    t:'the room tone sits lower, and a click on the mark moves on to the next song.'},
-  {v:'v80', d:'now', url:null,
+  {v:'v80', d:'28 oct 2026', url:'https://sof-studio-v80.vercel.app',
    t:'alone together gains a new essay from the fujifilm lates week: we are making this together.'},
+  {v:'v81', d:'now', url:null,
+   t:'every film has its own still drifting underneath, so phones show the film even before it can play.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3228,6 +3240,17 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
      stays invisible until it is actually playing; a film starts as soon as any of it
      scrolls into view, and is paused only once it is fully out of view */
   const slides=[...track.querySelectorAll('.vslide')];
+  /* the stills: the film's own thumbnail, the sharpest one youtube has (maxres is missing on
+     some films, and youtube then returns a tiny grey placeholder, so check the size) */
+  slides.forEach((sl,k)=>{
+    const id=MAIN_VIDEOS[k]; if(!id) return;
+    const st=document.createElement('div'); st.className='vstill'; sl.insertBefore(st,sl.firstChild);
+    const set=u=>{ st.style.backgroundImage='url("'+u+'")'; st.classList.add('ready'); };
+    const im=new Image();
+    im.onload=()=>{ if(im.naturalWidth>200) set(im.src); else set('https://i.ytimg.com/vi/'+id+'/hqdefault.jpg'); };
+    im.onerror=()=>set('https://i.ytimg.com/vi/'+id+'/hqdefault.jpg');
+    im.src='https://i.ytimg.com/vi/'+id+'/maxresdefault.jpg';
+  });
   function watch(p,k){
     if(!p||p._watched||!p.addEventListener) return; p._watched=1;
     try{ p.addEventListener('onStateChange',e=>{
