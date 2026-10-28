@@ -23,6 +23,7 @@
     overflow:hidden;-webkit-font-smoothing:antialiased;
   }
   #map{position:fixed;inset:0;display:block;cursor:crosshair;}
+  body.insec #map{cursor:zoom-out;}
 
   /* ---------- overview node buttons ---------- */
   #nodeLayer{position:fixed;inset:0;pointer-events:none;z-index:10;transition:opacity .35s;}
@@ -2064,6 +2065,20 @@ function leaveSection(){
   },REDUCED?750:1350);
 }
 backBtn.addEventListener('click',leaveSection);
+/* inside a world, the empty space around it is also the way back: a plain click on the
+   background (not a drag, not mid-turn) steps out one level, exactly like the back button */
+(()=>{
+  let down=null;
+  cv.addEventListener('pointerdown',e=>{ down={x:e.clientX,y:e.clientY,t:performance.now()}; });
+  cv.addEventListener('click',e=>{
+    if(view==='over' || !down) return;
+    const moved=Math.hypot(e.clientX-down.x,e.clientY-down.y)>6, long=performance.now()-down.t>600;
+    down=null;
+    if(moved||long||trans<.9||transTarget!==1) return;
+    if(document.body.classList.contains('menuopen')||document.body.classList.contains('dirmode')) return;
+    leaveSection();
+  });
+})();
 
 /* ---------- animation ---------- */
 let T=0, startT=null;
@@ -2575,8 +2590,10 @@ const VERSIONS=[
    t:'the door became the logo: the film behind it, the name in the corner, and the mark folding into its centre as the photographs pass.'},
   {v:'v72', d:'28 oct 2026', url:'https://sof-studio-v72.vercel.app',
    t:'the mark is made of pixels now: it unfolds out of a point, leans away from your hand, and folds back into it on the way in.'},
-  {v:'v73', d:'now', url:null,
+  {v:'v73', d:'28 oct 2026', url:'https://sof-studio-v73.vercel.app',
    t:'choosing a world turns the whole network in space, bringing that world round and up to the front before it opens.'},
+  {v:'v74', d:'now', url:null,
+   t:'inside a world, clicking the empty space around it turns you back out to the network.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
