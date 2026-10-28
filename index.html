@@ -833,6 +833,23 @@
     width:240px;height:300px;background:none;border:0;padding:0;cursor:pointer;border-radius:50%;
   }
   .ilogo:focus-visible{outline:1px dotted rgba(242,242,240,.45);outline-offset:10px;}
+
+  /* =========================================================
+     v76 — the room tone: the site plays one of the songs as a slow ambient bed,
+     built live from its stems. a small mark beside the menu turns it on and off.
+     ========================================================= */
+  .sndBtn{background:none;border:0;padding:6px 4px;margin-right:6px;cursor:pointer;display:inline-flex;align-items:flex-end;gap:2px;height:22px;vertical-align:middle;}
+  .sndBtn i{display:block;width:2px;height:2px;background:var(--ink);opacity:.55;border-radius:1px;transition:height .5s cubic-bezier(.22,1,.36,1),opacity .4s;}
+  .sndBtn.on i{opacity:.9;animation:sndBar 1.6s ease-in-out infinite alternate;}
+  .sndBtn.on i:nth-child(2){animation-duration:2.3s;animation-delay:-.6s;}
+  .sndBtn.on i:nth-child(3){animation-duration:1.9s;animation-delay:-1.1s;}
+  .sndBtn.on i:nth-child(4){animation-duration:2.7s;animation-delay:-.3s;}
+  .sndBtn:hover i{opacity:1;}
+  .sndBtn.loading i{animation:sndLoad 1s ease-in-out infinite;}
+  .sndBtn.loading i:nth-child(2){animation-delay:.15s;} .sndBtn.loading i:nth-child(3){animation-delay:.3s;} .sndBtn.loading i:nth-child(4){animation-delay:.45s;}
+  @keyframes sndBar{0%{height:3px;}100%{height:12px;}}
+  @keyframes sndLoad{0%,100%{height:2px;opacity:.4;}50%{height:6px;opacity:.9;}}
+  @media (prefers-reduced-motion:reduce){ .sndBtn.on i{animation:none;height:8px;} }
 </style>
 </head>
 <body class="introon">
@@ -898,6 +915,7 @@
       <button id="mapBtn" class="active" aria-pressed="true"><span class="jw" data-word="map">map</span></button>
       <button id="dirBtn" aria-pressed="false"><span class="jw" data-word="index">index</span></button>
     </div>
+    <button class="sndBtn" id="sndBtn" aria-label="sound" aria-pressed="false" title="sound"><i></i><i></i><i></i><i></i></button>
     <button class="burger" id="menuBtn" aria-label="menu"><span></span><span></span><span></span></button>
   </nav>
 </header>
@@ -2594,8 +2612,10 @@ const VERSIONS=[
    t:'choosing a world turns the whole network in space, bringing that world round and up to the front before it opens.'},
   {v:'v74', d:'28 oct 2026', url:'https://sof-studio-v74.vercel.app',
    t:'inside a world, clicking the empty space around it turns you back out to the network.'},
-  {v:'v75', d:'now', url:null,
+  {v:'v75', d:'28 oct 2026', url:'https://sof-studio-v75.vercel.app',
    t:'network archives 001 has its cover in the shop, and instagram points to the right place.'},
+  {v:'v76', d:'now', url:null,
+   t:'the site has a room tone: one song at a time, rebuilt live from its stems, drifting, then giving way to the next.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3148,6 +3168,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   function retract(total){ if(window.__logoExit) window.__logoExit(total); }
   function run(){
     const btn=document.getElementById('enterBtn'); if(btn.disabled) return; btn.disabled=true; ytPlay();
+    if(window.__sound) window.__sound.start();   /* the room tone comes in as you enter */
     if(reduce){ intro.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'}).onfinish=finish; return; }
     retract(GAP*(layers.length-1)+D-D/8+D);
     const n=layers.length;
@@ -3394,6 +3415,231 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     outT=performance.now(); outDur=total||3000; mode='out'; hoverT=0;
     if(!raf) raf=requestAnimationFrame(frame);
   };
+})();
+
+/* ---------- the room tone: an ambient bed generated from the songs' stems.
+   one song at a time, its stems only. each stem loops on whole bars at the song's tempo, so they
+   stay in time; filter, reverb, delay, a grain cloud, level and pan drift slowly between random
+   points inside ranges chosen for that stem's role, every stem out of phase with the others.
+   after a few minutes the next song fades in through the reverb with new random settings.
+   it starts as you come through the door (your click is what browsers need to allow sound),
+   and the mark beside the menu turns it off and remembers ---------- */
+(()=>{
+  const SONGS=[{"id":"s1","bpm":131,"stems":[{"f":"s1-drums","bars":16,"role":"perc","g":0.7362},{"f":"s1-synths","bars":32,"role":"tonal","g":0.8266},{"f":"s1-vocal","bars":10,"role":"voice","g":0.1522},{"f":"s1-heartbeat","bars":4,"role":"perc","g":1.4301},{"f":"s1-bass","bars":8,"role":"bass","g":1.4885}]},{"id":"s2","bpm":128,"stems":[{"f":"s2-chords","bars":8,"role":"tonal","g":0.2644},{"f":"s2-extra","bars":32,"role":"tonal","g":0.1044},{"f":"s2-family","bars":16,"role":"voice","g":0.5212},{"f":"s2-arp","bars":8,"role":"tonal","g":0.3473},{"f":"s2-perc","bars":7,"role":"perc","g":0.1246}]},{"id":"s3","bpm":132,"stems":[{"f":"s3-arps","bars":8,"role":"tonal","g":0.0746},{"f":"s3-bass","bars":8,"role":"bass","g":0.0732},{"f":"s3-music","bars":8,"role":"tonal","g":0.2145},{"f":"s3-chords","bars":2,"role":"tonal","g":0.0301},{"f":"s3-talking","bars":20,"role":"voice","g":0.4544},{"f":"s3-plops","bars":19,"role":"tonal","g":1.5528}]}];
+  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+  const btn=document.getElementById('sndBtn');
+  const LS='sof_sound';
+  let wantOn=true; try{ wantOn=localStorage.getItem(LS)!=='off'; }catch(e){}
+  let ctx=null, master=null, comp=null, IR={}, started=false, current=null, nextTimer=0, ticker=0, lastSong=-1;
+  const R=(a,b)=>a+Math.random()*(b-a);
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const cache={};   /* decoded buffers per song, freed when a song is done */
+
+  function ensureCtx(){
+    if(ctx) return;
+    ctx=new AC();
+    comp=ctx.createDynamicsCompressor();
+    comp.threshold.value=-20; comp.knee.value=12; comp.ratio.value=3.5; comp.attack.value=.02; comp.release.value=.4;
+    master=ctx.createGain(); master.gain.value=0;
+    comp.connect(master); master.connect(ctx.destination);
+    IR=buildIR(ctx);
+  }
+  /* reverb rooms, generated (same recipes as the stem randomiser) */
+  function imp(c,{duration,decay,preDelay,brightness}){
+    const rate=c.sampleRate,len=Math.floor(rate*duration),pd=Math.floor(rate*(preDelay||0)),b=c.createBuffer(2,len,rate);
+    for(let ch=0;ch<2;ch++){ const d=b.getChannelData(ch); let prev=0;
+      for(let i=0;i<len;i++){ if(i<pd){d[i]=0;continue;} const t=(i-pd)/(len-pd); let n=Math.random()*2-1; n=prev+brightness*(n-prev); prev=n; d[i]=n*Math.pow(1-t,decay); } }
+    return b;
+  }
+  function shimmer(c){ const rate=c.sampleRate,len=Math.floor(rate*6),b=c.createBuffer(2,len,rate);
+    for(let ch=0;ch<2;ch++){ const d=b.getChannelData(ch); for(let i=0;i<len;i++){ const t=i/len; d[i]=((Math.random()*2-1)*.7+Math.sin(i*.15*(ch+1))*.3+Math.sin(i*.09*(ch+1))*.2)*Math.pow(1-t,1.4); } } return b; }
+  function freeze(c){ const rate=c.sampleRate,len=rate*12,b=c.createBuffer(2,len,rate);
+    for(let ch=0;ch<2;ch++){ const d=b.getChannelData(ch); for(let i=0;i<len;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/len,.55)*.95; } } return b; }
+  function buildIR(c){ return {
+    hall:imp(c,{duration:4,decay:1.8,preDelay:.02,brightness:.5}),
+    cathedral:imp(c,{duration:8,decay:1.1,preDelay:.05,brightness:.4}),
+    shimmer:shimmer(c), freeze:freeze(c) }; }
+
+  async function loadSong(i){
+    if(cache[i]) return cache[i];
+    const song=SONGS[i];
+    cache[i]=Promise.all(song.stems.map(async st=>{
+      for(const ext of ['m4a','flac']){
+        try{ const r=await fetch('audio/'+st.f+'.'+ext); if(!r.ok) continue;
+             const ab=await r.arrayBuffer();
+             return await new Promise((res,rej)=>ctx.decodeAudioData(ab,res,rej)); }catch(e){}
+      }
+      return null;
+    }));
+    return cache[i];
+  }
+
+  /* ranges by what the stem is: textures wander widest, drums sit back in the wash,
+     voices drift in and out, bass stays low and mostly dry */
+  function rangesFor(role){
+    const lim=(a,b)=>({min:Math.min(a,b),max:Math.max(a,b)});
+    if(role==='perc') return {
+      filter:lim(R(300,1200),R(2200,6500)), reverb:lim(R(.5,.75),R(.85,1)), delay:lim(R(0,.2),R(.3,.55)),
+      grain:lim(R(0,.1),R(.2,.45)), volume:lim(R(.12,.25),R(.3,.5)), pan:lim(R(-.6,-.2),R(.2,.6)), rest:.22 };
+    if(role==='bass') return {
+      filter:lim(R(160,400),R(800,2200)), reverb:lim(R(.05,.15),R(.25,.4)), delay:lim(0,R(.05,.15)),
+      grain:lim(0,R(.03,.12)), volume:lim(R(.45,.6),R(.7,.9)), pan:lim(R(-.15,0),R(0,.15)), rest:0 };
+    if(role==='voice') return {
+      filter:lim(R(700,1800),R(4000,10000)), reverb:lim(R(.3,.5),R(.7,.95)), delay:lim(R(0,.2),R(.35,.6)),
+      grain:lim(R(.1,.3),R(.4,.8)), volume:lim(R(.3,.5),R(.65,.9)), pan:lim(R(-.6,-.1),R(.1,.6)), rest:.3 };
+    return {
+      filter:lim(R(500,2000),R(4000,12000)), reverb:lim(R(.35,.6),R(.7,1)), delay:lim(R(0,.25),R(.3,.6)),
+      grain:lim(R(0,.2),R(.3,.7)), volume:lim(R(.45,.7),R(.8,1)), pan:lim(R(-.8,-.3),R(.3,.8)), rest:.08 };
+  }
+  const KEYS=['filter','reverb','delay','grain','volume','pan'];
+
+  function makePlayer(i,bufs){
+    const song=SONGS[i], bar=240/song.bpm;
+    const drift=R(40,90);
+    const room=pick(['cathedral','cathedral','hall','shimmer','shimmer','freeze']);
+    const gp=pick([[-12,-5],[-7,0],[-7,5],[-5,5],[0,7],[-2,2]]);
+    const out=ctx.createGain(); out.gain.value=0; out.connect(comp);
+    const verb=ctx.createConvolver(); verb.buffer=IR[room]; verb.connect(out);
+    /* one grain cloud per song: stems send into it, grains are windowed slices of the recent past */
+    const gIn=ctx.createGain(), gOut=ctx.createGain(); gOut.gain.value=.9; gOut.connect(out);
+    const gVerb=ctx.createGain(); gVerb.gain.value=.5; gOut.connect(gVerb); gVerb.connect(verb);
+    const GB=ctx.createBuffer(2,Math.floor(ctx.sampleRate*2),ctx.sampleRate); let w=0;
+    const cap=ctx.createScriptProcessor(2048,2,2);
+    cap.onaudioprocess=e=>{ const L=e.inputBuffer.getChannelData(0), Rr=e.inputBuffer.numberOfChannels>1?e.inputBuffer.getChannelData(1):L;
+      const bl=GB.getChannelData(0), br=GB.getChannelData(1), n=GB.length;
+      for(let k=0;k<L.length;k++){ bl[w]=L[k]; br[w]=Rr[k]; w=(w+1)%n; }
+      e.outputBuffer.getChannelData(0).fill(0); e.outputBuffer.getChannelData(1).fill(0); };
+    const sink=ctx.createGain(); sink.gain.value=0; gIn.connect(cap); cap.connect(sink); sink.connect(ctx.destination);
+    const gs={pitch:R(gp[0],gp[1]), from:0, to:0, t0:0, t1:1, timer:0, alive:true};
+    gs.from=gs.to=gs.pitch;
+    function grain(){
+      if(!gs.alive) return;
+      const semis=gs.pitch+(Math.random()-.5)*2, rate=Math.pow(2,semis/12);
+      const dur=.08+Math.random()*.1, back=Math.floor((.05+Math.random()*1.15)*ctx.sampleRate), n=GB.length;
+      const st=((w-back)%n+n)%n, len=Math.floor(dur*ctx.sampleRate);
+      const vb=ctx.createBuffer(2,len,ctx.sampleRate), sl=GB.getChannelData(0), sr=GB.getChannelData(1), ol=vb.getChannelData(0), orr=vb.getChannelData(1);
+      for(let k=0;k<len;k++){ const win=.5*(1-Math.cos(2*Math.PI*k/len)), j=(st+k)%n; ol[k]=sl[j]*win; orr[k]=sr[j]*win; }
+      const v=ctx.createBufferSource(); v.buffer=vb; v.playbackRate.value=rate;
+      const pn=ctx.createStereoPanner(); pn.pan.value=(Math.random()-.5)*1.4;
+      v.connect(pn); pn.connect(gOut); v.start(); v.stop(ctx.currentTime+dur/rate+.02);
+      gs.timer=setTimeout(grain,30+Math.random()*35);
+    }
+    const delayT=60/song.bpm*1.5;   /* a dotted quarter at the song's tempo */
+    const t0=ctx.currentTime+.15;
+    const stems=song.stems.map((st,k)=>{
+      const buf=bufs[k]; if(!buf) return null;
+      const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true; src.loopStart=0; src.loopEnd=Math.min(buf.duration,st.bars*bar);
+      const trim=ctx.createGain(); trim.gain.value=st.g||1;
+      const filt=ctx.createBiquadFilter(); filt.type='lowpass'; filt.Q.value=.8;
+      const dry=ctx.createGain();
+      const dl=ctx.createDelay(3); dl.delayTime.value=delayT; const fb=ctx.createGain(); const dw=ctx.createGain(); dw.gain.value=.6;
+      const rs=ctx.createGain(), gsnd=ctx.createGain();
+      const pan=ctx.createStereoPanner(), vol=ctx.createGain();
+      src.connect(trim); trim.connect(filt);
+      filt.connect(dry); dry.connect(pan);
+      filt.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(dw); dw.connect(pan);
+      pan.connect(vol); vol.connect(out);
+      filt.connect(rs); rs.connect(verb);
+      filt.connect(gsnd); gsnd.connect(gIn);
+      const rg=rangesFor(st.role), cur={}, tg={};
+      KEYS.forEach(key=>{ const r=rg[key]; cur[key]=R(r.min,r.max); const ph=Math.random();
+        tg[key]={from:cur[key],to:R(r.min,r.max),t0:t0-drift*ph,t1:t0+drift*(1-ph)}; });
+      src.start(t0);
+      return {src,filt,fb,rs,gsnd,pan,vol,rg,cur,tg,role:st.role};
+    }).filter(Boolean);
+    grain();
+    function step(){
+      const now=ctx.currentTime;
+      const tp=(now-gs.t0)/(gs.t1-gs.t0);
+      if(tp>=1){ gs.from=gs.pitch; gs.to=R(gp[0],gp[1]); gs.t0=now; gs.t1=now+drift*R(.85,1.15); }
+      else if(tp>0){ const e=tp*tp*(3-2*tp); gs.pitch=gs.from+(gs.to-gs.from)*e; }
+      stems.forEach(S=>{
+        KEYS.forEach(key=>{
+          const T=S.tg[key]; let t=(now-T.t0)/(T.t1-T.t0);
+          if(t>=1){ S.cur[key]=T.to; let to=R(S.rg[key].min,S.rg[key].max);
+            if(key==='volume' && Math.random()<S.rg.rest) to=0;          /* sometimes a stem rests for a cycle */
+            S.tg[key]={from:S.cur[key],to,t0:now,t1:now+drift*R(.85,1.15)}; }
+          else if(t>0){ const e=t*t*(3-2*t); S.cur[key]=T.from+(T.to-T.from)*e; }
+        });
+        const c=S.cur;
+        S.filt.frequency.setTargetAtTime(c.filter,now,.08);
+        S.rs.gain.setTargetAtTime(c.reverb*2.2,now,.08);
+        S.fb.gain.setTargetAtTime(c.delay,now,.08);
+        S.gsnd.gain.setTargetAtTime(c.grain,now,.08);
+        S.vol.gain.setTargetAtTime(c.volume,now,.15);
+        S.pan.pan.setTargetAtTime(c.pan,now,.15);
+      });
+    }
+    function stop(){
+      gs.alive=false; clearTimeout(gs.timer);
+      stems.forEach(S=>{ try{S.src.stop();}catch(e){} });
+      try{ cap.disconnect(); cap.onaudioprocess=null; out.disconnect(); }catch(e){}
+    }
+    return {i,out,step,stop,room};
+  }
+
+  async function playSong(i,fade){
+    lastSong=i;
+    const bufs=await loadSong(i);
+    if(!bufs.some(Boolean)) return false;
+    const p=makePlayer(i,bufs), now=ctx.currentTime, prev=current;
+    p.out.gain.setValueAtTime(0,now); p.out.gain.linearRampToValueAtTime(1,now+fade);
+    if(prev){ prev.out.gain.setValueAtTime(prev.out.gain.value,now); prev.out.gain.linearRampToValueAtTime(0,now+fade);
+      setTimeout(()=>{ prev.stop(); if(prev.i!==i) delete cache[prev.i]; },fade*1000+300); }
+    current=p;
+    clearTimeout(nextTimer);
+    const stay=R(170,300)*1000;   /* each song stays a few minutes */
+    nextTimer=setTimeout(nextSong,stay);
+    return true;
+  }
+  function nextSong(){
+    if(SONGS.length<2){ playSong(lastSong,14); return; }
+    let j; do{ j=Math.floor(Math.random()*SONGS.length); }while(j===lastSong);
+    loadSong(j).then(()=>playSong(j,14));
+  }
+
+  function setBtn(){ btn.classList.toggle('on',wantOn&&started); btn.setAttribute('aria-pressed',String(wantOn)); btn.title=wantOn?'sound on':'sound off'; }
+  async function start(){
+    if(!wantOn) return;
+    ensureCtx();
+    try{ await ctx.resume(); }catch(e){}
+    if(!started){
+      started=true; btn.classList.add('loading');
+      await playSong(firstSong,6);
+      btn.classList.remove('loading');
+      ticker=setInterval(()=>{ if(current&&ctx.state==='running') current.step(); },100);
+    }
+    const now=ctx.currentTime; master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(.62,now+5);
+    setBtn();
+  }
+  function silence(sec){
+    if(!ctx) return;
+    const now=ctx.currentTime; master.gain.cancelScheduledValues(now);
+    master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(0,now+sec);
+    setTimeout(()=>{ if(!wantOn||document.hidden) ctx.suspend(); },sec*1000+100);
+  }
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    wantOn=!wantOn; try{ localStorage.setItem(LS,wantOn?'on':'off'); }catch(err){}
+    if(wantOn) start(); else silence(1.2);
+    setBtn();
+  });
+  /* away from the tab, the room goes quiet; back again, it returns */
+  document.addEventListener('visibilitychange',()=>{
+    if(!started) return;
+    if(document.hidden) silence(.6); else if(wantOn) start();
+  });
+  /* begin loading the first song's stems early, so the door click has something to play */
+  const firstSong=Math.floor(Math.random()*SONGS.length);
+  ensureCtx(); loadSong(firstSong);
+  /* no door (deep links): the first touch anywhere starts it */
+  const first=()=>{ if(!started) start(); };
+  document.addEventListener('pointerdown',first,{once:true,capture:true});
+  document.addEventListener('keydown',first,{once:true,capture:true});
+  window.__sound={start, state:()=>({started,on:wantOn,song:current?SONGS[current.i].id:null,room:current?current.room:null,ctx:ctx?ctx.state:null}),
+    _tap:()=>master, _play:i=>playSong(i,2)};
+  setBtn();
 })();
 
 /* deep links — ?go=work / ?go=patron / ?go=<branch> lands the visitor somewhere specific
