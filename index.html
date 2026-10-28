@@ -1790,8 +1790,6 @@ function drawOverview(t, alpha){
     if(lab && !isMobile()){
       ctx.font='9px '+MONO;
       const tw=ctx.measureText(lab).width;
-      ctx.fillStyle='#0a0a0a';
-      ctx.fillRect(mx-tw/2-4,my-8,tw+8,12);
       ctx.fillStyle='rgba(242,242,240,.4)';
       ctx.textAlign='center';
       ctx.fillText(lab,mx,my+2);
@@ -1817,8 +1815,6 @@ function drawOverview(t, alpha){
         if(!isMobile()){
           ctx.font='8.5px '+MONO;
           const tw=ctx.measureText(lab).width;
-          ctx.fillStyle='rgba(242,242,240,.9)';
-          ctx.fillRect(mx-tw/2-4,my-8,tw+8,12);
           ctx.fillStyle=tintStr(n.id,.85*n.hover);
           ctx.textAlign='center';
           ctx.fillText(lab,mx,my+2);
@@ -2116,8 +2112,10 @@ const VERSIONS=[
    t:'the door got quieter: just the name and enter.'},
   {v:'v60', d:'28 oct 2026', url:'https://sof-studio-v60.vercel.app',
    t:'the studio page started speaking as seams — a name tried out in public.'},
-  {v:'v61', d:'now', url:null,
+  {v:'v61', d:'28 oct 2026', url:'https://sof-studio-v61.vercel.app',
    t:'a different picture behind the map: traces.'},
+  {v:'v62', d:'now', url:null,
+   t:'the words on the threads lost their boxes and sit on the picture like everything else.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
