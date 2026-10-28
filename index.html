@@ -720,6 +720,45 @@
   body.inpage #vdots,body.menuopen #vdots,body.dirmode #vdots{opacity:0;pointer-events:none;}
   #patronView,#workView,#studioView,#signupView,#directoryView{overscroll-behavior:contain;}
   @media (max-width:640px){ #vdots{right:8px;gap:9px;} }
+
+  /* =========================================================
+     v67 — the menu stays small, top right, and drops down from the button;
+     page titles come down to a readable size.
+     ========================================================= */
+  #menuView{
+    inset:auto;top:62px;right:clamp(18px,1.8vw,26px);left:auto;bottom:auto;
+    width:auto;min-width:210px;padding:14px 20px 14px;
+    background:rgba(10,10,10,.94);border:1px solid var(--g25);
+    transform:none;clip-path:inset(0 0 100% 0);overflow:visible;
+    transition:clip-path .45s cubic-bezier(.76,0,.24,1),visibility 0s linear .45s;
+  }
+  #menuView.open{display:block;transform:none;clip-path:inset(0 0 0 0);transition:clip-path .45s cubic-bezier(.76,0,.24,1),visibility 0s;}
+  .menu-inner{position:static;}
+  .menu-inner .mi{
+    width:100%;font-size:14px;font-weight:700;letter-spacing:.01em;line-height:1.2;padding:7px 0;
+    transform:translateY(-6px);
+  }
+  #menuView.open .menu-inner .mi:nth-child(1){transition-delay:.08s;}
+  #menuView.open .menu-inner .mi:nth-child(2){transition-delay:.12s;}
+  #menuView.open .menu-inner .mi:nth-child(3){transition-delay:.16s;}
+  #menuView.open .menu-inner .mi:nth-child(4){transition-delay:.20s;}
+  .menu-side{position:static;align-items:flex-start;margin-top:12px;padding-top:12px;border-top:1px solid var(--g12);font-size:10.5px;gap:7px;}
+  .menu-mark,.mclose{display:none;}
+  /* the header stays put while the menu is open: the button closes it */
+  body.menuopen header{opacity:1;}
+  body.menuopen header .wordmark,body.menuopen header .modes,body.menuopen header .modes *{pointer-events:auto !important;}
+  .burger span{transition:transform .3s,opacity .2s;}
+  body.menuopen .burger span:nth-child(1){transform:translateY(5px) rotate(45deg);}
+  body.menuopen .burger span:nth-child(2){opacity:0;}
+  body.menuopen .burger span:nth-child(3){transform:translateY(-5px) rotate(-45deg);}
+  /* page titles: big, not huge */
+  .patron h1{font-size:clamp(30px,4.4vw,58px);letter-spacing:-.05em;line-height:.95;margin:14px 0 clamp(26px,3.4vw,44px);}
+  .patron h1 + p,#signupBox .promise{font-size:clamp(14px,1.3vw,17px);line-height:1.65;}
+  @media (max-width:640px){
+    #menuView{top:54px;right:18px;min-width:190px;}
+    .menu-inner .mi{font-size:14px;margin-bottom:0;}
+    .patron h1{font-size:clamp(28px,9vw,40px);}
+  }
 </style>
 </head>
 <body>
@@ -2371,8 +2410,10 @@ const VERSIONS=[
    t:'the menu drops down like a page of a magazine, and every page now sits on its own film.'},
   {v:'v65', d:'28 oct 2026', url:'https://sof-studio-v65.vercel.app',
    t:'map and index scatter and come together when you reach for them; a small sun runs the threads toward your hand.'},
-  {v:'v66', d:'now', url:null,
+  {v:'v66', d:'28 oct 2026', url:'https://sof-studio-v66.vercel.app',
    t:'the map stays still and the films scroll beneath it, four of them, one after another.'},
+  {v:'v67', d:'now', url:null,
+   t:'the menu went back to being small: it drops down from the corner, and the page titles came down to size.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2609,7 +2650,9 @@ function sbSignup(email,kind,note,cb){
   }).then(r=>r.json()).then(ok=>cb(ok===true)).catch(()=>cb(false));
 }
 
-document.getElementById('menuBtn').onclick=()=>menuView.classList.add('open');
+document.getElementById('menuBtn').onclick=()=>menuView.classList.toggle('open');
+/* a tap or click anywhere outside the menu and its button folds it */
+document.addEventListener('pointerdown',e=>{ if(menuView.classList.contains('open') && !menuView.contains(e.target) && !e.target.closest('#menuBtn')) menuView.classList.remove('open'); });
 new MutationObserver(()=>{ const o=menuView.classList.contains('open'); menuView.setAttribute('aria-hidden',o?'false':'true'); document.body.classList.toggle('menuopen',o); }).observe(menuView,{attributes:true,attributeFilter:['class']});
 document.getElementById('menuClose').onclick=()=>{
   menuView.classList.remove('open');
@@ -2970,7 +3013,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   const intro=document.getElementById('intro');
   const lockCheck=()=>{
     const b=document.body;
-    const lock=b.classList.contains('inpage')||b.classList.contains('menuopen')||b.classList.contains('dirmode')||(intro&&intro.classList.contains('on')&&!intro.classList.contains('clear'));
+    const lock=b.classList.contains('inpage')||b.classList.contains('dirmode')||(intro&&intro.classList.contains('on')&&!intro.classList.contains('clear'));
     document.documentElement.classList.toggle('vlock',!!lock);
   };
   new MutationObserver(lockCheck).observe(document.body,{attributes:true,attributeFilter:['class']});
