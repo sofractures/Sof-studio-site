@@ -838,18 +838,30 @@
      v76 — the room tone: the site plays one of the songs as a slow ambient bed,
      built live from its stems. a small mark beside the menu turns it on and off.
      ========================================================= */
-  .sndBtn{background:none;border:0;padding:6px 4px;margin-right:6px;cursor:pointer;display:inline-flex;align-items:flex-end;gap:2px;height:22px;vertical-align:middle;}
-  .sndBtn i{display:block;width:2px;height:2px;background:var(--ink);opacity:.55;border-radius:1px;transition:height .5s cubic-bezier(.22,1,.36,1),opacity .4s;}
-  .sndBtn.on i{opacity:.9;animation:sndBar 1.6s ease-in-out infinite alternate;}
-  .sndBtn.on i:nth-child(2){animation-duration:2.3s;animation-delay:-.6s;}
-  .sndBtn.on i:nth-child(3){animation-duration:1.9s;animation-delay:-1.1s;}
-  .sndBtn.on i:nth-child(4){animation-duration:2.7s;animation-delay:-.3s;}
-  .sndBtn:hover i{opacity:1;}
-  .sndBtn.loading i{animation:sndLoad 1s ease-in-out infinite;}
-  .sndBtn.loading i:nth-child(2){animation-delay:.15s;} .sndBtn.loading i:nth-child(3){animation-delay:.3s;} .sndBtn.loading i:nth-child(4){animation-delay:.45s;}
-  @keyframes sndBar{0%{height:3px;}100%{height:12px;}}
-  @keyframes sndLoad{0%,100%{height:2px;opacity:.4;}50%{height:6px;opacity:.9;}}
-  @media (prefers-reduced-motion:reduce){ .sndBtn.on i{animation:none;height:8px;} }
+  /* v78 — the mark is the sound control: it listens to the music, a click asks for a new mix,
+     a double-click mutes and it fades almost out of sight */
+  .mixLogo{
+    position:absolute;left:50%;top:14px;transform:translateX(-50%);
+    width:36px;height:45px;padding:0;border:0;background:none;cursor:pointer;pointer-events:auto;
+    touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    transition:opacity .9s ease;opacity:.95;
+  }
+  .mixLogo canvas{display:block;width:100%;height:100%;}
+  .mixLogo.muted{opacity:.14;}
+  .mixLogo.muted:hover{opacity:.32;}
+  .mixLogo:focus-visible{outline:1px dotted rgba(242,242,240,.45);outline-offset:6px;}
+  .mixCap{
+    position:absolute;top:100%;left:50%;transform:translate(-50%,4px);margin-top:4px;white-space:nowrap;
+    font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--g60);
+    opacity:0;transition:opacity .4s,transform .4s;pointer-events:none;
+  }
+  @media (hover:hover){ .mixLogo:hover .mixCap{opacity:1;transform:translate(-50%,0);} }
+  .mixLogo.hint .mixCap{opacity:1;transform:translate(-50%,0);}
+  /* on a phone the header is full, so the mark sits at the bottom centre; its caption above it */
+  @media (max-width:640px){
+    .mixLogo{position:fixed;top:auto;bottom:max(16px,env(safe-area-inset-bottom));width:30px;height:38px;}
+    .mixCap{top:auto;bottom:100%;margin:0 0 6px;}
+  }
 </style>
 </head>
 <body class="introon">
@@ -906,6 +918,7 @@
 </svg><span class="cnt"></span></button>
 
 <header>
+  <button class="mixLogo" id="sndBtn" aria-label="sound: click for a new mix, double-click to mute" title="click — a new mix · double-click — mute"><canvas aria-hidden="true"></canvas><span class="mixCap">new mix · double-click to mute</span></button>
   <div class="wordmark">
     <div class="jr">sound of fractures</div>
     <p class="line">jamie reddington (sound of fractures) is a <span class="nb">uk-based</span> artist and researcher working at the intersection of music, memory, and participation.</p>
@@ -915,7 +928,6 @@
       <button id="mapBtn" class="active" aria-pressed="true"><span class="jw" data-word="map">map</span></button>
       <button id="dirBtn" aria-pressed="false"><span class="jw" data-word="index">index</span></button>
     </div>
-    <button class="sndBtn" id="sndBtn" aria-label="sound" aria-pressed="false" title="sound"><i></i><i></i><i></i><i></i></button>
     <button class="burger" id="menuBtn" aria-label="menu"><span></span><span></span><span></span></button>
   </nav>
 </header>
@@ -2616,8 +2628,10 @@ const VERSIONS=[
    t:'network archives 001 has its cover in the shop, and instagram points to the right place.'},
   {v:'v76', d:'28 oct 2026', url:'https://sof-studio-v76.vercel.app',
    t:'the site has a room tone: one song at a time, rebuilt live from its stems, drifting, then giving way to the next.'},
-  {v:'v77', d:'now', url:null,
+  {v:'v77', d:'28 oct 2026', url:'https://sof-studio-v77.vercel.app',
    t:'the room tone kept in key: every loop returns over its own harmony, grains move only by octaves and fifths, the rooms ring with no pitch of their own.'},
+  {v:'v78', d:'now', url:null,
+   t:'the mark sits at the top and listens: each petal lights with its part of the sound. click it for a new mix, double-click to let it fall quiet.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3429,10 +3443,10 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
 (()=>{
   const SONGS=[{"id":"s1","bpm":131,"stems":[{"f":"s1-drums","bars":16,"role":"perc","g":0.7362},{"f":"s1-synths","bars":32,"role":"tonal","g":0.8266},{"f":"s1-vocal","bars":16,"role":"voice","g":0.1522},{"f":"s1-heartbeat","bars":4,"role":"perc","g":1.4301},{"f":"s1-bass","bars":8,"role":"bass","g":1.4885}],"sg":0.118},{"id":"s2","bpm":128,"stems":[{"f":"s2-chords","bars":8,"role":"tonal","g":0.2644},{"f":"s2-extra","bars":64,"role":"tonal","g":0.1044},{"f":"s2-family","bars":16,"role":"voice","g":0.5212},{"f":"s2-arp","bars":8,"role":"tonal","g":0.3473},{"f":"s2-perc","bars":8,"role":"perc","g":0.1246}],"sg":1.286},{"id":"s3","bpm":132,"stems":[{"f":"s3-arps","bars":8,"role":"tonal","g":0.0746},{"f":"s3-bass","bars":8,"role":"bass","g":0.0732},{"f":"s3-music","bars":8,"role":"tonal","g":0.2145},{"f":"s3-chords","bars":2,"role":"tonal","g":0.0301},{"f":"s3-talking","bars":32,"role":"voice","g":0.4544},{"f":"s3-plops","bars":32,"role":"tonal","g":1.5528}],"sg":0.419}];
   const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
-  const btn=document.getElementById('sndBtn');
+  const btn=document.getElementById('sndBtn'), lcv=btn.querySelector('canvas'), lctx=lcv.getContext('2d');
   const LS='sof_sound';
   let wantOn=true; try{ wantOn=localStorage.getItem(LS)!=='off'; }catch(e){}
-  let ctx=null, master=null, comp=null, IR={}, started=false, current=null, nextTimer=0, ticker=0, lastSong=-1;
+  let ctx=null, master=null, comp=null, IR={}, started=false, current=null, nextTimer=0, ticker=0, lastSong=-1, an=null, fbins=null;
   const R=(a,b)=>a+Math.random()*(b-a);
   const pick=a=>a[Math.floor(Math.random()*a.length)];
   const cache={};   /* decoded buffers per song, freed when a song is done */
@@ -3446,6 +3460,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     /* a fast limiter last in line, so nothing the drift lands on can clip */
     const lim=ctx.createDynamicsCompressor(); lim.threshold.value=-4; lim.knee.value=0; lim.ratio.value=20; lim.attack.value=.002; lim.release.value=.15;
     comp.connect(master); master.connect(lim); lim.connect(ctx.destination); master.__lim=lim;
+    an=ctx.createAnalyser(); an.fftSize=1024; an.smoothingTimeConstant=.8; lim.connect(an); fbins=new Float32Array(an.frequencyBinCount);
     IR=buildIR(ctx);
   }
   /* reverb rooms, generated (same recipes as the stem randomiser) */
@@ -3591,7 +3606,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     const p=makePlayer(i,bufs), now=ctx.currentTime, prev=current;
     p.out.gain.setValueAtTime(0,now); p.out.gain.linearRampToValueAtTime(1,now+fade);
     if(prev){ prev.out.gain.setValueAtTime(prev.out.gain.value,now); prev.out.gain.linearRampToValueAtTime(0,now+fade);
-      setTimeout(()=>{ prev.stop(); if(prev.i!==i) delete cache[prev.i]; },fade*1000+300); }
+      setTimeout(()=>{ prev.stop(); if(prev.i!==i && (!current||current.i!==prev.i)) delete cache[prev.i]; },fade*1000+300); }
     current=p;
     clearTimeout(nextTimer);
     const stay=R(170,300)*1000;   /* each song stays a few minutes */
@@ -3604,7 +3619,8 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     loadSong(j).then(()=>playSong(j,14));
   }
 
-  function setBtn(){ btn.classList.toggle('on',wantOn&&started); btn.setAttribute('aria-pressed',String(wantOn)); btn.title=wantOn?'sound on':'sound off'; }
+  function setBtn(){ btn.classList.toggle('on',wantOn&&started); btn.classList.toggle('muted',!wantOn); btn.setAttribute('aria-pressed',String(wantOn));
+    btn.setAttribute('aria-label',wantOn?'sound on: click for a new mix, double-click to mute':'sound off: double-click to turn the sound back on'); }
   async function start(){
     if(!wantOn) return;
     ensureCtx();
@@ -3614,6 +3630,8 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
       await playSong(firstSong,6);
       btn.classList.remove('loading');
       ticker=setInterval(()=>{ if(current&&ctx.state==='running') current.step(); },100);
+      /* the first time, say what the mark does, then let it go quiet */
+      btn.classList.add('hint'); setTimeout(()=>btn.classList.remove('hint'),4500);
     }
     const now=ctx.currentTime; master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(.62,now+5);
@@ -3625,12 +3643,82 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(0,now+sec);
     setTimeout(()=>{ if(!wantOn||document.hidden) ctx.suspend(); },sec*1000+100);
   }
-  btn.addEventListener('click',e=>{
-    e.stopPropagation();
+  /* one click: a new mix of the same song (it fades through itself with fresh random settings).
+     two clicks: mute / unmute. the single click waits a moment in case a second one follows */
+  let clickT=0, lastClick=0;
+  function reroll(){
+    if(!wantOn) return;
+    if(!started){ start(); return; }
+    if(current){ playSong(current.i,3.5); burst=performance.now(); }
+  }
+  function toggle(){
     wantOn=!wantOn; try{ localStorage.setItem(LS,wantOn?'on':'off'); }catch(err){}
     if(wantOn) start(); else silence(1.2);
     setBtn();
+  }
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const now=performance.now();
+    if(now-lastClick<320){ clearTimeout(clickT); lastClick=0; toggle(); return; }
+    lastClick=now;
+    clickT=setTimeout(reroll,330);
   });
+  btn.addEventListener('dblclick',e=>{ e.preventDefault(); e.stopPropagation(); });
+
+  /* ---------- the mark at the top, in pixels: each petal listens to its own part of the spectrum,
+     lows to highs round the flower; it glows and leans outward with that band, the whole mark
+     breathes with the level; a new mix scatters it and it re-forms ---------- */
+  const LG={"GW":44,"GH":55,"b64":"A8AAAAABwwAAAAAwCAAAAAEAQAAAABgCAAAAAIAQAAAABAEAAAAAIAgAAAADAIAAgAAQCfh/AB+AcHgYAg4cAgDAQH4gEAQMAwHwgCBgEAHMAwMAgAZgMAwEABMGAGBgALGAAYIADjAADBABzAAAMYA5gAAAjAdgAAAGQOwAAAAaDwAAAADxwAAAAAM4AAAAAB4AAAAAAOAAAAAAF4AAAAACfgAAAADC+AAAABgiwAAAAgETAAAAQBDMAAAYAIYwAAMACDDAAHgAwIMACIAEBAwAjABAMCAMYAIBggAjACAMQAGP/wAkAAfgcAGAAAMBwBwAABAPBmAAAIC/gwAADAkAIAAAQEgMAAAGBHOAAAAgYeAAAAECAAAAABggAAAAAMEAAAAABhAAAAAAHwAA","CX":21.34,"CY":27.12};
+  const SECT=[[-158,-126],[-129,-88],[-90,-49],[-52,-22],[22,41],[37,69],[65,106],[102,152]];
+  const lraw=atob(LG.b64), LP=[];
+  const angD=(a,b)=>Math.abs(((a-b+540)%360)-180);
+  for(let j=0;j<LG.GH;j++) for(let i=0;i<LG.GW;i++){
+    const n=j*LG.GW+i; if(!(lraw.charCodeAt(n>>3)&(128>>(n&7)))) continue;
+    const gx=i+.5-LG.CX, gy=j+.5-LG.CY, r=Math.hypot(gx,gy), deg=Math.atan2(gy,gx)*180/Math.PI;
+    let sct=0,best=1e9; SECT.forEach(([a0,a1],k)=>{ const dd=(deg>=a0&&deg<=a1)?0:Math.min(angD(deg,a0),angD(deg,a1)); if(dd<best){best=dd;sct=k;} });
+    LP.push({gx,gy,r,a:Math.atan2(gy,gx),s:r<2.2?8:sct,rnd:Math.random()});
+  }
+  const band=new Float32Array(9), bavg=new Float32Array(8).fill(-70); let burst=-1e9, lW=0, lH=0, ldpr=1;
+  const EDGES=[50,140,300,600,1200,2400,4800,9000,16000];
+  function readBands(){
+    if(!an||!started||!wantOn||ctx.state!=='running'){ for(let k=0;k<9;k++) band[k]*=.9; return; }
+    an.getFloatFrequencyData(fbins);
+    const hz=ctx.sampleRate/an.fftSize; let tot=0;
+    for(let k=0;k<8;k++){
+      const b0=Math.max(1,Math.floor(EDGES[k]/hz)), b1=Math.max(b0+1,Math.floor(EDGES[k+1]/hz)); let m=-200;
+      for(let b=b0;b<b1&&b<fbins.length;b++) m=Math.max(m,fbins[b]);
+      /* each band is heard against its own recent level, so the petals move around their rest
+         rather than sitting pinned — quiet passages still breathe, loud ones don't saturate */
+      bavg[k]+=(m-bavg[k])*.015;
+      const v=Math.max(0,Math.min(1,.38+(m-bavg[k])/14));
+      band[k]+= (v-band[k])*(v>band[k]?.45:.1); tot+=band[k];
+    }
+    band[8]+=((tot/8)-band[8])*.3;
+  }
+  function drawMark(t){
+    requestAnimationFrame(drawMark);
+    if(document.hidden) return;
+    const w=lcv.clientWidth, h=lcv.clientHeight; if(!w) return;
+    const d=Math.min(2,window.devicePixelRatio||1);
+    if(w!==lW||h!==lH||d!==ldpr){ lW=w; lH=h; ldpr=d; lcv.width=Math.round(w*d); lcv.height=Math.round(h*d); }
+    readBands();
+    lctx.clearRect(0,0,lcv.width,lcv.height);
+    const cell=w/LG.GW*d, cx=LG.CX*cell, cy=LG.CY*cell, sz=Math.max(1,Math.round(cell*.92));
+    const live=started&&wantOn;
+    const bp=(t-burst)/700, bs=bp>0&&bp<1?Math.sin(Math.PI*bp):0;
+    const breathe=1+band[8]*.07;
+    lctx.fillStyle='rgb(242,242,240)';
+    for(const p of LP){
+      const L=live?band[p.s]:0;
+      let k=breathe*(1+Math.max(0,L-.38)*.14);
+      let x=p.gx*k, y=p.gy*k;
+      if(bs){ const ang=p.a+bs*1.2*(p.rnd-.5)*2, rr=p.r*k+bs*(3+p.rnd*7); x=Math.cos(ang)*rr; y=Math.sin(ang)*rr; }
+      const X=cx+Math.round(x)*cell, Y=cy+Math.round(y)*cell;
+      lctx.globalAlpha=live? .5+.5*L : .7;
+      lctx.fillRect(Math.round(X),Math.round(Y),sz,sz);
+    }
+  }
+  requestAnimationFrame(drawMark);
   /* away from the tab, the room goes quiet; back again, it returns */
   document.addEventListener('visibilitychange',()=>{
     if(!started) return;
