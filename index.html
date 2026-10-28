@@ -2071,6 +2071,8 @@ function layoutSection(id){
 
 function enterSection(id){
   if(view!=='over') return;
+  /* opening a main world moves the room tone on to the next song, as a click on the mark does */
+  if(window.__sound && window.__sound.next) window.__sound.next();
   hideSuggest();
   cancelFlowNote();
   closeFlowNote();
@@ -2691,8 +2693,10 @@ const VERSIONS=[
    t:'on phones the door opens onto traces — a real film loop that plays the moment you arrive.'},
   {v:'v89', d:'28 oct 2026', url:'https://sof-studio-v89.vercel.app',
    t:'traces shows its own first frame from the start and keeps asking to play as it loads.'},
-  {v:'v90', d:'now', url:null,
+  {v:'v90', d:'28 oct 2026', url:'https://sof-studio-v90.vercel.app',
    t:'the first frame of traces holds still until the film is truly playing, then the film fades in — no play symbol.'},
+  {v:'v91', d:'now', url:null,
+   t:'opening a main world moves the music on to the next song, as a click on the mark does.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3888,7 +3892,9 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     if(ctx && ctx.state==='running') GEST.forEach(g=>document.removeEventListener(g,first,true));
   };
   GEST.forEach(g=>document.addEventListener(g,first,true));
-  window.__sound={start, _out:()=>master.__lim, state:()=>({started,on:wantOn,song:current?SONGS[current.i].id:null,room:current?current.room:null,ctx:ctx?ctx.state:null}),
+  /* the next song on request (a main world opened) — only once the sound is running and wanted */
+  function nextOnRequest(){ if(!started||!wantOn||!current) return; nextSong(2.5); burst=performance.now(); }
+  window.__sound={start, next:nextOnRequest, _out:()=>master.__lim, state:()=>({started,on:wantOn,song:current?SONGS[current.i].id:null,room:current?current.room:null,ctx:ctx?ctx.state:null}),
     _tap:()=>master, _play:i=>playSong(i,2)};
   setBtn();
 })();
