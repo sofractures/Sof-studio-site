@@ -523,7 +523,7 @@
     position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     text-align:center;padding:0 24px;z-index:2;
   }
-  #intro .head h1{font-size:clamp(28px,6vw,64px);font-weight:700;letter-spacing:-.02em;line-height:1;margin-bottom:18px;}
+  #intro .head h1{font-size:clamp(28px,6vw,64px);font-weight:700;letter-spacing:-.02em;line-height:1;margin-bottom:34px;}
   #intro .head p{font-size:11.5px;letter-spacing:.06em;color:rgba(242,242,240,.7);margin-bottom:34px;max-width:420px;line-height:1.7;}
   #intro .enter{
     font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:lowercase;
@@ -575,12 +575,9 @@
 
 <div id="intro" class="on" aria-label="intro">
   <div class="inner">
-    <div class="small top"><span>sound of fractures</span><span>studio</span><span>london</span></div>
-    <div class="small bottom"><span>music, memory, participation</span><span>v58</span><span>2026</span></div>
     <div class="hold" id="introHold"></div>
     <section class="head">
       <h1>sound of fractures</h1>
-      <p>an artist-led studio working through music, memory, space and participation.</p>
       <button class="enter" id="enterBtn">enter</button>
     </section>
   </div>
@@ -2113,8 +2110,10 @@ const VERSIONS=[
    t:'a door before the map: sound of fractures, enter, and the reveal that opened scenes — rebuilt here without react — landing on the map over a moving picture.'},
   {v:'v57', d:'27 oct 2026', url:'https://sof-studio-v57.vercel.app',
    t:'the site turned dark so the picture could come through: light lines and type over the moving image, the video at 40%, and the player told to play on the visitor’s own click.'},
-  {v:'v58', d:'now', url:null,
+  {v:'v58', d:'28 oct 2026', url:'https://sof-studio-v58.vercel.app',
    t:'the hold screen came over from scenes: photographs drifting on a grid behind the name, grain crawling over everything, the reveal now filling the whole screen.'},
+  {v:'v59', d:'now', url:null,
+   t:'the door got quieter: just the name and enter.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
