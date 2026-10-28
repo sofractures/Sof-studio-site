@@ -572,11 +572,118 @@
   #intro .head h1,#intro .head p{text-shadow:0 1px 18px rgba(0,0,0,.55);}
   @media (max-width:600px){ #intro .hold{width:94vw;height:90%;} }
   @media (prefers-reduced-motion:reduce){ #intro .hold .gi,#intro .grain{animation:none;} }
+
+  /* =========================================================
+     v64 — the menu drops down; the pages go big and sit on their own film.
+     all mono: scale, weight and tight tracking do the work.
+     ========================================================= */
+  /* menu: a panel that drops from the top */
+  #menuView{
+    display:block;visibility:hidden;align-items:initial;justify-content:initial;
+    background:rgba(10,10,10,.9);
+    transform:translateY(-100%);
+    transition:transform .6s cubic-bezier(.76,0,.24,1),visibility 0s linear .6s;
+    overflow:hidden;
+  }
+  #menuView.open{visibility:visible;transform:none;transition:transform .6s cubic-bezier(.76,0,.24,1),visibility 0s;}
+  .menu-inner{position:absolute;left:clamp(18px,3vw,40px);top:clamp(110px,18vh,190px);text-align:left;max-width:none;padding:0;}
+  .menu-inner .mi{
+    display:block;margin:0;padding:0;text-align:left;
+    font-size:clamp(40px,8.4vw,112px);font-weight:700;letter-spacing:-.07em;line-height:1;
+    color:var(--ink);opacity:0;transform:translateY(-14px);
+    transition:opacity .45s ease,transform .6s cubic-bezier(.22,1,.36,1),color .2s;
+  }
+  #menuView.open .menu-inner .mi{opacity:1;transform:none;}
+  #menuView.open .menu-inner .mi:nth-child(1){transition-delay:.18s;}
+  #menuView.open .menu-inner .mi:nth-child(2){transition-delay:.24s;}
+  #menuView.open .menu-inner .mi:nth-child(3){transition-delay:.30s;}
+  #menuView.open .menu-inner .mi:nth-child(4){transition-delay:.36s;}
+  .menu-inner .mi .u{border-bottom:none;padding-bottom:0;}
+  .menu-inner .mi:hover .u{border-bottom:none;}
+  .menu-inner:hover .mi{color:var(--g40);}
+  .menu-inner .mi:hover,.menu-inner .mi:focus-visible{color:var(--ink);}
+  .menu-side{
+    position:absolute;right:clamp(18px,3vw,40px);top:clamp(110px,18vh,190px);
+    display:flex;flex-direction:column;align-items:flex-end;gap:6px;
+    font-size:12px;letter-spacing:.02em;
+  }
+  .menu-side a{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);padding-bottom:2px;}
+  .menu-side a:hover{color:var(--ink);border-color:var(--ink);}
+  .menu-mark{
+    position:absolute;right:clamp(18px,3vw,40px);bottom:clamp(14px,3vh,34px);
+    font-size:6.4vw;font-weight:700;letter-spacing:-.075em;line-height:.85;color:var(--ink);
+    pointer-events:none;white-space:nowrap;
+  }
+  .mclose{font-size:12px;letter-spacing:.12em;top:22px;right:clamp(18px,3vw,40px);color:var(--ink);}
+  .mclose:hover{color:var(--g60);}
+  @media (max-width:640px){
+    .menu-inner{top:112px;}
+    .menu-inner .mi{font-size:clamp(34px,11vw,52px);margin-bottom:4px;}
+    .menu-side{right:auto;left:18px;top:auto;bottom:calc(9vw + 34px);align-items:flex-start;}
+    .menu-mark{right:18px;font-size:9.4vw;}
+    .mclose{top:16px;right:18px;}
+  }
+
+  /* pages: transparent, over their own video */
+  #pgvid{position:fixed;inset:0;z-index:51;overflow:hidden;pointer-events:none;background:var(--bg);opacity:0;visibility:hidden;transition:opacity .5s,visibility 0s linear .5s;}
+  #pgvid.on{opacity:1;visibility:visible;transition:opacity .5s,visibility 0s;}
+  #pgvid iframe{
+    position:absolute;top:50%;left:50%;border:0;pointer-events:none;
+    width:177.78vh;min-width:100vw;height:56.25vw;min-height:100vh;
+    transform:translate(-50%,-50%);
+  }
+  #pgvid:after{content:'';position:absolute;inset:0;background:rgba(10,10,10,.74);}
+  #patronView,#workView,#studioView,#signupView{background:transparent;}
+  #signupView{
+    position:fixed;inset:0;z-index:52;display:none;
+    padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #signupView.open{display:block;}
+  body.inpage header .wordmark,body.inpage header .modes{visibility:hidden;}
+  header{transition:opacity .3s;}
+  body.menuopen header{opacity:0;pointer-events:none;}
+  body.menuopen header *{pointer-events:none !important;}
+
+  .patron{max-width:1180px;margin:0 auto;padding:0 clamp(0px,2vw,24px);}
+  .patron .pnum{font-size:10px;letter-spacing:.24em;color:var(--g40);}
+  .patron h1{
+    font-size:clamp(46px,11.5vw,168px);font-weight:700;letter-spacing:-.075em;line-height:.88;
+    margin:18px 0 clamp(36px,6vw,80px);
+  }
+  .patron h1 + p{
+    font-size:clamp(15px,1.75vw,22px);line-height:1.55;letter-spacing:-.01em;
+    max-width:820px;margin-bottom:clamp(36px,5vw,64px);color:var(--ink);
+  }
+  .patron .plabel{
+    font-size:10px;letter-spacing:.24em;color:var(--g60);
+    border-top:1px solid var(--g25);padding-top:12px;margin:clamp(48px,7vw,88px) 0 18px;
+  }
+  @media (min-width:900px){
+    .patron > p:not(:first-of-type),.patron > .pcredits,.patron > .pvoices,.patron > .wlist,
+    .patron > .pform,.patron > .pnet,.patron > .pmail,.patron > blockquote,.patron > #signupBox{
+      margin-left:34%;
+    }
+    /* the label sits in the left column, level with its text */
+    .patron .plabel{float:left;clear:both;width:28%;margin-top:calc(clamp(48px,7vw,88px) - 24px);}
+    .patron > p,.patron > .pcredits,.patron > .pvoices,.patron > .wlist,.patron > blockquote,.patron > .pnet{margin-bottom:24px;}
+    .patron .plabel + *{margin-top:clamp(48px,7vw,88px);padding-top:12px;}
+    .patron .plabel + blockquote{padding-top:2px;}
+    .patron > *:not(.plabel){clear:right;}
+    .patron::after{content:'';display:block;clear:both;}
+  }
+  #signupBox .promise{font-size:clamp(15px,1.75vw,22px);line-height:1.55;color:var(--ink);letter-spacing:-.01em;max-width:620px;}
+  #signupBox input[type=email]{text-align:left;font-size:16px;max-width:520px;}
+  #signupBox .alt{margin-top:28px;}
+  @media (max-width:640px){
+    #patronView,#workView,#studioView,#signupView{padding:84px 18px 70px;}
+    .patron h1{font-size:clamp(42px,14vw,72px);}
+  }
 </style>
 </head>
 <body>
 
 <div id="bgvid"><div id="ytbg"></div></div>
+<div id="pgvid" aria-hidden="true"><div id="pgyt"></div></div>
 
 <div id="intro" class="on" aria-label="intro">
   <div class="inner">
@@ -613,11 +720,26 @@
   </nav>
 </header>
 
-<div id="menuView">
-  <button class="mclose" id="menuClose" aria-label="close">×</button>
-  <div class="menu-inner">
+<div id="menuView" aria-hidden="true">
+  <button class="mclose" id="menuClose" aria-label="close">close</button>
+  <nav class="menu-inner">
     <button class="mi" id="miSignup"><span class="u">sign up</span></button>
-    <div id="signupBox">
+    <button class="mi" id="miStudio"><span class="u">studio</span></button>
+    <button class="mi" id="miPatron"><span class="u">join the studio</span></button>
+    <button class="mi" id="miWork"><span class="u">work with me</span></button>
+  </nav>
+  <div class="menu-side">
+    <a href="https://soundoffractures.substack.com/p/musician-artist" target="_blank" rel="noopener">substack ↗</a>
+    <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a>
+  </div>
+  <div class="menu-mark" aria-hidden="true">sound of fractures</div>
+</div>
+
+<div id="signupView">
+  <button class="pback" id="signupBack">← back</button>
+  <div class="patron">
+    <h1>sign up</h1>
+    <div id="signupBox" class="open">
       <div class="promise" id="suPromise">occasional letters from the studio — experiments, essays, invitations. no noise.</div>
       <form id="signupForm">
         <input type="email" id="suEmail" placeholder="your email" autocomplete="email" required>
@@ -626,11 +748,6 @@
       </form>
       <a class="alt" href="https://soundoffractures.substack.com" target="_blank" rel="noopener">or read the writing so far ↗</a>
     </div>
-    <button class="mi" id="miStudio"><span class="u">studio</span></button>
-    <button class="mi" id="miPatron"><span class="u">join the studio</span></button>
-    <button class="mi" id="miWork"><span class="u">work with me</span></button>
-    <a class="mi" href="https://soundoffractures.substack.com/p/musician-artist" target="_blank" rel="noopener"><span class="u">substack ↗</span></a>
-    <span class="msmall"><a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></span>
   </div>
 </div>
 
@@ -2121,8 +2238,10 @@ const VERSIONS=[
    t:'a different picture behind the map: traces.'},
   {v:'v62', d:'28 oct 2026', url:'https://sof-studio-v62.vercel.app',
    t:'the words on the threads lost their boxes and sit on the picture like everything else.'},
-  {v:'v63', d:'now', url:null,
+  {v:'v63', d:'28 oct 2026', url:'https://sof-studio-v63.vercel.app',
    t:'the line under the name folded away — it opens when you reach for the name.'},
+  {v:'v64', d:'now', url:null,
+   t:'the menu drops down like a page of a magazine, and every page now sits on its own film.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2357,20 +2476,21 @@ function sbSignup(email,kind,note,cb){
 }
 
 document.getElementById('menuBtn').onclick=()=>menuView.classList.add('open');
+new MutationObserver(()=>{ const o=menuView.classList.contains('open'); menuView.setAttribute('aria-hidden',o?'false':'true'); document.body.classList.toggle('menuopen',o); }).observe(menuView,{attributes:true,attributeFilter:['class']});
 document.getElementById('menuClose').onclick=()=>{
   menuView.classList.remove('open');
-  signupBox.classList.remove('open');
 };
 menuView.addEventListener('click',e=>{
-  if(e.target===menuView){ menuView.classList.remove('open'); signupBox.classList.remove('open'); }
+  if(e.target===menuView){ menuView.classList.remove('open'); }
 });
+const signupView=document.getElementById('signupView');
 document.getElementById('miSignup').onclick=()=>{
-  signupBox.classList.toggle('open');
-  if(signupBox.classList.contains('open')){
-    const inp=document.getElementById('suEmail');
-    if(inp) setTimeout(()=>inp.focus(),60);
-  }
+  menuView.classList.remove('open');
+  signupView.classList.add('open');
+  const inp=document.getElementById('suEmail');
+  if(inp && matchMedia('(hover:hover)').matches) setTimeout(()=>inp.focus(),400);
 };
+document.getElementById('signupBack').onclick=()=>signupView.classList.remove('open');
 document.getElementById('miPatron').onclick=()=>{
   menuView.classList.remove('open');
   patronView.classList.add('open');
@@ -2460,7 +2580,8 @@ window.addEventListener('keydown',e=>{
   if(patronView.classList.contains('open')){ patronView.classList.remove('open'); return; }
   if(workView.classList.contains('open')){ workView.classList.remove('open'); return; }
   if(studioView.classList.contains('open')){ studioView.classList.remove('open'); return; }
-  if(menuView.classList.contains('open')){ menuView.classList.remove('open'); signupBox.classList.remove('open'); return; }
+  if(signupView.classList.contains('open')){ signupView.classList.remove('open'); return; }
+  if(menuView.classList.contains('open')){ menuView.classList.remove('open'); return; }
   leaveSection();
 });
 
@@ -2473,6 +2594,51 @@ window.addEventListener('keydown',e=>{
   jr.addEventListener('click',e=>{ e.stopPropagation(); set(!wm.classList.contains('open')); });
   jr.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); set(!wm.classList.contains('open')); } });
   document.addEventListener('pointerdown',e=>{ if(!wm.contains(e.target)) set(false); });
+})();
+
+
+/* ---------- a film under each page: one player, swapped as pages open ----------
+   change a page's video by changing its id here */
+const PAGE_VIDEOS = {
+  studioView:'UFmeF6Un_rM',
+  signupView:'nHbDu3u6JaY',
+  patronView:'YRlw8RfUoU8',
+  workView:'YRlw8RfUoU8'
+};
+(()=>{
+  const el=document.getElementById('pgvid');
+  const views=Object.keys(PAGE_VIDEOS).map(id=>document.getElementById(id)).filter(Boolean);
+  let player=null, want=null;
+  function ensure(){
+    if(!want) return;
+    if(!(window.YT && YT.Player)){ setTimeout(ensure,300); return; }
+    if(!player){
+      player=new YT.Player('pgyt',{
+        host:'https://www.youtube-nocookie.com', videoId:want,
+        playerVars:{autoplay:1,mute:1,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,disablekb:1,fs:0},
+        events:{
+          onReady:e=>{ e.target.mute(); if(want) e.target.playVideo(); },
+          onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED){ e.target.seekTo(0); e.target.playVideo(); } }
+        }
+      });
+      player._id=want; return;
+    }
+    try{
+      if(player._id!==want && player.loadVideoById){ player._id=want; player.loadVideoById(want); player.mute(); }
+      else if(player.playVideo){ player.mute(); player.playVideo(); }
+    }catch(e){}
+  }
+  function sync(){
+    const v=views.find(x=>x.classList.contains('open'));
+    want=v? PAGE_VIDEOS[v.id] : null;
+    el.classList.toggle('on',!!want);
+    document.body.classList.toggle('inpage',!!want);
+    if(want) ensure(); else { try{ player && player.pauseVideo && player.pauseVideo(); }catch(e){} }
+  }
+  const mo=new MutationObserver(sync);
+  views.forEach(v=>mo.observe(v,{attributes:true,attributeFilter:['class']}));
+  document.addEventListener('pointerdown',()=>{ if(want && player && player.playVideo){ try{ player.playVideo(); }catch(e){} } },{passive:true});
+  sync();
 })();
 
 requestAnimationFrame(draw);
@@ -2588,6 +2754,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   if(go==='work'){ setTimeout(()=>workView.classList.add('open'),400); return; }
   if(go==='patron'){ setTimeout(()=>patronView.classList.add('open'),400); return; }
   if(go==='studio'){ setTimeout(()=>studioView.classList.add('open'),400); return; }
+  if(go==='signup'){ setTimeout(()=>signupView.classList.add('open'),400); return; }
   if(!go || !SECTIONS[go]) return;
   const root=rootId(go);
   setTimeout(()=>{ if(view==='over') enterSection(root); },900);
