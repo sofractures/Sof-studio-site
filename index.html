@@ -6,12 +6,12 @@
 <title>jamie reddington / sound of fractures studios</title>
 <style>
   :root{
-    --bg:#ffffff;
-    --ink:#0a0a0a;
-    --g60:rgba(10,10,10,.6);
-    --g40:rgba(10,10,10,.4);
-    --g25:rgba(10,10,10,.25);
-    --g12:rgba(10,10,10,.12);
+    --bg:#0a0a0a;
+    --ink:#f2f2f0;
+    --g60:rgba(242,242,240,.6);
+    --g40:rgba(242,242,240,.4);
+    --g25:rgba(242,242,240,.25);
+    --g12:rgba(242,242,240,.12);
     --mono:"SF Mono","IBM Plex Mono","Space Mono",ui-monospace,Menlo,Consolas,monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -30,7 +30,7 @@
     position:fixed;top:0;left:0;pointer-events:auto;
     background:none;border:none;cursor:grab;text-align:center;
     font-family:var(--mono);padding:6px 10px;
-    -webkit-tap-highlight-color:rgba(10,10,10,.08);
+    -webkit-tap-highlight-color:rgba(242,242,240,.1);
     touch-action:none;
     transform-origin:50% 0;
   }
@@ -70,11 +70,11 @@
   .leaf{
     position:fixed;top:0;left:0;width:100px;
     text-decoration:none;color:var(--ink);text-align:center;
-    -webkit-tap-highlight-color:rgba(10,10,10,.08);
+    -webkit-tap-highlight-color:rgba(242,242,240,.1);
   }
   .leaf .lthumb{
     display:flex;align-items:center;justify-content:center;
-    width:100px;height:60px;background:#f2f2f0;border:1px solid var(--g25);
+    width:100px;height:60px;background:#1a1a1a;border:1px solid var(--g25);
     overflow:hidden;margin-bottom:6px;
     transition:border-color .2s;
   }
@@ -170,7 +170,7 @@
 
   /* ---------- menu overlay ---------- */
   #menuView{
-    position:fixed;inset:0;z-index:50;background:rgba(255,255,255,.97);
+    position:fixed;inset:0;z-index:50;background:rgba(10,10,10,.97);
     display:none;align-items:center;justify-content:center;
   }
   #menuView.open{display:flex;}
@@ -269,10 +269,10 @@
   /* the thinking — a little network of the writing behind patronage */
   .pnet{position:relative;display:flex;gap:26px;padding-top:36px;margin-bottom:12px;}
   .pnet svg{position:absolute;top:0;left:0;width:100%;height:34px;pointer-events:none;}
-  .pnet svg path{fill:none;stroke:rgba(10,10,10,.25);stroke-width:1;stroke-dasharray:2 4;vector-effect:non-scaling-stroke;}
+  .pnet svg path{fill:none;stroke:rgba(242,242,240,.25);stroke-width:1;stroke-dasharray:2 4;vector-effect:non-scaling-stroke;}
   .pnet .pdot{position:absolute;top:-3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:rgba(168,72,50,.85);}
   .ptile{flex:1;min-width:0;text-decoration:none;color:var(--ink);}
-  .ptile .pthumb{display:block;height:96px;background:#f2f2f0;border:1px solid var(--g25);overflow:hidden;margin-bottom:8px;transition:border-color .2s;}
+  .ptile .pthumb{display:block;height:96px;background:#1a1a1a;border:1px solid var(--g25);overflow:hidden;margin-bottom:8px;transition:border-color .2s;}
   .ptile:hover .pthumb{border-color:var(--ink);}
   .ptile .pthumb img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(15%);}
   .ptile:hover .pthumb img{filter:none;}
@@ -307,7 +307,7 @@
   #trailChip{
     position:fixed;top:0;left:0;z-index:40;
     font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
-    background:rgba(255,255,255,.92);padding:3px 8px;
+    background:rgba(10,10,10,.92);padding:3px 8px;
     transform:translate(-50%,-50%);
     cursor:pointer;white-space:nowrap;
     opacity:0;pointer-events:none;
@@ -323,7 +323,7 @@
   #trailHint{
     position:fixed;top:0;left:0;z-index:15;max-width:210px;text-align:center;
     font-size:9px;letter-spacing:.04em;line-height:1.75;color:var(--g40);
-    background:rgba(255,255,255,.92);padding:5px 9px;
+    background:rgba(10,10,10,.92);padding:5px 9px;
     pointer-events:none;opacity:0;transition:opacity .6s;
   }
   #trailHint.on{opacity:1;}
@@ -335,7 +335,7 @@
   #expBtn{
     position:fixed;bottom:20px;left:26px;z-index:20;
     font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
-    background:rgba(255,255,255,.92);border:none;
+    background:rgba(10,10,10,.92);border:none;
     padding:2px 0;color:var(--g40);cursor:pointer;
     transition:color .2s,opacity .35s;
   }
@@ -366,7 +366,7 @@
     text-decoration:none;color:var(--ink);
   }
   .card .thumb{
-    flex:0 0 118px;height:70px;overflow:hidden;background:#f2f2f0;
+    flex:0 0 118px;height:70px;overflow:hidden;background:#1a1a1a;
     border:1px solid var(--g12);display:flex;align-items:center;justify-content:center;
   }
   .card .thumb img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(18%);transition:filter .25s;}
@@ -402,7 +402,7 @@
   #flowHint{
     position:fixed;top:0;left:0;z-index:14;max-width:230px;text-align:center;
     font-size:9.5px;letter-spacing:.05em;line-height:1.9;
-    background:rgba(255,255,255,.93);padding:6px 10px;cursor:pointer;
+    background:rgba(10,10,10,.93);padding:6px 10px;cursor:pointer;
     transform:translate(-50%,0);opacity:0;transition:opacity .7s;pointer-events:none;
   }
   #flowHint.on{opacity:1;pointer-events:auto;}
@@ -415,7 +415,7 @@
     position:fixed;left:50%;bottom:26px;z-index:45;
     transform:translate(-50%,10px);
     width:88%;max-width:360px;
-    background:rgba(255,255,255,.94);border:1px solid var(--g12);
+    background:rgba(10,10,10,.94);border:1px solid var(--g12);
     padding:14px 20px;text-align:center;
     opacity:0;pointer-events:none;
     transition:opacity .9s ease-out, transform .9s ease-out;
@@ -445,7 +445,7 @@
 
   /* ---------- youtube lightbox: films play inside the site ---------- */
   #ytView{
-    position:fixed;inset:0;z-index:70;background:rgba(255,255,255,.96);
+    position:fixed;inset:0;z-index:70;background:rgba(10,10,10,.96);
     display:none;align-items:center;justify-content:center;
   }
   #ytView.open{display:flex;}
@@ -461,7 +461,7 @@
   /* ---------- trace modal ---------- */
   #traceModal{
     position:fixed;inset:0;z-index:60;display:none;
-    background:rgba(255,255,255,.95);align-items:center;justify-content:center;
+    background:rgba(10,10,10,.95);align-items:center;justify-content:center;
   }
   #traceModal.open{display:flex;}
   .trace-box{max-width:420px;width:90%;text-align:center;}
@@ -479,138 +479,6 @@
   .trace-box button.primary{background:var(--ink);color:var(--bg);}
   .trace-box .hint{font-size:10px;color:var(--g40);margin-top:20px;letter-spacing:.04em;}
 
-  /* =========================================================
-     MOTION PASS — the map assembles, ink settles, signals move.
-     one easing family everywhere; everything honours
-     prefers-reduced-motion at the bottom of this block.
-     ========================================================= */
-  :root{ --ease:cubic-bezier(.22,1,.36,1); }
-
-  /* ---------- arrival: the chrome takes its place ---------- */
-  @keyframes chromeDown{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
-  @keyframes chromeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
-  .wordmark .jr{animation:chromeDown .7s var(--ease) .15s backwards;}
-  .wordmark .line{animation:chromeDown .8s var(--ease) .5s backwards;}
-  .modes{animation:chromeDown .7s var(--ease) .3s backwards;}
-  #expBtn{animation:chromeUp .8s var(--ease) 2.6s backwards;}
-
-  /* ---------- the ink underline: dotted rest, solid sweep ----------
-     hover draws a solid line across the dots, left to right,
-     instead of snapping */
-  .node .lbl,.childlbl .cl,.menu-inner .mi .u,#expBtn .u,
-  .patron p a,.pcredits .cnames a,.pv .pvw a,.wordmark .mail,
-  .menu-inner .msmall a,#signupBox .alt{
-    border-bottom:none !important;
-    padding-bottom:2px;
-    background-image:
-      linear-gradient(currentColor,currentColor),
-      repeating-linear-gradient(90deg,var(--g25) 0 1px,transparent 1px 3px);
-    background-repeat:no-repeat,no-repeat;
-    background-position:0 100%,0 100%;
-    background-size:0% 1px,100% 1px;
-    transition:background-size .5s var(--ease),color .25s;
-  }
-  .node:hover .lbl,.node:focus .lbl,.childlbl:hover .cl,
-  .menu-inner .mi:hover .u,#expBtn:hover .u,
-  .patron p a:hover,.pcredits .cnames a:hover,.pv .pvw a:hover,
-  .wordmark .mail:hover,.menu-inner .msmall a:hover,#signupBox .alt:hover{
-    background-size:100% 1px,100% 1px;
-  }
-  .card .t{border-bottom:none;background-image:linear-gradient(currentColor,currentColor);
-    background-repeat:no-repeat;background-position:0 100%;background-size:0% 1px;
-    padding-bottom:2px;transition:background-size .5s var(--ease);}
-  .card:hover .t{background-size:100% 1px;}
-
-  /* ---------- buttons: ink fills from the left ---------- */
-  #signupBox .join,.pform .send,.fn-box .fna,.trace-box button:not(.primary){
-    background:linear-gradient(to right,var(--ink) 0 50%,var(--bg) 50% 100%) no-repeat;
-    background-size:201% 100%;background-position:99.5% 0;
-    transition:background-position .45s var(--ease),color .3s;
-  }
-  #signupBox .join:hover,.pform .send:hover,.fn-box .fna:hover,
-  .trace-box button:not(.primary):hover{background-position:0 0;color:var(--bg);}
-
-  /* ---------- thumbnails: a slow lean-in ---------- */
-  .leaf .lthumb img,.card .thumb img,.ptile .pthumb img{
-    transition:filter .3s,transform .9s var(--ease);
-  }
-  .leaf:hover .lthumb img,.card:hover .thumb img,.ptile:hover .pthumb img{transform:scale(1.05);}
-  .leaf .lthumb,.card .thumb,.ptile .pthumb{transition:border-color .25s;}
-
-  /* arrows point where they're going */
-  a.wrow .ww:after,.card .arrow{display:inline-block;transition:transform .35s var(--ease),color .2s;}
-  a.wrow:hover .ww:after{transform:translate(3px,-2px);}
-  .card:hover .arrow{transform:translate(3px,-2px);}
-
-  /* ---------- pages: content settles line by line ---------- */
-  @keyframes pvRise{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
-  @keyframes pvTitle{from{opacity:0;transform:translateY(18px);letter-spacing:.09em;}to{opacity:1;transform:none;}}
-  @keyframes pvLabel{from{opacity:0;transform:translateY(8px);letter-spacing:.42em;}to{opacity:1;transform:none;}}
-  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-  #patronView.open,#studioView.open,#workView.open{animation:fadeIn .3s backwards;}
-  #patronView.open .patron>*,#studioView.open .patron>*,#workView.open .patron>*{
-    animation:pvRise .65s var(--ease) backwards;
-    animation-delay:calc(120ms + var(--n,0)*45ms);
-  }
-  #patronView.open .patron h1,#studioView.open .patron h1,#workView.open .patron h1{
-    animation-name:pvTitle;animation-duration:.8s;
-  }
-  #patronView.open .patron .plabel,#studioView.open .patron .plabel,#workView.open .patron .plabel{
-    animation-name:pvLabel;animation-duration:.7s;
-  }
-  #patronView.open .pback,#studioView.open .pback,#workView.open .pback{
-    animation:fadeIn .5s var(--ease) .5s backwards;
-  }
-
-  /* ---------- menu: held breath, then one item at a time ---------- */
-  #menuView.open{animation:fadeIn .3s backwards;}
-  #menuView.open .menu-inner>*{
-    animation:pvRise .55s var(--ease) backwards;
-    animation-delay:calc(80ms + var(--n,0)*55ms);
-  }
-  @keyframes spinIn{from{opacity:0;transform:rotate(-90deg);}to{opacity:1;transform:none;}}
-  #menuView.open .mclose{animation:spinIn .5s var(--ease) .25s backwards;}
-
-  /* ---------- index: sections cascade, rules draw ---------- */
-  #directoryView.open{animation:fadeIn .3s backwards;}
-  #directoryView.open .dir>*{
-    animation:pvRise .6s var(--ease) backwards;
-    animation-delay:calc(100ms + var(--n,0)*70ms);
-  }
-  @keyframes ruleIn{from{transform:scaleX(0);}to{transform:scaleX(1);}}
-  #directoryView.open .dir-sect>h2::after{
-    transform-origin:left center;
-    animation:ruleIn .9s var(--ease) backwards;
-    animation-delay:calc(260ms + var(--n,0)*70ms);
-  }
-
-  /* ---------- sub-map: the hub title arrives letter by letter ---------- */
-  .subhub .t .ch{
-    display:inline-block;opacity:0;transform:translateY(9px);filter:blur(3px);
-    animation:chIn .55s var(--ease) forwards;
-    animation-delay:calc(120ms + var(--i,0)*26ms);
-  }
-  @keyframes chIn{to{opacity:1;transform:none;filter:none;}}
-
-  /* ---------- films: the lightbox breathes open ---------- */
-  #ytView.open{animation:fadeIn .3s backwards;}
-  #ytView.open .ytbox{animation:pvRise .5s var(--ease) .08s backwards;}
-  #ytView.open .mclose{animation:spinIn .5s var(--ease) .2s backwards;}
-
-  /* ---------- wayfinding: the back button slides into reach ---------- */
-  .backmap.on{animation:pvRise .45s var(--ease) .12s backwards;}
-  .backmap,.pback{transition:border-color .25s,transform .3s var(--ease);}
-  .backmap:hover,.pback:hover{transform:translateX(-2px);}
-
-  /* ---------- stillness is a preference ---------- */
-  @media (prefers-reduced-motion:reduce){
-    *,*::before,*::after{
-      animation-duration:.001s !important;
-      animation-delay:0s !important;
-      transition-duration:.001s !important;
-    }
-  }
-
   @media (max-width:640px){
     header{padding:16px 18px;}
     footer{padding:16px 18px;}
@@ -625,9 +493,100 @@
     .mclose{top:12px;right:14px;}
     #flowNote{bottom:16px;width:92%;padding:12px 16px;}
   }
+
+  /* ---------- background video (behind the map) ---------- */
+  #bgvid{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--bg);}
+  #bgvid iframe{
+    position:absolute;top:50%;left:50%;border:0;pointer-events:none;
+    width:177.78vh;min-width:100vw;height:56.25vw;min-height:100vh;
+    transform:translate(-50%,-50%);
+  }
+  #bgvid:after{content:'';position:absolute;inset:0;background:rgba(10,10,10,var(--vwash,.66));}  /* video shows at 34% */
+  #map{z-index:1;}
+
+  /* ---------- intro: sound of fractures → enter → the reveal ---------- */
+  #intro{position:fixed;inset:0;z-index:200;background:#000;color:#f2f2f0;display:none;}
+  #intro.on{display:block;}
+  #intro.clear{background:transparent;}
+  #intro .inner{position:absolute;inset:0;border:1px solid rgba(242,242,240,.55);margin:14px;overflow:hidden;}
+  #intro .small{
+    position:absolute;left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 18px;height:30px;line-height:30px;font-size:9.5px;letter-spacing:.14em;color:rgba(242,242,240,.75);
+    z-index:2;
+  }
+  #intro .small.top{top:0;}
+  #intro .small.bottom{bottom:0;}
+  #intro .small span{flex:1;}
+  #intro .small span:nth-child(2){text-align:center;}
+  #intro .small span:nth-child(3){text-align:right;}
+  #intro .head{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:0 24px;z-index:2;
+  }
+  #intro .head h1{font-size:clamp(28px,6vw,64px);font-weight:700;letter-spacing:-.02em;line-height:1;margin-bottom:18px;}
+  #intro .head p{font-size:11.5px;letter-spacing:.06em;color:rgba(242,242,240,.7);margin-bottom:34px;max-width:420px;line-height:1.7;}
+  #intro .enter{
+    font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:lowercase;
+    background:transparent;border:1px solid rgba(242,242,240,.8);color:#f2f2f0;
+    padding:12px 34px;cursor:pointer;transition:background .2s,color .2s;
+  }
+  #intro .enter:hover{background:#1a1a1a;color:#0a0a0a;}
+  #intro .layers{position:fixed;inset:0;z-index:3;width:100%;height:100%;overflow:hidden;pointer-events:none;}  /* full screen, outside the bordered inner box */
+  #intro .layer{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;transform:translate3d(0,101%,0);will-change:transform;}
+  #intro .layer .img{width:100%;height:100%;background-size:cover;background-position:50% 50%;transform:translate3d(0,-101%,0);will-change:transform;}
+  @media (max-width:600px){ #intro .inner{margin:10px;} #intro .small span:nth-child(3){display:none;} }
+
+  /* ---------- the hold screen: scenes' floating photographs + grain, behind the title ---------- */
+  #intro .hold{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:80vw;height:93%;display:grid;grid-template-columns:repeat(13,1fr);grid-template-rows:repeat(8,1fr);
+    gap:1vw;z-index:1;pointer-events:none;
+  }
+  #intro .hold .gi{
+    background-size:cover;background-position:50% 50%;filter:brightness(.7);
+    animation:holdDrift var(--dur,24s) ease-in-out infinite alternate;animation-delay:var(--dl,0s);
+  }
+  #intro .hold .gi:nth-child(1){grid-area:2/1/5/3;}
+  #intro .hold .gi:nth-child(2){grid-area:5/2/8/6;}
+  #intro .hold .gi:nth-child(3){grid-area:3/5/7/7;}
+  #intro .hold .gi:nth-child(4){grid-area:1/8/4/10;}
+  #intro .hold .gi:nth-child(5){grid-area:4/10/7/14;}
+  #intro .hold .gi:nth-child(6){grid-area:6/9/9/12;}
+  #intro .hold .gi:nth-child(7){grid-area:1/4/3/6;}
+  #intro .hold .gi:nth-child(8){grid-area:2/11/3/14;}
+  @keyframes holdDrift{from{transform:translate3d(0,0,0);}to{transform:translate3d(var(--dx,4px),var(--dy,-7px),0);}}
+  #intro .grain{
+    position:absolute;inset:-100%;z-index:4;pointer-events:none;opacity:.11;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+    background-size:300px 300px;animation:grainCrawl .9s steps(6) infinite;
+  }
+  @keyframes grainCrawl{
+    0%{transform:translate(0,0);}20%{transform:translate(-3%,2%);}40%{transform:translate(2%,-4%);}
+    60%{transform:translate(-4%,-1%);}80%{transform:translate(3%,3%);}100%{transform:translate(-1%,4%);}
+  }
+  #intro .head h1,#intro .head p{text-shadow:0 1px 18px rgba(0,0,0,.55);}
+  @media (max-width:600px){ #intro .hold{width:94vw;height:90%;} }
+  @media (prefers-reduced-motion:reduce){ #intro .hold .gi,#intro .grain{animation:none;} }
 </style>
 </head>
 <body>
+
+<div id="bgvid"><div id="ytbg"></div></div>
+
+<div id="intro" class="on" aria-label="intro">
+  <div class="inner">
+    <div class="small top"><span>sound of fractures</span><span>studio</span><span>london</span></div>
+    <div class="small bottom"><span>music, memory, participation</span><span>v58</span><span>2026</span></div>
+    <div class="hold" id="introHold"></div>
+    <section class="head">
+      <h1>sound of fractures</h1>
+      <p>an artist-led studio working through music, memory, space and participation.</p>
+      <button class="enter" id="enterBtn">enter</button>
+    </section>
+  </div>
+  <div class="layers" id="introLayers"></div>
+  <div class="grain" aria-hidden="true"></div>
+</div>
 
 <canvas id="map"></canvas>
 <div id="nodeLayer"></div>
@@ -666,7 +625,7 @@
       <a class="alt" href="https://soundoffractures.substack.com" target="_blank" rel="noopener">or read the writing so far ↗</a>
     </div>
     <button class="mi" id="miStudio"><span class="u">studio</span></button>
-    <button class="mi" id="miPatron"><span class="u">become a part of the studio</span></button>
+    <button class="mi" id="miPatron"><span class="u">join the studio</span></button>
     <button class="mi" id="miWork"><span class="u">work with me</span></button>
     <a class="mi" href="https://soundoffractures.substack.com/p/musician-artist" target="_blank" rel="noopener"><span class="u">substack ↗</span></a>
     <span class="msmall"><a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></span>
@@ -677,15 +636,15 @@
   <button class="pback" id="patronBack">← back</button>
   <div class="patron">
     <div class="pnum">— THE STUDIO</div>
-    <h1>become a part of the studio</h1>
+    <h1>join the studio</h1>
     <p>the studio is funded by people who want this work to exist. it funds the experiment, not the outcome.</p>
     <div class="plabel">THE MODEL</div>
     <div class="pcredits">
       <div class="crow"><span class="cproj">studio board</span><span class="cnames">the small group who make each year of the work possible. names on what the studio makes: the talks, the writing, the events, the editions. cy lee is the first.</span></div>
-      <div class="crow"><span class="cproj">studio partners</span><span class="cnames">an open place in the studio, at a level that's yours to choose. your name here, and the process as it happens — the messy middle, not the highlights.</span></div>
+      <div class="crow"><span class="cproj">studio partners</span><span class="cnames">an open place in the studio, at a level that's yours to choose. your name here, and the process as it happens.</span></div>
     </div>
     <p>presence in the process, credit on what emerges, a hand in something you believe should exist.</p>
-    <div class="plabel">THE RECORD</div>
+    <div class="plabel">SO FAR</div>
     <div class="pcredits">
       <div class="crow"><span class="cproj">scenes</span><span class="cnames">made possible by 55 people — c.y. lee · maarten walraven · nick smith. that experiment became the book, the exhibition, and the method alone together runs on today</span></div>
       <div class="crow"><span class="cproj">alone together</span><span class="cnames">c.y. lee (lead) · alex watson · alex houpillart</span></div>
@@ -715,11 +674,11 @@
       </a>
     </div>
     <div class="plabel">START THE CONVERSATION</div>
-    <p>it starts as a conversation, not a checkout — write to me, or leave a note here.</p>
+    <p>it starts as a conversation — write to me, or leave a note here.</p>
     <form class="pform" id="patronForm">
       <input type="email" id="ptEmail" placeholder="your email" autocomplete="email" required>
       <input type="text" id="ptWeb" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <textarea id="ptNote" rows="3" maxlength="600" placeholder="what feels meaningful to you? (optional)"></textarea>
+      <textarea id="ptNote" rows="3" maxlength="600" placeholder="what part of the work do you want to help make possible? (optional)"></textarea>
       <button class="send" type="submit">send</button>
     </form>
     <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
@@ -731,33 +690,33 @@
   <div class="patron">
     <div class="pnum">— THE STUDIO</div>
     <h1>sound of fractures</h1>
-    <p>jamie reddington (sound of fractures) is a <span class="nb">uk-based</span> artist and researcher working at the intersection of music, memory, and participation. most artists release content. this studio builds containers for meaning.</p>
-    <p class="sdef">container for meaning (n.) — a song, an event, a book, an archive: anything built so that other people's lives can live inside it, not just pass by it.</p>
+    <p>sound of fractures is an artist-led studio working through music, memory, space and participation.</p>
+    <p>it develops projects that explore what music can make possible between people. a song can become a prompt, an archive, a film, a room, a publication or a gathering. the form changes with the question.</p>
+    <p>people are not added at the end as an audience. their memories, voices and contributions can become part of how the work develops. the studio does not try to manufacture connection. it creates reasons and invitations to reflect, contribute and feel part of something shared.</p>
+    <p>research is not separate from the work. it happens through making, listening and gathering. each project is shaped by its audience and context, and leaves behind work, documentation, relationships and new questions that inform what comes next.</p>
+    <p>music is often the starting point without defining the boundary. the tools and forms can change; the concern remains: how creative work can help people recognise something of themselves and one another.</p>
 
-    <p>the studio exists to create: experiments in human connection and participation, with music as the seed. it researches by making. it creates knowledge and shares it. it doesn't offer answers — each experiment grows out of the last.</p>
-    <p>underneath it is a bigger question: what a creative career looks like when a few companies own the rails. music went first — and every medium is now on the same tracks. the research into that future is currently run by the platforms. the studio runs it from the other side — led by an artist, with the audience in it, shared as it happens.</p>
+    <div class="plabel">THE STUDIO AS A CONTAINER</div>
+    <p>every output is different — an album, an exhibition, a piece of research, an event. what stays the same is the ethos at the heart of them: human connection, participation, process shared in the open. the studio gives these different forms somewhere to belong.</p>
 
-    <div class="plabel">THE CONTAINER</div>
-    <p>the ethos is the fixed point — connection, participation, process shared. everything else moves with its moment: the medium, the technology, the shape each experiment takes. projects end; the thread doesn't. the studio is the container for all of it.</p>
-
-    <div class="plabel">THE TRAP</div>
-    <blockquote class="pv"><p>"being easy to understand gets good clicks. the dj, the pads producer, the modular head — ready-made lanes, someone else's rules. i didn't want to choose one. so the studio builds the alternative in public: the use case, so people can see it, hear it, take part, and want it to exist."</p><span class="pvw">— jamie reddington</span></blockquote>
+    <div class="plabel">THE WHY</div>
+    <blockquote class="pv"><p>"being easy to understand gets good clicks. pick a lane, follow its rules. i didn't want to choose one. so the studio builds the alternative in public: the use case, so people can see it, hear it, take part, and want it to exist."</p><span class="pvw">— jamie reddington</span></blockquote>
 
     <div class="plabel">THE METHOD</div>
-    <p>artist → experiment → community → archive → next experiment.</p>
-    <p>the output is never the endpoint — each artifact becomes evidence for the next exploration.</p>
+    <p>question → project → participation → reflection → next question.</p>
+    <p>each project becomes part of the continuing practice rather than an isolated output.</p>
 
     <div class="plabel">PROOF OF WORK</div>
     <div class="pcredits">
-      <div class="crow"><span class="cproj">scenes</span><span class="cnames">an album that became participatory art — a decentralised, artist-owned platform. a song became a prompt, the prompt gathered strangers' memories, the memories became artefacts, the artefacts became an exhibition, a book, a peer-reviewed chapter, a case study taught on stages from amsterdam to hamburg — designed to remind people of the emotional value of music</span></div>
-      <div class="crow"><span class="cproj">alone together</span><span class="cnames">part immersive exhibition, part live show, part community event — an ep and an experiment testing whether you can design architecture for genuine connection: alone, then together, then alone together — instead of putting strangers in proximity and hoping</span></div>
-      <div class="crow"><span class="cproj">network archives</span><span class="cnames">the method turned outward — edition 001: a directory of inspiration gathering 60 worldbuilding artist case studies, curated by me with metalabel; 120 digital editions collected</span></div>
+      <div class="crow"><span class="cproj">scenes</span><span class="cnames">an album co-created through 351 public memories, photographs and stories. songs became prompts; the responses became artworks, an exhibition, a book and a published research chapter.</span></div>
+      <div class="crow"><span class="cproj">alone together</span><span class="cnames">a modular live work between performance, exhibition and social space. music, memory and designed participation give people reasons to reflect, contribute and feel part of something shared.</span></div>
+      <div class="crow"><span class="cproj">network archives</span><span class="cnames">a publication documenting how artists build worlds around their work, released on metalabel. it turns the studio's research outward by tracing the projects, relationships and systems behind creative practice.</span></div>
     </div>
     <div class="plabel">DOORS</div>
     <div class="wlist">
       <a class="wrow" href="https://soundoffractures.substack.com" target="_blank" rel="noopener"><span class="wt">follow the work</span><span class="ww">the letters</span></a>
       <a class="wrow" href="https://symphony.to/sound-of-fractures/vpvkxkmpt4o1" target="_blank" rel="noopener"><span class="wt">take part</span><span class="ww">join the community</span></a>
-      <a class="wrow" href="#" id="sdPatron"><span class="wt">step into it</span><span class="ww">become a part of the studio</span></a>
+      <a class="wrow" href="#" id="sdPatron"><span class="wt">step into it</span><span class="ww">join the studio</span></a>
       <a class="wrow" href="#" id="sdWork"><span class="wt">bring it somewhere</span><span class="ww">work with me</span></a>
     </div>
     <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
@@ -769,7 +728,7 @@
   <div class="patron">
     <div class="pnum">— WORK WITH ME</div>
     <h1>the practice travels</h1>
-    <p>the same method has now been a record, an exhibition, a book, a platform, a peer-reviewed chapter and a keynote. the thinking behind it lives in <a href="#" id="wkStudioLink">the studio</a>.</p>
+    <p>the same method has now been an album, an exhibition, a book, a platform, a peer-reviewed chapter and a keynote. the thinking behind it lives in <a href="#" id="wkStudioLink">the studio</a>.</p>
     <p>if you're interested in collaborating, write to me — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a>.</p>
 
     <div class="plabel">WHAT I DO</div>
@@ -1025,7 +984,7 @@ const TINT = {
   research:[150,112,44],  /* ochre  */
   shop:[148,76,104],      /* rose   */
 };
-const tintStr=(id,a)=>{const c=TINT[id]||[10,10,10];return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';};
+const tintStr=(id,a)=>{const c=TINT[id]||[242,242,240];return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';};
 
 /* how the worlds feed each other — lit on hover */
 const CROSS = {
@@ -1087,19 +1046,6 @@ const nodes = NODES.map(n=>{
   return {...n, sats, seed:rng()*1000, hover:0, lift:0, zseed:rng()*1000};
 });
 
-/* ---------- arrival: the network assembles itself ----------
-   each world is born in turn — dot first, then its label, then its
-   satellites bloom, then the threads between worlds draw themselves,
-   and only then do the fainter layers (ghost arcs, other people's
-   trails, the shared zones) breathe in. fragments, then connections. */
-let introT0=null;
-nodes.forEach((n,i)=>{
-  n.born = 260 + i*150 + rng()*90;
-  n.sats.forEach((s,j)=>{ s.birth = n.born + 140 + j*65 + rng()*40; });
-});
-/* a touch of overshoot for the moment a world pops into being */
-const easeBack = p => { const c=2.0; const q=p-1; return 1 + q*q*((c+1)*q + c); };
-
 /* depth: each world sits at a slowly drifting distance from the viewer.
    0 = far, 1 = near. a dragged world lifts toward you and settles back.
    near worlds are a touch larger, darker and softer-shadowed; far ones
@@ -1112,16 +1058,11 @@ const zScale = z => .9 + z*.22;           /* 0.90 → 1.12 */
 const zInk   = z => .55 + z*.45;          /* alpha multiplier */
 function nodeSats(n,nx,ny,t){
   const z=nodeZ(n,t), zs=zScale(z);
-  /* on click, the satellites briefly gather toward their world —
-     the network pulling itself in before the zoom */
-  const gp = Math.max(0, 1-(t-(n.gatherT||-1e9))/280)*MOT;
   return n.sats.map(s=>{
-    const b = easeOut(aprog(t, introT0??t, s.birth||0, 420));   /* birth bloom */
     const wob=Math.sin(t*.00035+s.seed)*3*MOT;
-    const reach=(s.dist+wob)*(.25+.75*b)*(1-.18*gp);
-    return {x:nx+Math.cos(s.a)*reach*zs*(1+n.hover*.08),
-            y:ny+Math.sin(s.a)*(reach*.72)*zs*(1+n.hover*.08),
-            size:s.size*zs*(.6+.4*b), b};
+    return {x:nx+Math.cos(s.a)*(s.dist+wob)*zs*(1+n.hover*.08),
+            y:ny+Math.sin(s.a)*(s.dist*.72+wob)*zs*(1+n.hover*.08),
+            size:s.size*zs};
   });
 }
 
@@ -1543,10 +1484,7 @@ function layoutSection(id){
   /* hub element */
   const hubEl=document.createElement('div');
   hubEl.className='subhub';
-  /* the hub title lands letter by letter — ink settling into print */
-  const chTitle=[...sec.title].map((c,i)=>
-    `<span class="ch" style="--i:${i}">${c===' '?'&nbsp;':c.replace('<','&lt;')}</span>`).join('');
-  hubEl.innerHTML=`<span class="num">${sec.num}</span><span class="t">${chTitle}</span><span class="d">${sec.d||''}</span>`;
+  hubEl.innerHTML=`<span class="num">${sec.num}</span><span class="t">${sec.title}</span><span class="d">${sec.d||''}</span>`;
   hubEl.querySelector('.num').style.color=tintStr(root,.9);
   subLayer.appendChild(hubEl);
   subEls.push({el:hubEl, bx:hub.x, by:hub.y, seed:rng()*1000, wob:3, delay:0, dur:260});
@@ -1756,16 +1694,12 @@ function layoutSection(id){
   });
 }
 
-let clickRipple=null;
 function enterSection(id){
   if(view!=='over') return;
   hideSuggest();
   cancelFlowNote();
   closeFlowNote();
   activeSection=nodes.find(n=>n.id===id);
-  /* the chosen world gathers its satellites and lets a ring go */
-  if(activeSection){ activeSection.gatherT=performance.now(); }
-  clickRipple={id, t0:performance.now()};
   setTrans(1,480);
   sectionEnterT=performance.now();
   layoutSection(id);
@@ -1821,118 +1755,52 @@ backBtn.addEventListener('click',leaveSection);
 /* ---------- animation ---------- */
 let T=0, startT=null;
 
-/* pointer parallax: near worlds drift a few px against the cursor,
-   far worlds barely — the map reads as a space, not a diagram.
-   everything (labels, threads, trails, chips) follows for free,
-   because the whole map reads each node's position every frame. */
-let paraTX=0, paraTY=0, paraX=0, paraY=0;
-window.addEventListener('pointermove',e=>{
-  if(e.pointerType==='touch') return;
-  paraTX=(e.clientX/Math.max(W,1)-.5);
-  paraTY=(e.clientY/Math.max(H,1)-.5);
-},{passive:true});
-
 function nodePos(n,t){
-  const z=nodeZ(n,t);
-  return [ n.x*W + Math.sin(t*.0002+n.seed)*6*MOT - paraX*(5+13*z)*MOT,
-           n.y*H + Math.cos(t*.00017+n.seed*1.3)*5*MOT - paraY*(4+10*z)*MOT ];
+  return [ n.x*W + Math.sin(t*.0002+n.seed)*6*MOT, n.y*H + Math.cos(t*.00017+n.seed*1.3)*5*MOT ];
 }
-
-/* one edge's geometry, shared by the edge drawing and the signals
-   that travel along it — so a pulse never leaves its thread */
-function edgeGeom(ei,t){
-  const [a,b]=EDGES[ei];
-  const na=nodes.find(n=>n.id===a), nb=nodes.find(n=>n.id===b);
-  const [x1,y1]=nodePos(na,t), [x2,y2]=nodePos(nb,t);
-  const ang=Math.atan2(y2-y1,x2-x1);
-  return { sx:x1+Math.cos(ang)*60, sy:y1+Math.sin(ang)*33,
-           ex:x2-Math.cos(ang)*60, ey:y2-Math.sin(ang)*33,
-           bend:(ei%2?-1:1)*(16+ei*6), a, b };
-}
-function qAt(g,tt){
-  const mx=(g.sx+g.ex)/2, my=(g.sy+g.ey)/2;
-  const dx=g.ex-g.sx, dy=g.ey-g.sy, L=Math.hypot(dx,dy)||1;
-  const cxp=mx+(-dy/L)*g.bend, cyp=my+(dx/L)*g.bend;
-  const a=(1-tt)*(1-tt), b2=2*(1-tt)*tt, c=tt*tt;
-  return [a*g.sx+b2*cxp+c*g.ex, a*g.sy+b2*cyp+c*g.ey];
-}
-
-/* ---------- signals: thought travelling between the worlds ----------
-   every few seconds a small pulse of ink runs along one thread,
-   tinted by the world it left. the map is a practice in motion,
-   not a chart of one. */
-let signals=[], lastSignalT=-1e9, signalGap=2600;
 
 function drawOverview(t, alpha){
   ctx.save();
   ctx.globalAlpha=alpha;
 
-  /* the faint layers hold their breath until the network exists */
-  const introA = easeOut(aprog(t, introT0??t, 1500, 900));
-
   /* learnt communities: soft shared zones beneath everything */
-  drawCommunities(t,alpha*introA);
+  drawCommunities(t,alpha);
 
   /* faded connections in the distance */
   ghosts.forEach(g=>{
     const [gx1,gy1]=satXY(g.a,g.a.sats[g.ai],t,0);
     const [gx2,gy2]=satXY(g.b,g.b.sats[g.bi],t,0);
-    ctx.strokeStyle=tintStr(g.a.id,.09*introA);
+    ctx.strokeStyle=tintStr(g.a.id,.09);
     ctx.lineWidth=.7;
     curve(gx1,gy1,gx2,gy2,g.bend);
   });
 
   /* other people's trails, fainter than the network */
-  otherTrails.forEach(tr=>drawTrail(tr,t,.11*alpha*introA,true));
+  otherTrails.forEach(tr=>drawTrail(tr,t,.11*alpha,true));
 
   EDGES.forEach(([a,b,lab,dash],ei)=>{
-    /* each thread draws itself, one after another, once its worlds exist */
-    const ep = easeOut(aprog(t, introT0??t, 1050+ei*110, 520));
-    if(ep<=0) return;
-    const g=edgeGeom(ei,t);
-    ctx.strokeStyle='rgba(10,10,10,.2)';
+    const na=nodes.find(n=>n.id===a), nb=nodes.find(n=>n.id===b);
+    const [x1,y1]=nodePos(na,t), [x2,y2]=nodePos(nb,t);
+    const ang=Math.atan2(y2-y1,x2-x1);
+    const sx=x1+Math.cos(ang)*60, sy=y1+Math.sin(ang)*33;
+    const ex=x2-Math.cos(ang)*60, ey=y2-Math.sin(ang)*33;
+    ctx.strokeStyle='rgba(242,242,240,.2)';
     ctx.lineWidth=.7;
     ctx.setLineDash(dash?[2,5]:[]);
-    let mx,my;
-    if(ep>=1){ [mx,my]=curve(g.sx,g.sy,g.ex,g.ey,g.bend); }
-    else { curvePartial(g.sx,g.sy,g.ex,g.ey,g.bend,ep); }
+    const bend=(ei%2?-1:1)*(16+ei*6);
+    const [mx,my]=curve(sx,sy,ex,ey,bend);
     ctx.setLineDash([]);
-    if(ep>=1 && lab && !isMobile()){
-      const lp = aprog(t, introT0??t, 1600+ei*110, 350);
+    if(lab && !isMobile()){
       ctx.font='9px '+MONO;
       const tw=ctx.measureText(lab).width;
-      ctx.fillStyle='rgba(255,255,255,'+(.92*lp)+')';
+      ctx.fillStyle='#0a0a0a';
       ctx.fillRect(mx-tw/2-4,my-8,tw+8,12);
-      ctx.fillStyle='rgba(10,10,10,'+(.4*lp)+')';
+      ctx.fillStyle='rgba(242,242,240,.4)';
       ctx.textAlign='center';
       ctx.fillText(lab,mx,my+2);
       ctx.textAlign='left';
     }
   });
-
-  /* signals along the threads — only while the map is at rest */
-  if(!REDUCED && trans<.05){
-    if(t-lastSignalT>signalGap && signals.length<3 && t-(introT0??t)>2400){
-      signals.push({ei:Math.floor(Math.random()*EDGES.length), t0:t,
-                    dur:1500+Math.random()*900, dir:Math.random()<.5?1:-1});
-      lastSignalT=t; signalGap=2400+Math.random()*3400;
-    }
-  }
-  for(let i=signals.length-1;i>=0;i--){
-    const s=signals[i], p=(t-s.t0)/s.dur;
-    if(p>=1){ signals.splice(i,1); continue; }
-    const g=edgeGeom(s.ei,t);
-    const src = s.dir>0? g.a : g.b;
-    const env = Math.min(1, Math.sin(p*Math.PI)*1.7);   /* fade at both ends */
-    for(let k=0;k<5;k++){
-      const tp=Math.max(0, p-k*.024);
-      const [X,Y]=qAt(g, s.dir>0? tp : 1-tp);
-      ctx.beginPath();
-      ctx.arc(X,Y, Math.max(.4,1.9-k*.34), 0, Math.PI*2);
-      ctx.fillStyle=tintStr(src,(k?.11:.4)*env);
-      ctx.fill();
-    }
-  }
 
   /* hover lineage: how this world feeds the others */
   nodes.forEach(n=>{
@@ -1952,7 +1820,7 @@ function drawOverview(t, alpha){
         if(!isMobile()){
           ctx.font='8.5px '+MONO;
           const tw=ctx.measureText(lab).width;
-          ctx.fillStyle='rgba(255,255,255,.9)';
+          ctx.fillStyle='rgba(242,242,240,.9)';
           ctx.fillRect(mx-tw/2-4,my-8,tw+8,12);
           ctx.fillStyle=tintStr(n.id,.85*n.hover);
           ctx.textAlign='center';
@@ -1973,56 +1841,39 @@ function drawOverview(t, alpha){
     n.lift+=((n.dragging?1:0)-n.lift)*(n.dragging?.12:.06);
     const z=nodeZ(n,t), zs=zScale(z), zi=zInk(z);
 
-    /* birth: the dot lands with a tiny overshoot, everything else follows */
-    const bp = aprog(t, introT0??t, n.born||0, 480);
-    if(bp<=0){ if(n.el) n.el.style.opacity=0; return; }
-    const bornE = easeOut(bp);
-    const dotS  = easeBack(bp);
-
-    /* a ring marks the moment a world appears, then lets go */
-    const rp = aprog(t, introT0??t, (n.born||0)+40, 680);
-    if(rp>0 && rp<1){
-      ctx.beginPath();
-      ctx.arc(nx,ny, 6+easeOut(rp)*26, 0, Math.PI*2);
-      ctx.strokeStyle=tintStr(n.id,(1-rp)*.35*alpha);
-      ctx.lineWidth=1;
-      ctx.stroke();
-    }
-
     /* a soft ground shadow that grows as the world comes nearer */
     if(z>.35){
-      const sh=(z-.35)/.65*bornE;
+      const sh=(z-.35)/.65;
       const g=ctx.createRadialGradient(nx,ny+6*sh,0,nx,ny+6*sh,38+22*sh);
-      g.addColorStop(0,'rgba(10,10,10,'+(.045*sh*alpha)+')');
-      g.addColorStop(1,'rgba(10,10,10,0)');
+      g.addColorStop(0,'rgba(242,242,240,'+(.045*sh*alpha)+')');
+      g.addColorStop(1,'rgba(242,242,240,0)');
       ctx.fillStyle=g;
       ctx.beginPath(); ctx.arc(nx,ny+6*sh,38+22*sh,0,Math.PI*2); ctx.fill();
     }
 
     nodeSats(n,nx,ny,t).forEach(s=>{
-      if(s.b<=0) return;
-      ctx.strokeStyle='rgba(10,10,10,'+((.16+.24*n.hover)*zi*alpha*s.b)+')';
+      ctx.strokeStyle='rgba(242,242,240,'+((.16+.24*n.hover)*zi*alpha)+')';
       ctx.lineWidth=.6;
       ctx.beginPath();ctx.moveTo(nx,ny);ctx.lineTo(s.x,s.y);ctx.stroke();
-      ctx.strokeStyle='rgba(10,10,10,'+((.4+.5*n.hover)*zi*alpha*s.b)+')';
+      ctx.strokeStyle='rgba(242,242,240,'+((.4+.5*n.hover)*zi*alpha)+')';
       ctx.lineWidth=.6+.4*z;
       ctx.strokeRect(s.x-s.size/2, s.y-s.size/2, s.size, s.size);
     });
 
     ctx.beginPath();
-    ctx.arc(nx,ny,Math.max(.1,(2.4+n.hover*.8)*zs*dotS),0,Math.PI*2);
+    ctx.arc(nx,ny,(2.4+n.hover*.8)*zs,0,Math.PI*2);
     ctx.fillStyle=tintStr(n.id,(.6+.4*n.hover)*zi*alpha);
     ctx.fill();
 
     if(n.el){
-      n.el.style.transform=`translate(${nx}px,${ny+8+(1-bornE)*10}px) translateX(-50%) scale(${zs.toFixed(3)})`;
-      n.el.style.opacity=((.62+.38*zi)*bornE).toFixed(3);
+      n.el.style.transform=`translate(${nx}px,${ny+8}px) translateX(-50%) scale(${zs.toFixed(3)})`;
+      n.el.style.opacity=(.62+.38*zi).toFixed(3);
       n.el.style.zIndex=String(10+Math.round(z*20));
     }
   });
 
   /* your trail, on top but quiet */
-  drawTrail(userTrail,t,.32*alpha*introA,false,true);
+  drawTrail(userTrail,t,.32*alpha,false,true);
 
   /* suggested next world: a slow breathing ring */
   if(suggestNow){
@@ -2064,23 +1915,11 @@ function drawSection(t, alpha){
   otherTrails.forEach(tr=>drawTrail(tr,t,.05*alpha,false));
   drawTrail(userTrail,t,.12*alpha,false,true);
 
-  /* hub dot — breathing, slowly */
+  /* hub dot */
   ctx.beginPath();
-  ctx.arc(hub.x, hub.y+(isMobile()?26:34), 2.4+Math.sin(t*.0012)*.45*MOT, 0, Math.PI*2);
+  ctx.arc(hub.x, hub.y+(isMobile()?26:34), 2.4, 0, Math.PI*2);
   ctx.fillStyle=tintStr(rootId(view),.85);
   ctx.fill();
-  /* every few seconds the hub lets a quiet ring go — the world is live */
-  if(!REDUCED){
-    const hp=((t-sectionEnterT)%4200)/4200;
-    if(hp<.5 && t-sectionEnterT>900){
-      const q=hp/.5;
-      ctx.beginPath();
-      ctx.arc(hub.x, hub.y+(isMobile()?26:34), 5+easeOut(q)*22, 0, Math.PI*2);
-      ctx.strokeStyle=tintStr(rootId(view),(1-q)*.22*alpha);
-      ctx.lineWidth=.8;
-      ctx.stroke();
-    }
-  }
   const hubAnchor={x:hub.x, y:hub.y+(isMobile()?26:34)};
 
   ctx.lineWidth=.7;
@@ -2088,12 +1927,12 @@ function drawSection(t, alpha){
   /* threads draw themselves outward from the hub */
   let bi=0, li=0;
   subGeom.children.forEach((c,ci)=>{
-    ctx.strokeStyle='rgba(10,10,10,.3)';
+    ctx.strokeStyle='rgba(242,242,240,.3)';
     curvePartial(hubAnchor.x,hubAnchor.y,c.x,c.y,(bi++%2?-1:1)*22,
       easeOut(aprog(t,sectionEnterT,80+ci*60,300)));
     c.leaves.forEach(lf=>{
       ctx.setLineDash([2,4]);
-      ctx.strokeStyle='rgba(10,10,10,.26)';
+      ctx.strokeStyle='rgba(242,242,240,.26)';
       curvePartial(c.x,c.y,lf.x,lf.y,(bi++%2?-1:1)*14,
         easeOut(aprog(t,sectionEnterT,180+(li++)*60,320)));
       ctx.setLineDash([]);
@@ -2101,14 +1940,14 @@ function drawSection(t, alpha){
   });
   subGeom.leaves.filter(lf=>!lf.parent).forEach(lf=>{
     ctx.setLineDash([2,4]);
-    ctx.strokeStyle='rgba(10,10,10,.26)';
+    ctx.strokeStyle='rgba(242,242,240,.26)';
     curvePartial(hubAnchor.x,hubAnchor.y,lf.x,lf.y,(bi++%2?-1:1)*18,
       easeOut(aprog(t,sectionEnterT,180+(li++)*60,320)));
     ctx.setLineDash([]);
   });
   /* threads to the doorways */
   (subGeom.doors||[]).forEach((d,di)=>{
-    ctx.strokeStyle='rgba(10,10,10,.3)';
+    ctx.strokeStyle='rgba(242,242,240,.3)';
     curvePartial(hubAnchor.x,hubAnchor.y,d.x,d.y,(di%2?-1:1)*14,
       easeOut(aprog(t,sectionEnterT,140+di*60,300)));
   });
@@ -2120,7 +1959,7 @@ function drawSection(t, alpha){
     const wx = Math.sin(t*.0003+se.seed)*se.wob*MOT;
     const wy = Math.cos(t*.00026+se.seed*1.4)*se.wob*.7*MOT + (1-e)*14;
     if(se.abs){
-      se.el.style.transform=`translate(${se.bx+wx}px,${se.by+wy}px) scale(${(.95+.05*e).toFixed(3)})`;
+      se.el.style.transform=`translate(${se.bx+wx}px,${se.by+wy}px)`;
       se.el.style.position='fixed'; se.el.style.top='0'; se.el.style.left='0';
     } else {
       se.el.style.left=(se.bx+wx)+'px';
@@ -2133,13 +1972,8 @@ function drawSection(t, alpha){
 
 function draw(t){
   T=t; if(startT===null) startT=t;
-  if(introT0===null) introT0=t;
   if(!W||!H) resize();
   ctx.clearRect(0,0,W,H);
-
-  /* the parallax eases toward the pointer rather than tracking it */
-  paraX+=(paraTX-paraX)*.05;
-  paraY+=(paraTY-paraY)*.05;
 
   /* fellow explorers' names fade in and out rather than snapping */
   nameA+=((namesOn?1:0)-nameA)*(REDUCED?1:.08);
@@ -2160,22 +1994,6 @@ function draw(t){
       ctx.translate(zx,zy); ctx.scale(s,s); ctx.translate(-zx,-zy);
     }
     drawOverview(t, 1-trans);
-    /* the ring the click released, riding the same zoom */
-    if(clickRipple){
-      const rp=aprog(t,clickRipple.t0,0,650);
-      if(rp>=1){ clickRipple=null; }
-      else{
-        const rn=nodeById(clickRipple.id);
-        if(rn){
-          const [rx,ry]=nodePos(rn,t);
-          ctx.beginPath();
-          ctx.arc(rx,ry, 10+easeOut(rp)*48, 0, Math.PI*2);
-          ctx.strokeStyle=tintStr(clickRipple.id,(1-rp)*.5*(1-trans));
-          ctx.lineWidth=1.2;
-          ctx.stroke();
-        }
-      }
-    }
     ctx.restore();
   }
 
@@ -2285,8 +2103,18 @@ const VERSIONS=[
    t:'the subject came into focus: experiments in human connection and participation, with music as the seed. music went first — every medium is now on the same tracks.'},
   {v:'v52', d:'19 sep 2026', url:'https://sof-studio-v52.vercel.app',
    t:'each page got one job — the studio says what it is; joining says how. my own voice stepped back into a single quote.'},
-  {v:'v53', d:'now', url:null,
+  {v:'v53', d:'19 sep 2026', url:'https://sof-studio-v53.vercel.app',
    t:'the missing argument landed: the ethos is the fixed point, the experiments are the variables — the studio is the container for all of it.'},
+  {v:'v54', d:'26 sep 2026', url:'https://sof-studio-v54.vercel.app',
+   t:'a language review, and cy’s reactions to it: projects, not experiences; participation you can point to, not meaning you claim. “become a part of the studio” became “join the studio”.'},
+  {v:'v55', d:'4 oct 2026', url:'https://sof-studio-v55.vercel.app',
+   t:'the labels learned to face outward. “the trap” became “the why”; “the record” became “so far”; and one word that meant three things — record — went.'},
+  {v:'v56', d:'27 oct 2026', url:'https://sof-studio-v56.vercel.app',
+   t:'a door before the map: sound of fractures, enter, and the reveal that opened scenes — rebuilt here without react — landing on the map over a moving picture.'},
+  {v:'v57', d:'27 oct 2026', url:'https://sof-studio-v57.vercel.app',
+   t:'the site turned dark so the picture could come through: light lines and type over the moving image, the video at 40%, and the player told to play on the visitor’s own click.'},
+  {v:'v58', d:'now', url:null,
+   t:'the hold screen came over from scenes: photographs drifting on a grid behind the name, grain crawling over everything, the reveal now filling the whole screen.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2308,18 +2136,6 @@ dirRoot.addEventListener('click',e=>{
   const c=e.target.closest('.card');
   if(c && c.dataset.yt){ e.preventDefault(); playYt(c.dataset.yt, c.dataset.t||''); }
 });
-
-/* ---------- stagger indexes: each block knows its place in line ----------
-   the CSS reads --n to cascade the pages, the menu and the index in;
-   delays are capped so long pages never keep anyone waiting */
-['patronView','studioView','workView'].forEach(id=>{
-  document.querySelectorAll('#'+id+' .patron > *').forEach((el,i)=>
-    el.style.setProperty('--n', Math.min(i,14)));
-});
-document.querySelectorAll('.menu-inner > *').forEach((el,i)=>
-  el.style.setProperty('--n', i));
-document.querySelectorAll('#dirRoot > *').forEach((el,i)=>
-  el.style.setProperty('--n', Math.min(i,8)));
 
 /* =========================================================
    YOUTUBE LIGHTBOX — films play in the centre of the site
@@ -2472,7 +2288,7 @@ function openFlowNote(kind){
     flowFlags.sub=1;
   } else {
     p.textContent='you clearly like to lean in deep and really explore. the studio has a way to be part of it — not a subscription, a role.';
-    a.textContent='become a part of the studio';
+    a.textContent='join the studio';
     a.href='#';
     a.removeAttribute('target');
     flowFlags.patron=1;
@@ -2641,6 +2457,110 @@ window.addEventListener('keydown',e=>{
 });
 
 requestAnimationFrame(draw);
+
+/* ---------- intro + background video ---------- */
+/* the reveal is the scenes platform's intro, rebuilt without react: eight full-bleed photographs
+   swipe up one after another (each frame sliding up while its image slides down, so the picture
+   holds still), the title fades, and the last frame slides away to reveal the map — which now
+   sits over a muted, looping video. */
+const YT_BG_ID = 'UFmeF6Un_rM';   /* the background video */
+const INTRO_IMAGES = [
+  'https://images.ctfassets.net/57idppycthif/12FdbNTsdE2cFCscV4Wko1/c60245afb4d6ef1f1869fab1ec9f872f/Swipe_6.jpg?w=1600&q=60',
+  'https://images.ctfassets.net/57idppycthif/5DKpJH0lgBFGshIsMAnzla/0039426513348f919789e21048cb1881/Swipe_2.jpg?w=1600&q=60',
+  'https://images.ctfassets.net/57idppycthif/3sl9TX3NitVXYdG4wLZYEf/145628ea6e98303a4e81a36f2d1aaf56/Swipe_4.jpg?w=1600&q=60',
+  'https://images.ctfassets.net/57idppycthif/rrJLgs16Yqtg5SSIUQ7Vw/12e87307749593fdbbd74d39402eccb1/Swipe_8.jpg?w=1600&q=60',
+  'https://images.ctfassets.net/57idppycthif/3FlqIdFQP7KZD3nuQplbKE/a18e4228eb0daa1cfcd1b3a0d04743d5/Swipe_1.jpg?w=1600&q=60',
+  'https://images.ctfassets.net/57idppycthif/5xdO8DEK0aRe4zVl65owuK/2dfbd94181a87defe2aaadacf91e80dc/Swipe_7.jpg?w=1600&q=60',
+  'https://images.ctfassets.net/57idppycthif/9SboWhVklcQ7KMu6Q6QQQ/53df85ae959ef0400a403e6199b16c8d/omo_swipe.jpg?w=1600&q=60',
+  'https://images.ctfassets.net/57idppycthif/BMGmAbZFkjyGhQnbrE3Cf/f14387ee32215230c39f9087ca5d6b44/girl_old_2.jpg?w=1600&q=60'
+];
+const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' arrangement */
+  'https://images.ctfassets.net/57idppycthif/12FdbNTsdE2cFCscV4Wko1/c60245afb4d6ef1f1869fab1ec9f872f/Swipe_6.jpg?w=640&q=60',
+  'https://images.ctfassets.net/57idppycthif/2kZFTPhhOQlzBY6iWGh41N/8747687aac2ed49e9010c8a86f31651f/Maarten.jpg?w=640&q=60',
+  'https://images.ctfassets.net/57idppycthif/3sl9TX3NitVXYdG4wLZYEf/145628ea6e98303a4e81a36f2d1aaf56/Swipe_4.jpg?w=640&q=60',
+  'https://images.ctfassets.net/57idppycthif/3FGC24mo9C1OxA6WTweMwW/c00a0c17fe9a99cf76ec3e9835e79eb8/Maria.jpg?w=640&q=60',
+  'https://images.ctfassets.net/57idppycthif/1Uh9q3KrUr0rb4Mmg8j7Rj/c25efee1098afc5ef23809a066706539/0_small_dutchy.jpg?w=640&q=60',
+  'https://images.ctfassets.net/57idppycthif/9SboWhVklcQ7KMu6Q6QQQ/53df85ae959ef0400a403e6199b16c8d/omo_swipe.jpg?w=640&q=60',
+  'https://images.ctfassets.net/57idppycthif/5iNgCAVd9slXia0oBmAHfu/4dcb7290de5b7d33b9445e8110861be3/Jonathan.jpg?w=640&q=60',
+  'https://images.ctfassets.net/57idppycthif/4YrjkoYbz5LWvjfMZmrZ1s/95ef603129e0c94705596cbf4153fb8c/Ricardo.jpg?w=640&q=60'
+];
+(function(){
+  const intro=document.getElementById('intro');
+  const layersEl=document.getElementById('introLayers');
+  const bg=document.getElementById('bgvid');
+  const skip=/[?&]go=/.test(location.search) || /[?&]nointro/.test(location.search);
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* the player is driven through youtube's iframe api so it can be told to play again on the
+     visitor's own gesture (the enter click) — the one thing every browser allows */
+  let ytPlayer=null, ytWanted=false;
+  function ytPlay(){ try{ if(ytPlayer&&ytPlayer.playVideo){ ytPlayer.mute(); ytPlayer.playVideo(); } }catch(e){} }
+  function mountVideo(){
+    if(!YT_BG_ID || ytWanted) return; ytWanted=true;
+    window.onYouTubeIframeAPIReady=function(){
+      ytPlayer=new YT.Player('ytbg',{
+        host:'https://www.youtube-nocookie.com', videoId:YT_BG_ID,
+        playerVars:{autoplay:1,mute:1,loop:1,playlist:YT_BG_ID,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,disablekb:1,fs:0},
+        events:{
+          onReady:ytPlay,
+          onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED) ytPlay(); }
+        }
+      });
+    };
+    const sc=document.createElement('script'); sc.src='https://www.youtube.com/iframe_api'; document.head.appendChild(sc);
+    document.addEventListener('pointerdown',ytPlay,{passive:true});
+  }
+
+  if(skip){ intro.classList.remove('on'); mountVideo(); return; }
+
+  /* the hold screen: eight photographs on scenes' 13×8 grid, each drifting a few pixels on its own clock */
+  const hold=document.getElementById('introHold');
+  HOLD_IMAGES.forEach((src,k)=>{
+    const g=document.createElement('div'); g.className='gi'; g.style.backgroundImage='url('+src+')';
+    g.style.setProperty('--dur',(18+k*3)+'s'); g.style.setProperty('--dl',(-k*5)+'s');
+    g.style.setProperty('--dx',((k%2?-1:1)*(3+k))+'px'); g.style.setProperty('--dy',((k%3?-1:1)*(4+k))+'px');
+    hold.appendChild(g);
+  });
+
+  /* build the eight frames; each holds one photograph */
+  const layers=INTRO_IMAGES.map(src=>{
+    const l=document.createElement('div'); l.className='layer';
+    const i=document.createElement('div'); i.className='img'; i.style.backgroundImage='url('+src+')';
+    l.appendChild(i); layersEl.appendChild(l); return {el:l,img:i};
+  });
+  INTRO_IMAGES.forEach(src=>{ const im=new Image(); im.src=src; });   /* warm the cache */
+  mountVideo();                                                       /* let the player load behind the curtain */
+
+  const P2=  'cubic-bezier(.455,.03,.515,.955)';   /* power2.inOut  */
+  const EXO= 'cubic-bezier(.19,1,.22,1)';          /* expo.out      */
+  const EXIO='cubic-bezier(1,0,0,1)';              /* expo.inOut    */
+  const D=1000, GAP=160;                           /* duration, panel delay (ms) */
+
+  function finish(){ intro.classList.remove('on'); intro.classList.add('clear'); layersEl.innerHTML=''; }
+
+  function run(){
+    const btn=document.getElementById('enterBtn'); btn.disabled=true; ytPlay();
+    if(reduce){ intro.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'}).onfinish=finish; return; }
+    const n=layers.length;
+    layers.forEach((L,k)=>{
+      const o={duration:D,delay:GAP*k,easing:P2,fill:'forwards'};
+      L.el.animate([{transform:'translate3d(0,101%,0)'},{transform:'translate3d(0,0,0)'}],o);
+      L.img.animate([{transform:'translate3d(0,-101%,0)'},{transform:'translate3d(0,0,0)'}],o);
+    });
+    const halfway=GAP*(n-1)+D;
+    setTimeout(()=>{
+      layers.slice(0,n-1).forEach(L=>L.el.style.opacity='0');
+      intro.classList.add('clear');
+      intro.querySelectorAll('.head,.small,.hold,.grain').forEach(el=>el.animate([{opacity:1},{opacity:0}],{duration:D,easing:EXO,fill:'forwards'}));
+      intro.querySelector('.inner').style.borderColor='transparent';
+      const last=layers[n-1];
+      last.el.animate([{transform:'translate3d(0,0,0)'},{transform:'translate3d(0,-101%,0)'}],{duration:D,easing:EXIO,fill:'forwards'});
+      last.img.animate([{transform:'translate3d(0,0,0)'},{transform:'translate3d(0,101%,0)'}],{duration:D,easing:EXIO,fill:'forwards'}).onfinish=finish;
+    }, halfway - D/8);
+  }
+  document.getElementById('enterBtn').addEventListener('click',run);
+  document.addEventListener('keydown',e=>{ if(intro.classList.contains('on') && (e.key==='Enter'||e.key===' ')) run(); },{once:true});
+})();
 
 /* deep links — ?go=work / ?go=patron / ?go=<branch> lands the visitor somewhere specific
    after a conversation: the map, already opened to the relevant place) */
