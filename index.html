@@ -678,6 +678,28 @@
     #patronView,#workView,#studioView,#signupView{padding:84px 18px 70px;}
     .patron h1{font-size:clamp(42px,14vw,72px);}
   }
+
+  /* =========================================================
+     v65 — the view toggle is a pill whose letters assemble,
+     and a small sun runs the threads toward your hand.
+     ========================================================= */
+  .vtoggle{display:inline-flex;align-items:center;border:1px solid var(--g40);border-radius:999px;padding:2px;gap:0;}
+  .modes .vtoggle button{
+    font-size:11px;letter-spacing:.06em;color:var(--g60);border:none;border-radius:999px;
+    padding:6px 13px 6px;line-height:1;transition:background .3s,color .3s;
+  }
+  .modes .vtoggle button.active{background:var(--ink);color:var(--bg);border-bottom:none;}
+  .modes .vtoggle button:not(.active):hover{color:var(--ink);}
+  .jw{display:inline-block;white-space:nowrap;}
+  .jw i{
+    display:inline-block;font-style:normal;
+    transform:translate(var(--dx,0),var(--dy,0)) rotate(var(--r,0deg));
+    transition:transform .55s cubic-bezier(.22,1,.36,1);
+    transition-delay:calc(var(--k,0) * 35ms);
+  }
+  .vtoggle.together .jw i,.vtoggle:focus-within .jw i{transform:none;}
+  @media (hover:hover){ .vtoggle:hover .jw i{transform:none;} }
+  @media (prefers-reduced-motion:reduce){ .jw i{transform:none !important;transition:none;} }
 </style>
 </head>
 <body>
@@ -712,10 +734,10 @@
     <p class="line">jamie reddington (sound of fractures) is a <span class="nb">uk-based</span> artist and researcher working at the intersection of music, memory, and participation.</p>
   </div>
   <nav class="modes">
-    <span class="mlabel">view:</span>
-    <button id="mapBtn" class="active">map</button>
-    <span class="mlabel">/</span>
-    <button id="dirBtn">index</button>
+    <div class="vtoggle" role="group" aria-label="view">
+      <button id="mapBtn" class="active" aria-pressed="true"><span class="jw" data-word="map">map</span></button>
+      <button id="dirBtn" aria-pressed="false"><span class="jw" data-word="index">index</span></button>
+    </div>
     <button class="burger" id="menuBtn" aria-label="menu"><span></span><span></span><span></span></button>
   </nav>
 </header>
@@ -1878,6 +1900,80 @@ function nodePos(n,t){
   return [ n.x*W + Math.sin(t*.0002+n.seed)*6*MOT, n.y*H + Math.cos(t*.00017+n.seed*1.3)*5*MOT ];
 }
 
+
+/* ---------- the seeker: a small sun that keeps to the threads, trying to stay near your hand.
+   it chases a softened copy of the pointer, but only ever stands on a line; past reach it lets go ---------- */
+const seek={x:null,y:null,sx:0,sy:0,a:0,trail:[],spin:0};
+const ptr={x:-9999,y:-9999,on:false};
+window.addEventListener('pointermove',e=>{ if(e.pointerType==='touch') return; ptr.x=e.clientX; ptr.y=e.clientY; ptr.on=true; },{passive:true});
+document.addEventListener('mouseleave',()=>{ ptr.on=false; });
+const ptrTouch=e=>{ const q=e.touches&&e.touches[0]; if(q){ ptr.x=q.clientX; ptr.y=q.clientY; ptr.on=true; } };
+window.addEventListener('touchstart',ptrTouch,{passive:true});
+window.addEventListener('touchmove',ptrTouch,{passive:true});
+window.addEventListener('touchend',()=>{ setTimeout(()=>{ ptr.on=false; },900); },{passive:true});
+function edgeCurve(ei,t){
+  const [a,b]=EDGES[ei];
+  const na=nodeById(a), nb=nodeById(b);
+  const [x1,y1]=nodePos(na,t), [x2,y2]=nodePos(nb,t);
+  const ang=Math.atan2(y2-y1,x2-x1);
+  const sx=x1+Math.cos(ang)*60, sy=y1+Math.sin(ang)*33;
+  const ex=x2-Math.cos(ang)*60, ey=y2-Math.sin(ang)*33;
+  const bend=(ei%2?-1:1)*(16+ei*6);
+  const mx=(sx+ex)/2, my=(sy+ey)/2, dx=ex-sx, dy=ey-sy, L=Math.hypot(dx,dy)||1;
+  return [sx,sy, mx+(-dy/L)*bend, my+(dx/L)*bend, ex,ey];
+}
+function nearestOnNet(px,py,t){
+  let best=null;
+  for(let ei=0;ei<EDGES.length;ei++){
+    const [x0,y0,cx,cy,x1,y1]=edgeCurve(ei,t);
+    for(let i=0;i<=40;i++){
+      const u=i/40, a=(1-u)*(1-u), b=2*(1-u)*u, c=u*u;
+      const X=a*x0+b*cx+c*x1, Y=a*y0+b*cy+c*y1;
+      const d=Math.hypot(X-px,Y-py);
+      if(!best||d<best.d) best={x:X,y:Y,d};
+    }
+  }
+  return best;
+}
+function drawSeeker(t,alpha){
+  const live = view==='over' && trans<.05 && !document.body.classList.contains('dirmode') && !document.body.classList.contains('menuopen');
+  if(live){
+    if(seek.x===null){ seek.sx=ptr.x; seek.sy=ptr.y; }
+    seek.sx+=(ptr.x-seek.sx)*.12; seek.sy+=(ptr.y-seek.sy)*.12;
+    const n=nearestOnNet(seek.sx,seek.sy,t);
+    const reach=isMobile()?110:140;
+    const want=ptr.on && n && n.d<reach;
+    if(want){
+      if(seek.x===null){ seek.x=n.x; seek.y=n.y; }
+      const k=REDUCED?1:.22;
+      seek.x+=(n.x-seek.x)*k; seek.y+=(n.y-seek.y)*k;
+    }
+    seek.a+=((want?1:0)-seek.a)*(want?.1:.04);
+  } else {
+    seek.a*=.85;
+  }
+  if(seek.x===null || seek.a<.01){ seek.trail.length=0; return; }
+  seek.trail.push([seek.x,seek.y]); if(seek.trail.length>16) seek.trail.shift();
+  /* the trail: a few fading grains behind it */
+  for(let i=0;i<seek.trail.length-1;i++){
+    const [tx,ty]=seek.trail[i], f=i/seek.trail.length;
+    ctx.beginPath(); ctx.arc(tx,ty,.6+f*1.1,0,Math.PI*2);
+    ctx.fillStyle='rgba(242,242,240,'+(f*.28*seek.a*alpha)+')'; ctx.fill();
+  }
+  /* the sun: a dot and eight short rays, turning slowly */
+  seek.spin+=REDUCED?0:.012;
+  const X=seek.x, Y=seek.y, A=seek.a*alpha;
+  ctx.save(); ctx.translate(X,Y); ctx.rotate(seek.spin);
+  ctx.beginPath(); ctx.arc(0,0,2.6,0,Math.PI*2);
+  ctx.fillStyle='rgba(242,242,240,'+(.95*A)+')'; ctx.fill();
+  ctx.strokeStyle='rgba(242,242,240,'+(.85*A)+')'; ctx.lineWidth=1;
+  for(let r=0;r<8;r++){
+    const g=r*Math.PI/4;
+    ctx.beginPath(); ctx.moveTo(Math.cos(g)*4.6,Math.sin(g)*4.6); ctx.lineTo(Math.cos(g)*7.4,Math.sin(g)*7.4); ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawOverview(t, alpha){
   ctx.save();
   ctx.globalAlpha=alpha;
@@ -2009,6 +2105,8 @@ function drawOverview(t, alpha){
       }
     }
   }
+
+  drawSeeker(t,alpha);
 
   ctx.restore();
 }
@@ -2240,8 +2338,10 @@ const VERSIONS=[
    t:'the words on the threads lost their boxes and sit on the picture like everything else.'},
   {v:'v63', d:'28 oct 2026', url:'https://sof-studio-v63.vercel.app',
    t:'the line under the name folded away — it opens when you reach for the name.'},
-  {v:'v64', d:'now', url:null,
+  {v:'v64', d:'28 oct 2026', url:'https://sof-studio-v64.vercel.app',
    t:'the menu drops down like a page of a magazine, and every page now sits on its own film.'},
+  {v:'v65', d:'now', url:null,
+   t:'map and index scatter and come together when you reach for them; a small sun runs the threads toward your hand.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2453,6 +2553,9 @@ const mapBtn=document.getElementById('mapBtn'), dirBtn=document.getElementById('
 function setModes(m){
   mapBtn.classList.toggle('active',m==='map');
   dirBtn.classList.toggle('active',m==='directory');
+  mapBtn.setAttribute('aria-pressed',m==='map'?'true':'false');
+  dirBtn.setAttribute('aria-pressed',m==='directory'?'true':'false');
+  if(window.jwAssemble) window.jwAssemble();
   document.body.classList.toggle('dirmode',m==='directory');
   document.getElementById('directoryView').classList.toggle('open',m==='directory');
   if(m==='directory'){ backBtn.classList.remove('on'); }
@@ -2639,6 +2742,49 @@ const PAGE_VIDEOS = {
   views.forEach(v=>mo.observe(v,{attributes:true,attributeFilter:['class']}));
   document.addEventListener('pointerdown',()=>{ if(want && player && player.playVideo){ try{ player.playVideo(); }catch(e){} } },{passive:true});
   sync();
+})();
+
+
+/* ---------- the view toggle: letters scattered at rest, they come together when you reach for them.
+   on a phone (no hover) they come together when the map appears and when tapped,
+   and every so often loosen and settle again, so the toggle stays alive ---------- */
+(()=>{
+  const tog=document.querySelector('.vtoggle'); if(!tog) return;
+  const words=[...tog.querySelectorAll('.jw')];
+  /* each letter stands in another letter's slot (mono: every slot is the same width),
+     tilted a little; reaching for the toggle sends each one home */
+  function shuffle(n){
+    const o=[...Array(n).keys()];
+    for(let tries=0;tries<8;tries++){
+      for(let i=n-1;i>0;i--){ const j=Math.random()*(i+1)|0; [o[i],o[j]]=[o[j],o[i]]; }
+      if(o.some((v,i)=>v!==i)) break;
+    }
+    return o;
+  }
+  function scatter(){
+    words.forEach(w=>{
+      const word=w.dataset.word;
+      w.textContent=word;
+      const cw=(w.getBoundingClientRect().width||word.length*7)/word.length;
+      const slot=shuffle(word.length);
+      w.innerHTML=[...word].map((c,k)=>{
+        const dx=((slot[k]-k)*cw).toFixed(1), dy=((Math.random()-.5)*5).toFixed(1), r=((Math.random()-.5)*24).toFixed(0);
+        return `<i style="--dx:${dx}px;--dy:${dy}px;--r:${r}deg;--k:${k}">${c}</i>`;
+      }).join('');
+    });
+  }
+  scatter();
+  const touch=!matchMedia('(hover:hover)').matches;
+  window.jwAssemble=()=>{ tog.classList.add('together'); if(!touch) setTimeout(()=>{ if(!tog.matches(':hover')) tog.classList.remove('together'); },1400); };
+  tog.addEventListener('mouseleave',()=>{ if(!touch){ tog.classList.remove('together'); setTimeout(scatter,600); } });
+  if(touch){
+    setTimeout(()=>tog.classList.add('together'),1200);
+    setInterval(()=>{
+      if(document.hidden) return;
+      tog.classList.remove('together'); scatter();
+      setTimeout(()=>tog.classList.add('together'),900);
+    },9000);
+  }
 })();
 
 requestAnimationFrame(draw);
