@@ -891,8 +891,8 @@
 
   /* v88 — on portrait screens the first film is a real, silent video file: phones autoplay it
      on arrival, no youtube marks, no waiting for a tap. the youtube film stays hidden underneath */
-  .vclip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1s ease;pointer-events:none;}
-  .vclip.on{opacity:1;}
+  /* visible from the start, showing its own first frame — some safari versions won't autoplay a video they think is hidden */
+  .vclip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none;background:transparent;}
   .vslide.clipmode iframe{display:none !important;}
 </style>
 </head>
@@ -2684,8 +2684,10 @@ const VERSIONS=[
    t:'one voice at a time: the note waits until no other hint is showing, and the others hold while it speaks.'},
   {v:'v87', d:'28 oct 2026', url:'https://sof-studio-v87.vercel.app',
    t:'pressing the mark no longer flashes a dark box around it.'},
-  {v:'v88', d:'now', url:null,
+  {v:'v88', d:'28 oct 2026', url:'https://sof-studio-v88.vercel.app',
    t:'on phones the door opens onto traces — a real film loop that plays the moment you arrive.'},
+  {v:'v89', d:'now', url:null,
+   t:'traces shows its own first frame from the start and keeps asking to play as it loads.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3317,12 +3319,23 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     v.preload='auto'; v.poster='media/intro-traces-poster.jpg';
     const big=innerWidth>=700 && (window.devicePixelRatio||1)>=2;
     v.src=big?'media/intro-traces-720.mp4':'media/intro-traces-540.mp4';
-    v.addEventListener('playing',()=>v.classList.add('on'));
     const st=sl.querySelector('.vstill'); sl.insertBefore(v, st?st.nextSibling:sl.firstChild);
-    const go=()=>{ try{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} };
-    go();
+    let lastErr='';
+    const go=()=>{ if(!v.paused) return; try{ const p=v.play(); if(p&&p.catch) p.catch(e=>{ lastErr=e&&e.name||'refused'; }); }catch(e){ lastErr=e.name; } };
+    /* ask again as data arrives — an early play() before any frames can be turned down — and keep
+       asking for a few seconds; a tap anywhere also starts it */
+    go(); ['loadedmetadata','loadeddata','canplay','canplaythrough'].forEach(ev=>v.addEventListener(ev,go));
+    let tries=0; const iv=setInterval(()=>{ if(!v.paused||++tries>20){ clearInterval(iv); return; } go(); },500);
     ['touchend','click','pointerdown'].forEach(g=>document.addEventListener(g,go,{once:true,capture:true}));
     document.addEventListener('visibilitychange',()=>{ if(!document.hidden) go(); });
+    /* ?clipdebug shows what the clip is doing, for checking on a real phone */
+    if(/[?&]clipdebug/.test(location.search)){
+      const d=document.createElement('div'); d.style.cssText='position:fixed;left:8px;bottom:8px;z-index:9999;font:10px/1.4 monospace;color:#f2f2f0;background:rgba(10,10,10,.6);padding:4px 6px;pointer-events:none';
+      document.body.appendChild(d);
+      const t0=performance.now(), states=['nothing','metadata','current','future','enough'];
+      setInterval(()=>{ const b=v.buffered.length?v.buffered.end(v.buffered.length-1).toFixed(1):'0';
+        d.textContent=`clip ${v.paused?'PAUSED':'playing'} · t ${v.currentTime.toFixed(1)}s · data ${states[v.readyState]} · buffered ${b}s · ${lastErr||'no refusal'} · ${((performance.now()-t0)/1000).toFixed(0)}s since load`; },250);
+    }
   }
   function watch(p,k){
     if(!p||p._watched||!p.addEventListener) return; p._watched=1;
