@@ -827,7 +827,7 @@
   body.introon #expBtn,body.introon #vdots,body.introon #trailChip,body.introon #trailHint{opacity:0;pointer-events:none;}
   #map,#nodeLayer,header,#expBtn,#vdots{transition:opacity .9s ease;}
   /* v72 — the mark is drawn pixel by pixel on a canvas; the button is only where you press */
-  #logoPix{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none;}
+  #logoPix{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;}   /* under the photographs, so the first one's reveal edge wipes it away */
   .ilogo{
     position:absolute;left:50%;top:50%;z-index:6;transform:translate(-50%,-50%);
     width:240px;height:300px;background:none;border:0;padding:0;cursor:pointer;border-radius:50%;
@@ -2652,8 +2652,10 @@ const VERSIONS=[
    t:'every film has its own still drifting underneath, so phones show the film even before it can play.'},
   {v:'v82', d:'28 oct 2026', url:'https://sof-studio-v82.vercel.app',
    t:'the room tone plays on iphones, silent switch or not, and sits a little louder on small speakers.'},
-  {v:'v83', d:'now', url:null,
+  {v:'v83', d:'28 oct 2026', url:'https://sof-studio-v83.vercel.app',
    t:'the mark no longer folds away; it fades in a breath and leaves the photographs to carry you in.'},
+  {v:'v84', d:'now', url:null,
+   t:'the mark holds still and the first photograph rises over it, wiping it away along its edge.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3375,6 +3377,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
 
   function frame(now){
     raf=0;
+    if(mode==='held') return;
     if(mode!=='out' && !intro.classList.contains('on')){ ctx.clearRect(0,0,cv.width,cv.height); return; }
     const trails = mode==='out' || mode==='in';
     if(trails){
@@ -3458,9 +3461,12 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
 
   window.__logoExit=total=>{
     if(mode==='out'||mode==='done') return;
-    /* the mark simply fades — quick and soft — and leaves the photographs to carry the way in */
-    const fade=cv.animate([{opacity:1,filter:'blur(0px)'},{opacity:0,filter:'blur(2px)'}],{duration:reduce?600:380,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'});
-    fade.onfinish=()=>{ mode='done'; ctx.clearRect(0,0,cv.width,cv.height); };
+    if(reduce){ const f=cv.animate([{opacity:1},{opacity:0}],{duration:600,fill:'forwards'}); f.onfinish=()=>{ mode='done'; ctx.clearRect(0,0,cv.width,cv.height); }; return; }
+    /* the mark holds perfectly still where it is — the last frame stays on the canvas — and the first
+       photograph rises over it, its reveal edge wiping the mark away line by line. once that photograph
+       has fully covered it, the canvas is cleared so nothing shows when the photographs leave */
+    mode='held'; if(raf){ cancelAnimationFrame(raf); raf=0; }
+    setTimeout(()=>{ mode='done'; ctx.clearRect(0,0,cv.width,cv.height); },1150);
     return;
     if(mode==='in') P.forEach(p=>{ p.x=cx+p.gx*cell; p.y=cy+p.gy*cell; });
     P.forEach(p=>{ const dx=p.x-cx, dy=p.y-cy; p.r0=Math.hypot(dx,dy)/cell; p.a0=Math.atan2(dy,dx); });
