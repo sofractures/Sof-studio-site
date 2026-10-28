@@ -700,11 +700,40 @@
   .vtoggle.together .jw i,.vtoggle:focus-within .jw i{transform:none;}
   @media (hover:hover){ .vtoggle:hover .jw i{transform:none;} }
   @media (prefers-reduced-motion:reduce){ .jw i{transform:none !important;transition:none;} }
+
+  /* =========================================================
+     v66 — the page scrolls, but only the films move: four videos stacked
+     under a map that stays still. one snap per film.
+     ========================================================= */
+  html,body{height:auto;}
+  html{scroll-snap-type:y mandatory;scrollbar-width:none;}
+  html::-webkit-scrollbar{display:none;}
+  body{overflow:visible;}
+  html.vlock{overflow:hidden;}
+  #scrollspace .ss{height:100vh;height:100svh;scroll-snap-align:start;scroll-snap-stop:always;}
+  #vtrack{position:absolute;left:0;top:0;width:100%;will-change:transform;}
+  .vslide{position:relative;width:100%;height:100vh;height:100svh;overflow:hidden;}
+  #vdots{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:10px;transition:opacity .3s;}
+  #vdots button{width:7px;height:7px;border-radius:50%;border:1px solid var(--g60);background:transparent;padding:0;cursor:pointer;transition:background .3s,border-color .3s,transform .3s;}
+  #vdots button.on{background:var(--ink);border-color:var(--ink);transform:scale(1.15);}
+  #vdots button:hover{border-color:var(--ink);}
+  body.inpage #vdots,body.menuopen #vdots,body.dirmode #vdots{opacity:0;pointer-events:none;}
+  #patronView,#workView,#studioView,#signupView,#directoryView{overscroll-behavior:contain;}
+  @media (max-width:640px){ #vdots{right:8px;gap:9px;} }
 </style>
 </head>
 <body>
 
-<div id="bgvid"><div id="ytbg"></div></div>
+<div id="bgvid"><div id="vtrack">
+  <div class="vslide"><div id="ytbg"></div></div>
+  <div class="vslide"><div id="ytbg1"></div></div>
+  <div class="vslide"><div id="ytbg2"></div></div>
+  <div class="vslide"><div id="ytbg3"></div></div>
+</div></div>
+<div id="vdots" role="group" aria-label="videos">
+  <button data-i="0" aria-label="video 1" class="on"></button><button data-i="1" aria-label="video 2"></button><button data-i="2" aria-label="video 3"></button><button data-i="3" aria-label="video 4"></button>
+</div>
+<div id="scrollspace" aria-hidden="true"><div class="ss"></div><div class="ss"></div><div class="ss"></div><div class="ss"></div></div>
 <div id="pgvid" aria-hidden="true"><div id="pgyt"></div></div>
 
 <div id="intro" class="on" aria-label="intro">
@@ -2340,8 +2369,10 @@ const VERSIONS=[
    t:'the line under the name folded away — it opens when you reach for the name.'},
   {v:'v64', d:'28 oct 2026', url:'https://sof-studio-v64.vercel.app',
    t:'the menu drops down like a page of a magazine, and every page now sits on its own film.'},
-  {v:'v65', d:'now', url:null,
+  {v:'v65', d:'28 oct 2026', url:'https://sof-studio-v65.vercel.app',
    t:'map and index scatter and come together when you reach for them; a small sun runs the threads toward your hand.'},
+  {v:'v66', d:'now', url:null,
+   t:'the map stays still and the films scroll beneath it, four of them, one after another.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -2794,7 +2825,9 @@ requestAnimationFrame(draw);
    swipe up one after another (each frame sliding up while its image slides down, so the picture
    holds still), the title fades, and the last frame slides away to reveal the map — which now
    sits over a muted, looping video. */
-const YT_BG_ID = 'YRlw8RfUoU8';   /* the background video */
+/* the films behind the map, top to bottom — scrolling moves between them */
+const MAIN_VIDEOS = ['YRlw8RfUoU8','UFmeF6Un_rM','nHbDu3u6JaY','rF3HJDQgNME'];
+const YT_BG_ID = MAIN_VIDEOS[0];   /* the first film */
 const INTRO_IMAGES = [
   'https://images.ctfassets.net/57idppycthif/12FdbNTsdE2cFCscV4Wko1/c60245afb4d6ef1f1869fab1ec9f872f/Swipe_6.jpg?w=1600&q=60',
   'https://images.ctfassets.net/57idppycthif/5DKpJH0lgBFGshIsMAnzla/0039426513348f919789e21048cb1881/Swipe_2.jpg?w=1600&q=60',
@@ -2829,7 +2862,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   function mountVideo(){
     if(!YT_BG_ID || ytWanted) return; ytWanted=true;
     window.onYouTubeIframeAPIReady=function(){
-      ytPlayer=new YT.Player('ytbg',{
+      ytPlayer=window.__bg0=new YT.Player('ytbg',{
         host:'https://www.youtube-nocookie.com', videoId:YT_BG_ID,
         playerVars:{autoplay:1,mute:1,loop:1,playlist:YT_BG_ID,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,disablekb:1,fs:0},
         events:{
@@ -2891,6 +2924,60 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   }
   document.getElementById('enterBtn').addEventListener('click',run);
   document.addEventListener('keydown',e=>{ if(intro.classList.contains('on') && (e.key==='Enter'||e.key===' ')) run(); },{once:true});
+})();
+
+/* ---------- the scroll: the page is four screens tall, everything but the films is fixed,
+   so scrolling slides the film track under the still map. only the film in view plays ---------- */
+(()=>{
+  const track=document.getElementById('vtrack'), dots=document.getElementById('vdots');
+  const first=document.querySelector('#scrollspace .ss');
+  if(!track||!first) return;
+  const N=MAIN_VIDEOS.length, players=[];
+  let cur=0, raf=0;
+  const H=()=>first.offsetHeight||window.innerHeight;
+  function mark(){ [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===cur)); }
+  function play(){
+    if(!players[0] && window.__bg0) players[0]=window.__bg0;
+    players.forEach((p,k)=>{ if(!p||!p.playVideo) return; try{ if(k===cur){ p.mute(); p.playVideo(); } else p.pauseVideo(); }catch(e){} });
+  }
+  function place(){
+    raf=0;
+    const y=window.scrollY||document.documentElement.scrollTop||0;
+    track.style.transform='translate3d(0,'+(-y)+'px,0)';
+    const i=Math.max(0,Math.min(N-1,Math.round(y/H())));
+    if(i!==cur){ cur=i; mark(); play(); }
+  }
+  window.addEventListener('scroll',()=>{ if(!raf) raf=requestAnimationFrame(place); },{passive:true});
+  window.addEventListener('resize',place);
+  function make(){
+    if(!(window.YT && YT.Player)){ setTimeout(make,300); return; }
+    for(let k=1;k<N;k++){
+      const id=MAIN_VIDEOS[k];
+      players[k]=new YT.Player('ytbg'+k,{
+        host:'https://www.youtube-nocookie.com', videoId:id,
+        playerVars:{autoplay:0,mute:1,loop:1,playlist:id,controls:0,rel:0,playsinline:1,modestbranding:1,iv_load_policy:3,disablekb:1,fs:0},
+        events:{
+          onReady:e=>{ e.target.mute(); if(k===cur) e.target.playVideo(); },
+          onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED && k===cur) e.target.playVideo(); }
+        }
+      });
+    }
+  }
+  make();
+  document.addEventListener('pointerdown',()=>setTimeout(play,60),{passive:true});
+  dots.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) window.scrollTo({top:(+b.dataset.i)*H(),behavior:'smooth'}); });
+  /* while a page, the menu, the index or the door owns the screen, the films hold still */
+  const intro=document.getElementById('intro');
+  const lockCheck=()=>{
+    const b=document.body;
+    const lock=b.classList.contains('inpage')||b.classList.contains('menuopen')||b.classList.contains('dirmode')||(intro&&intro.classList.contains('on')&&!intro.classList.contains('clear'));
+    document.documentElement.classList.toggle('vlock',!!lock);
+  };
+  new MutationObserver(lockCheck).observe(document.body,{attributes:true,attributeFilter:['class']});
+  if(intro) new MutationObserver(lockCheck).observe(intro,{attributes:true,attributeFilter:['class']});
+  if('scrollRestoration' in history) history.scrollRestoration='manual';
+  window.scrollTo(0,0);
+  lockCheck(); mark(); place();
 })();
 
 /* deep links — ?go=work / ?go=patron / ?go=<branch> lands the visitor somewhere specific
