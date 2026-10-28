@@ -888,6 +888,12 @@
   #flowNote{border-color:rgba(242,242,240,.14);}
   /* on a phone the mark lives at the bottom centre, so the note sits just above it */
   @media (max-width:640px){ #flowNote{bottom:calc(max(16px,env(safe-area-inset-bottom)) + 52px);} }
+
+  /* v88 — on portrait screens the first film is a real, silent video file: phones autoplay it
+     on arrival, no youtube marks, no waiting for a tap. the youtube film stays hidden underneath */
+  .vclip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:0;transition:opacity 1s ease;pointer-events:none;}
+  .vclip.on{opacity:1;}
+  .vslide.clipmode iframe{display:none !important;}
 </style>
 </head>
 <body class="introon">
@@ -2676,8 +2682,10 @@ const VERSIONS=[
    t:'no more black boxes behind words: buttons, hints and notes sit on the same light veil as the menu.'},
   {v:'v86', d:'28 oct 2026', url:'https://sof-studio-v86.vercel.app',
    t:'one voice at a time: the note waits until no other hint is showing, and the others hold while it speaks.'},
-  {v:'v87', d:'now', url:null,
+  {v:'v87', d:'28 oct 2026', url:'https://sof-studio-v87.vercel.app',
    t:'pressing the mark no longer flashes a dark box around it.'},
+  {v:'v88', d:'now', url:null,
+   t:'on phones the door opens onto traces — a real film loop that plays the moment you arrive.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3200,7 +3208,8 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   /* the player is driven through youtube's iframe api so it can be told to play again on the
      visitor's own gesture (the enter click) — the one thing every browser allows */
   let ytPlayer=null, ytWanted=false;
-  function ytPlay(){ try{ if(ytPlayer&&ytPlayer.playVideo){ ytPlayer.mute(); ytPlayer.playVideo(); } }catch(e){} }
+  function ytPlay(){ if(document.querySelector('.vslide.clipmode')) return;   /* the clip plays instead */
+    try{ if(ytPlayer&&ytPlayer.playVideo){ ytPlayer.mute(); ytPlayer.playVideo(); } }catch(e){} }
   function mountVideo(){
     if(!YT_BG_ID || ytWanted) return; ytWanted=true;
     window.onYouTubeIframeAPIReady=function(){
@@ -3298,6 +3307,23 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     im.onerror=()=>set('https://i.ytimg.com/vi/'+id+'/hqdefault.jpg');
     im.src='https://i.ytimg.com/vi/'+id+'/maxresdefault.jpg';
   });
+  /* portrait screens: the first film is the traces clip, a silent looping file that phones
+     autoplay (low power mode can still refuse — then the still holds until the first tap) */
+  if(innerHeight>innerWidth){
+    const sl=slides[0]; sl.classList.add('clipmode');
+    const v=document.createElement('video'); v.className='vclip';
+    v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
+    ['muted','playsinline','webkit-playsinline','autoplay','loop'].forEach(a=>v.setAttribute(a,''));
+    v.preload='auto'; v.poster='media/intro-traces-poster.jpg';
+    const big=innerWidth>=700 && (window.devicePixelRatio||1)>=2;
+    v.src=big?'media/intro-traces-720.mp4':'media/intro-traces-540.mp4';
+    v.addEventListener('playing',()=>v.classList.add('on'));
+    const st=sl.querySelector('.vstill'); sl.insertBefore(v, st?st.nextSibling:sl.firstChild);
+    const go=()=>{ try{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} };
+    go();
+    ['touchend','click','pointerdown'].forEach(g=>document.addEventListener(g,go,{once:true,capture:true}));
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) go(); });
+  }
   function watch(p,k){
     if(!p||p._watched||!p.addEventListener) return; p._watched=1;
     try{ p.addEventListener('onStateChange',e=>{
@@ -3314,7 +3340,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     const key=players.map((p,k)=>inView(k,y)?k:'').join(',');
     if(key!==lastKey || force){
       lastKey=key;
-      players.forEach((p,k)=>{ if(!p||!p.playVideo) return; watch(p,k);
+      players.forEach((p,k)=>{ if(!p||!p.playVideo) return; if(k===0&&slides[0].classList.contains('clipmode')) return; watch(p,k);
         try{ if(inView(k,y) && p.getPlayerState && p.getPlayerState()!==1){ p.mute(); p.playVideo(); } }catch(e){} });
     }
     clearTimeout(settle);
