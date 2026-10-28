@@ -833,6 +833,11 @@
     width:240px;height:300px;background:none;border:0;padding:0;cursor:pointer;border-radius:50%;
   }
   .ilogo:focus-visible{outline:1px dotted rgba(242,242,240,.45);outline-offset:10px;}
+  /* no browser marks on the door: no tap flash on phones, no pressed or focus box on a click
+     (the dotted outline stays for keyboard users) */
+  #intro,#intro *{-webkit-tap-highlight-color:transparent;}
+  .ilogo{-webkit-appearance:none;appearance:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
+  .ilogo:focus:not(:focus-visible),.ilogo:active,.ilogo:disabled{outline:none;background:none;box-shadow:none;}
 
   /* =========================================================
      v76 — the room tone: the site plays one of the songs as a slow ambient bed,
@@ -2669,8 +2674,10 @@ const VERSIONS=[
    t:'the mark holds still and the first photograph rises over it, wiping it away along its edge.'},
   {v:'v85', d:'28 oct 2026', url:'https://sof-studio-v85.vercel.app',
    t:'no more black boxes behind words: buttons, hints and notes sit on the same light veil as the menu.'},
-  {v:'v86', d:'now', url:null,
+  {v:'v86', d:'28 oct 2026', url:'https://sof-studio-v86.vercel.app',
    t:'one voice at a time: the note waits until no other hint is showing, and the others hold while it speaks.'},
+  {v:'v87', d:'now', url:null,
+   t:'pressing the mark no longer flashes a dark box around it.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
