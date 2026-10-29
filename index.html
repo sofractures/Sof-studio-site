@@ -1639,12 +1639,12 @@ function wpXY(wp,t){
   const [nx,ny]=nodePos(n,t);
   return [nx+(wp[1]||0), ny+(wp[2]||0)];
 }
-function drawTrail(tr,t,a,withName,animate){
+function drawTrail(tr,t,a,withName,animate,lw){
   const pts=tr.wps.map(w=>wpXY(w,t)).filter(Boolean);
   if(pts.length<2) return;
   const hue=(tr.dispH!=null)? tr.dispH : tr.h;   /* colour leans toward its community */
   ctx.strokeStyle=trailCol(hue,a);
-  ctx.lineWidth=.8;
+  ctx.lineWidth=lw||.8;
   for(let i=0;i<pts.length-1;i++){
     const bend=(((tr.h+i*37)%2)?-1:1)*(24+((tr.h+i*53)%38));
     if(animate && i===pts.length-2){
@@ -2271,6 +2271,25 @@ function nearestOnNet(px,py,t){
    projects–music light · projects–videos space · music–videos echo · research–writing grain ·
    writing–projects voices · shop–projects width · shop–music pulse · research–projects depth */
 const THREAD_FX=['light','space','echo','grain','voices','width','pulse','depth'];
+/* memory on the threads: when the star rests on a thread, the trails other explorers left across
+   that same crossing rise out of the dark in their own colours, trails that only touched one end rise
+   a little, the threads leading on from either end brighten, and the rest steps back. no words. */
+const threadFocus={ei:null,s:0};
+function trailMatch(tr,A,B){
+  const w=tr.wps; let touch=0;
+  for(let i=0;i<w.length;i++){
+    const id=w[i][0];
+    if(i<w.length-1){ const j=w[i+1][0]; if((id===A&&j===B)||(id===B&&j===A)) return 1; }
+    if(id===A||id===B) touch=.35;
+  }
+  return touch;
+}
+function edgeRel(ei){
+  const f=threadFocus.ei; if(f==null) return 0;
+  if(ei===f) return 1;
+  const [a,b]=EDGES[f], [c,d]=EDGES[ei];
+  return (a===c||a===d||b===c||b===d)? .5 : 0;
+}
 function drawSeeker(t,alpha){
   const live = view==='over' && trans<.05 && !document.body.classList.contains('dirmode') && !document.body.classList.contains('menuopen');
   if(live){
@@ -2287,6 +2306,9 @@ function drawSeeker(t,alpha){
     /* each thread is one quality of the sound; how far along it the star stands sets how much */
     if(want && n.ei!=null && window.__sound && window.__sound.touch){ window.__sound.touch(THREAD_FX[n.ei], n.u); seek.fx=THREAD_FX[n.ei]; seek.u=n.u; }
     else seek.fx=null;
+    const onThread = want && n.ei!=null;
+    if(onThread) threadFocus.ei=n.ei;
+    threadFocus.s+=((onThread?1:0)-threadFocus.s)*(onThread?.07:.04);
     if(want){
       if(seek.x===null){ seek.x=n.x; seek.y=n.y; }
       const k=REDUCED?1:.2;
@@ -2295,7 +2317,9 @@ function drawSeeker(t,alpha){
     seek.a+=((want?1:0)-seek.a)*(want?.1:.04);
   } else {
     seek.a*=.85;
+    threadFocus.s*=.9;
   }
+  if(threadFocus.s<.005) threadFocus.ei=null;
   if(seek.x===null || seek.a<.01){ seek.trail.length=0; return; }
   seek.trail.push([seek.x,seek.y]); if(seek.trail.length>16) seek.trail.shift();
   /* the trail: a few fading grains behind it */
@@ -2333,7 +2357,13 @@ function drawOverview(t, alpha){
   });
 
   /* other people's trails, fainter than the network */
-  otherTrails.forEach(tr=>drawTrail(tr,t,.11*alpha,true));
+  { const F=threadFocus, on=F.ei!=null && F.s>.01, A=on?EDGES[F.ei][0]:null, B=on?EDGES[F.ei][1]:null;
+    otherTrails.forEach(tr=>{
+      if(!on){ drawTrail(tr,t,.11*alpha,true); return; }
+      const m=trailMatch(tr,A,B);
+      const k=m===1? 1+F.s*4.6 : m>0? 1+F.s*1.6 : 1-F.s*.55;
+      drawTrail(tr,t,Math.min(.75,.11*k)*alpha,true,false,m===1? .8+F.s*.6 : .8);
+    }); }
 
   EDGES.forEach(([a,b,lab,dash],ei)=>{
     const na=nodes.find(n=>n.id===a), nb=nodes.find(n=>n.id===b);
@@ -2341,7 +2371,9 @@ function drawOverview(t, alpha){
     const ang=Math.atan2(y2-y1,x2-x1);
     const sx=x1+Math.cos(ang)*60, sy=y1+Math.sin(ang)*33;
     const ex=x2-Math.cos(ang)*60, ey=y2-Math.sin(ang)*33;
-    ctx.strokeStyle='rgba(242,242,240,.2)';
+    const rel=edgeRel(ei), F=threadFocus.s;
+    const ek= threadFocus.ei==null? 1 : rel===1? 1+F*1.7 : rel? 1+F*.75 : 1-F*.4;
+    ctx.strokeStyle='rgba(242,242,240,'+(.2*ek)+')';
     ctx.lineWidth=.7;
     ctx.setLineDash(dash?[2,5]:[]);
     const bend=(ei%2?-1:1)*(16+ei*6);
@@ -2350,7 +2382,7 @@ function drawOverview(t, alpha){
     if(lab && !isMobile()){
       ctx.font='9px '+MONO;
       const tw=ctx.measureText(lab).width;
-      ctx.fillStyle='rgba(242,242,240,.4)';
+      ctx.fillStyle='rgba(242,242,240,'+Math.min(.75,.4*ek)+')';
       ctx.textAlign='center';
       ctx.fillText(lab,mx,my+2);
       ctx.textAlign='left';
@@ -2426,7 +2458,9 @@ function drawOverview(t, alpha){
   });
 
   /* your trail, on top but quiet */
-  drawTrail(userTrail,t,.32*alpha,false,true);
+  { const F=threadFocus, on=F.ei!=null && F.s>.01;
+    const m=on? trailMatch(userTrail,EDGES[F.ei][0],EDGES[F.ei][1]) : 0;
+    drawTrail(userTrail,t,Math.min(.9,.32*(on?(m===1?1+F.s*1.4:m>0?1+F.s*.4:1-F.s*.3):1))*alpha,false,true,m===1? .8+F.s*.5 : .8); }
 
   /* suggested next world: a slow breathing ring */
   if(suggestNow){
@@ -2738,8 +2772,10 @@ const VERSIONS=[
    t:'the music begins only as you enter; on phones the film starts the moment the page arrives.'},
   {v:'v93', d:'29 oct 2026', url:'https://sof-studio-v93.vercel.app',
    t:'the threads play the music: each line of the map leans one quality of the sound as the star travels it.'},
-  {v:'v94', d:'now', url:null,
+  {v:'v94', d:'29 oct 2026', url:'https://sof-studio-v94.vercel.app',
    t:'nothing explains itself: no names by the star, no words under the mark — only things to find.'},
+  {v:'v95', d:'now', url:null,
+   t:'rest on a thread and its memory rises: the trails others left across that crossing, and the threads leading on.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
