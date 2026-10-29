@@ -2776,8 +2776,10 @@ const VERSIONS=[
    t:'nothing explains itself: no names by the star, no words under the mark — only things to find.'},
   {v:'v95', d:'29 oct 2026', url:'https://sof-studio-v95.vercel.app',
    t:'rest on a thread and its memory rises: the trails others left across that crossing, and the threads leading on.'},
-  {v:'v96', d:'now', url:null,
+  {v:'v96', d:'29 oct 2026', url:'https://sof-studio-v96.vercel.app',
    t:'the mark no longer parts around your hand; under it the pixels tremble and haze.'},
+  {v:'v97', d:'now', url:null,
+   t:'on a phone your finger plays the network; the films change only on a short, deliberate flick.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3452,6 +3454,41 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   make();
   document.addEventListener('pointerdown',()=>setTimeout(()=>play(true),60),{passive:true});
   dots.addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) window.scrollTo({top:(+b.dataset.i)*H(),behavior:'smooth'}); });
+  /* on a touch screen the finger belongs to the network: holding and moving plays the threads and
+     never drags the films. the films change only on a short, deliberate flick — quick, mostly
+     vertical, without wandering — up for the next film, down for the one before. scrolling inside
+     pages, the menu and the index, and two-finger gestures, are left to the browser */
+  if(matchMedia('(hover:none) and (pointer:coarse)').matches){
+    const FREE='#menuView,#patronView,#workView,#studioView,#signupView,#directoryView,#ytView,#flowNote,input,textarea,select';
+    const mapOwns=e=>{
+      const b=document.body, door=document.getElementById('intro');
+      if(b.classList.contains('inpage')||b.classList.contains('menuopen')||b.classList.contains('dirmode')) return false;
+      if(door && door.classList.contains('on') && !door.classList.contains('clear')) return false;
+      return !(e.target.closest && e.target.closest(FREE));
+    };
+    let g=null;
+    document.addEventListener('touchstart',e=>{
+      if(e.touches.length!==1 || !mapOwns(e)){ g=null; return; }
+      const q=e.touches[0]; g={x0:q.clientX,y0:q.clientY,x:q.clientX,y:q.clientY,t0:performance.now(),path:0};
+    },{passive:true});
+    document.addEventListener('touchmove',e=>{
+      if(e.touches.length>1){ g=null; return; }
+      if(!mapOwns(e)) return;
+      e.preventDefault();                     /* no native scroll while playing the map */
+      if(!g) return;
+      const q=e.touches[0]; g.path+=Math.hypot(q.clientX-g.x,q.clientY-g.y); g.x=q.clientX; g.y=q.clientY;
+    },{passive:false});
+    document.addEventListener('touchend',e=>{
+      if(!g) return;
+      const dt=performance.now()-g.t0, dx=g.x-g.x0, dy=g.y-g.y0, ay=Math.abs(dy);
+      const flick = dt<380 && ay>55 && ay>Math.abs(dx)*1.8 && g.path<ay*1.35 && ay/dt>.25;
+      g=null;
+      if(!flick) return;
+      const n=Math.max(0,Math.min(N-1,cur+(dy<0?1:-1)));
+      if(n!==cur) window.scrollTo({top:n*H(),behavior:'smooth'});
+    },{passive:true});
+    document.addEventListener('touchcancel',()=>{ g=null; },{passive:true});
+  }
   /* while a page, the menu, the index or the door owns the screen, the films hold still */
   const intro=document.getElementById('intro');
   const lockCheck=()=>{
