@@ -2774,8 +2774,10 @@ const VERSIONS=[
    t:'the threads play the music: each line of the map leans one quality of the sound as the star travels it.'},
   {v:'v94', d:'29 oct 2026', url:'https://sof-studio-v94.vercel.app',
    t:'nothing explains itself: no names by the star, no words under the mark — only things to find.'},
-  {v:'v95', d:'now', url:null,
+  {v:'v95', d:'29 oct 2026', url:'https://sof-studio-v95.vercel.app',
    t:'rest on a thread and its memory rises: the trails others left across that crossing, and the threads leading on.'},
+  {v:'v96', d:'now', url:null,
+   t:'the mark no longer parts around your hand; under it the pixels tremble and haze.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3552,18 +3554,23 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
       const sc=1;
       if(!reduce && !glitch && t>nextGlitch){ glitch={j:Math.floor(Math.random()*(GH-12)),h:2+Math.floor(Math.random()*5),dx:(Math.random()<.5?-1:1)*(1+Math.floor(Math.random()*3)),until:t+90+Math.random()*70}; }
       if(glitch && t>glitch.until){ glitch=null; nextGlitch=t+2600+Math.random()*3200; }
-      const RAD=78, ox=cx-CX*cell, oy=cy-CY*cell;
+      const RAD=96, ox=cx-CX*cell, oy=cy-CY*cell;
       for(const p of P){
         let tx=cx+p.gx*cell*sc, ty=cy+p.gy*cell*sc;
         if(!reduce){
           if(glitch){ const row=p.gy+CY; if(row>=glitch.j&&row<glitch.j+glitch.h) tx+=glitch.dx*cell; }
-          const dx=p.x-ptr.x, dy=p.y-ptr.y, d=Math.hypot(dx,dy);
-          if(d<RAD&&d>.01){ const f=Math.pow(1-d/RAD,2)*5.5; p.vx+=dx/d*f; p.vy+=dy/d*f; }
-          p.vx+=(tx-p.x)*.075; p.vy+=(ty-p.y)*.075; p.vx*=.8; p.vy*=.8; p.x+=p.vx; p.y+=p.vy;
+          /* under the hand the pixels don't move away — they tremble where they are and thin into a haze,
+             strongest at the centre and fading out softly, so no shape is cut into the mark */
+          const d=Math.hypot(tx-ptr.x, ty-ptr.y);
+          p.hz = d<RAD ? Math.pow(1-d/RAD,1.6) : 0;
+          if(p.hz>0){ const j=p.hz*cell*2.2; tx+=(Math.random()-.5)*j; ty+=(Math.random()-.5)*j; }
+          p.vx+=(tx-p.x)*.35; p.vy+=(ty-p.y)*.35; p.vx*=.55; p.vy*=.55; p.x+=p.vx; p.y+=p.vy;
         } else { p.x=tx; p.y=ty; }
         const dA=Math.abs(((p.a-sweep+Math.PI*3)%(Math.PI*2))-Math.PI);
         const lit=reduce?0:Math.max(0,1-dA/.42);
-        ctx.globalAlpha=.74+.26*lit+hover*.1;
+        const haze=p.hz||0;
+        if(haze>0 && Math.random()<haze*.35) continue;   /* a few pixels blink out in the haze */
+        ctx.globalAlpha=(.74+.26*lit+hover*.1)*(1-haze*.45*Math.random());
         const g=lit>.55&&p.rnd<.18?1:0;   /* a few pixels in the light step up a size */
         /* drawn on the logo's own grid, so a pushed pixel jumps cell to cell rather than smearing */
         const X=ox+Math.floor((p.x-ox)/cell)*cell, Y=oy+Math.floor((p.y-oy)/cell)*cell;
