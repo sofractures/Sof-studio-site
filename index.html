@@ -855,17 +855,9 @@
   .mixLogo.muted{opacity:.14;}
   .mixLogo.muted:hover{opacity:.32;}
   .mixLogo:focus-visible{outline:1px dotted rgba(242,242,240,.45);outline-offset:6px;}
-  .mixCap{
-    position:absolute;top:100%;left:50%;transform:translate(-50%,4px);margin-top:4px;white-space:nowrap;
-    font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--g60);
-    opacity:0;transition:opacity .4s,transform .4s;pointer-events:none;
-  }
-  @media (hover:hover){ .mixLogo:hover .mixCap{opacity:1;transform:translate(-50%,0);} }
-  .mixLogo.hint .mixCap{opacity:1;transform:translate(-50%,0);}
   /* on a phone the header is full, so the mark sits at the bottom centre; its caption above it */
   @media (max-width:640px){
     .mixLogo{position:fixed;top:auto;bottom:max(16px,env(safe-area-inset-bottom));width:30px;height:38px;}
-    .mixCap{top:auto;bottom:100%;margin:0 0 6px;}
   }
 
   /* v81 — every film has its own still underneath, drifting slowly, so a phone that won't
@@ -991,7 +983,7 @@
 </svg><span class="cnt"></span></button>
 
 <header>
-  <button class="mixLogo" id="sndBtn" aria-label="sound: click for the next song, double-click to mute" title="click — next song · double-click — mute"><canvas aria-hidden="true"></canvas><span class="mixCap">next song · double-click to mute</span></button>
+  <button class="mixLogo" id="sndBtn" aria-label="sound"><canvas aria-hidden="true"></canvas></button>
   <div class="wordmark">
     <div class="jr">sound of fractures</div>
     <p class="line">jamie reddington (sound of fractures) is a <span class="nb">uk-based</span> artist and researcher working at the intersection of music, memory, and participation.</p>
@@ -2279,7 +2271,6 @@ function nearestOnNet(px,py,t){
    projects–music light · projects–videos space · music–videos echo · research–writing grain ·
    writing–projects voices · shop–projects width · shop–music pulse · research–projects depth */
 const THREAD_FX=['light','space','echo','grain','voices','width','pulse','depth'];
-let fxShow=0, fxName='';
 function drawSeeker(t,alpha){
   const live = view==='over' && trans<.05 && !document.body.classList.contains('dirmode') && !document.body.classList.contains('menuopen');
   if(live){
@@ -2323,18 +2314,6 @@ function drawSeeker(t,alpha){
     ctx.beginPath(); ctx.moveTo(-Math.cos(g)*L,-Math.sin(g)*L); ctx.lineTo(Math.cos(g)*L,Math.sin(g)*L); ctx.stroke();
   }
   ctx.restore();
-  /* while it plays, the quality's name sits beside the star, very quietly, with a hairline meter */
-  const playing = seek.fx && window.__sound && window.__sound.live && window.__sound.live();
-  fxShow+=((playing?1:0)-fxShow)*.08; if(playing) fxName=seek.fx;
-  if(fxShow>.02 && fxName){
-    const a=fxShow*A*.6;
-    ctx.font='8.5px '+MONO; ctx.textAlign='left';
-    ctx.fillStyle='rgba(242,242,240,'+a+')';
-    ctx.fillText(fxName, X+11, Y-7);
-    const w=ctx.measureText(fxName).width, u=seek.u==null?.5:seek.u;
-    ctx.fillStyle='rgba(242,242,240,'+(a*.35)+')'; ctx.fillRect(X+11, Y-3, w, .7);
-    ctx.fillStyle='rgba(242,242,240,'+a+')'; ctx.fillRect(X+11, Y-3.4, Math.max(1,w*u), 1.4);
-  }
 }
 
 function drawOverview(t, alpha){
@@ -2757,8 +2736,10 @@ const VERSIONS=[
    t:'opening a main world moves the music on to the next song, as a click on the mark does.'},
   {v:'v92', d:'29 oct 2026', url:'https://sof-studio-v92.vercel.app',
    t:'the music begins only as you enter; on phones the film starts the moment the page arrives.'},
-  {v:'v93', d:'now', url:null,
+  {v:'v93', d:'29 oct 2026', url:'https://sof-studio-v93.vercel.app',
    t:'the threads play the music: each line of the map leans one quality of the sound as the star travels it.'},
+  {v:'v94', d:'now', url:null,
+   t:'nothing explains itself: no names by the star, no words under the mark — only things to find.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
@@ -3809,7 +3790,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   }
 
   function setBtn(){ btn.classList.toggle('on',wantOn&&started); btn.classList.toggle('muted',!wantOn); btn.setAttribute('aria-pressed',String(wantOn));
-    btn.setAttribute('aria-label',wantOn?'sound on: click for the next song, double-click to mute':'sound off: double-click to turn the sound back on'); }
+    btn.setAttribute('aria-label',wantOn?'sound on':'sound off'); }
   async function start(){
     if(!wantOn) return;
     unlock();
@@ -3820,7 +3801,6 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
       btn.classList.remove('loading');
       ticker=setInterval(()=>{ if(current&&ctx.state==='running') current.step(); },100);
       /* the first time, say what the mark does, then let it go quiet */
-      if(!document.querySelector('#flowNote.on')){ btn.classList.add('hint'); setTimeout(()=>btn.classList.remove('hint'),4500); }
     }
     const now=ctx.currentTime; master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(master.gain.value,now); master.gain.linearRampToValueAtTime(VOL,now+5);
