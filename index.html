@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>jamie reddington / sound of fractures studios</title>
+<title>sound of fractures</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -1048,6 +1048,7 @@
     <div class="plabel">THE TEAM</div>
     <div class="pcredits">
       <div class="crow"><span class="cproj">creative director</span><span class="cnames">jamie reddington</span></div>
+      <div class="crow"><span class="cproj">executive producer</span><span class="cnames">c.y. lee</span></div>
       <div class="crow"><span class="cproj">studio manager</span><span class="cnames">carole keating</span></div>
       <div class="crow"><span class="cproj">technical partners</span><span class="cnames">alex watson (my perfect cousins) · tesni kerens (ct europe)</span></div>
     </div>
@@ -1350,15 +1351,15 @@ const SECTIONS = {
       {id:'alonetogether', label:'alone together', x:.78, y:.40, mx:.5, my:.58, leaves:[L.atReel, L.atTogether, L.twoDays, L.canva, L.cheads]},
       {id:'networkarchives', label:'network archives', x:.50, y:.80, mx:.5, my:.85, leaves:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
     ]},
-  networkarchives:{ num:'01', title:'network archives', d:'the meta-world — a directory of inspiration, made with metalabel', parent:'projects',
+  networkarchives:{ num:'01', title:'network archives', d:'a directory of inspiration — 60 artists building worlds, with metalabel', parent:'projects',
     leaves:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
   scenes:{ num:'01', title:'scenes', d:'the participatory album', parent:'projects', proc:'scenesproc',
     leaves:[L.scenesSite, L.beyond, L.decential]},
-  alonetogether:{ num:'01', title:'alone together', d:'the current world', parent:'projects', proc:'atproc',
+  alonetogether:{ num:'01', title:'alone together', d:'a live work for strangers — alone, then together, then alone together', parent:'projects', proc:'atproc',
     leaves:[L.atReel, L.atTogether, L.twoDays, L.canva, L.cheads]},
-  scenesproc:{ num:'01', title:'the process', d:'notes from the making of scenes', parent:'scenes',
+  scenesproc:{ num:'01', title:'the process', d:'how scenes was made', parent:'scenes',
     leaves:[L.scBook, L.scVideo, L.scVibe, L.scProduct]},
-  atproc:{ num:'01', title:'the process', d:'notes from the making of alone together', parent:'alonetogether',
+  atproc:{ num:'01', title:'the process', d:'how alone together is made', parent:'alonetogether',
     leaves:[L.atFilm, L.atFindings, L.atWork, L.atConnect, L.atWorld]},
   music:{ num:'02', title:'music', d:'emotional electronic music — where every world begins',
     leaves:[L.spotify, L.playlist, L.bandcamp]},
@@ -1373,7 +1374,7 @@ const SECTIONS = {
     leaves:[L.nf1, L.nf2, L.nf3, L.nfYancey, L.nfVivid]},
   writing:{ num:'04', title:'writing', d:'honest process notes from building the model',
     leaves:[L.wPurpose, L.wCareer, L.wRhythm, L.wExpression, L.wAudience, L.wPeople, L.wFriction, L.wWorldB]},
-  research:{ num:'05', title:'research', d:'the practitioner-researcher',
+  research:{ num:'05', title:'research', d:'the practice, studied — chapters, field notes, teaching',
     leaves:[L.rScenes, L.rTeach, L.rSprint, L.rTeaching]},
   shop:{ num:'06', title:'shop', d:'more than merch — memories you can hold',
     leaves:[L.cards, L.book, L.naObj, L.bandcamp]},
@@ -2789,11 +2790,13 @@ const VERSIONS=[
    t:'on a phone your finger plays the network; the films change only on a short, deliberate flick.'},
   {v:'v98', d:'29 oct 2026', url:'https://sof-studio-v98.vercel.app',
    t:'join the studio names its people: the board, an advisory board, technical partners and the team.'},
-  {v:'v99', d:'now', url:null,
+  {v:'v99', d:'29 oct 2026', url:'https://sof-studio-v99.vercel.app',
    t:'join the studio opens with the studio\'s name: seams studio is funded by people who want this work to exist.'},
+  {v:'v100', d:'now', url:null,
+   t:'the small lines under the worlds learned to speak to a visitor rather than a researcher; the tab just says sound of fractures; c.y. lee joins the team as executive producer.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
-  <div class="dir-note">this site is developed in public and every version stays live. each row opens the site as it was, frozen mid-thought — the record of the model being worked out.</div>`;
+  <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
 VERSIONS.forEach(x=>{
   dirHTML += x.url
   ? `<a class="vrow" href="${x.url}" target="_blank" rel="noopener">
