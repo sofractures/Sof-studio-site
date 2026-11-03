@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>sound of fractures</title>
+<meta name="description" content="jamie reddington (sound of fractures) is a uk-based artist and researcher working at the intersection of music, memory, and participation.">
+<meta property="og:title" content="sound of fractures">
+<meta property="og:description" content="jamie reddington (sound of fractures) is a uk-based artist and researcher working at the intersection of music, memory, and participation.">
+<meta property="og:image" content="https://sof-studio-v100.vercel.app/media/intro-traces-poster.jpg">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  /* the link page — the studio site's foundations: near-black over the traces film,
+     off-white, lowercase mono; the name in a light tight grotesk; the pixel mark;
+     a faint film of grain over everything. */
+  :root{
+    --bg:#0a0a0a;
+    --ink:#f2f2f0;
+    --g80:rgba(242,242,240,.8);
+    --g60:rgba(242,242,240,.6);
+    --g40:rgba(242,242,240,.4);
+    --g25:rgba(242,242,240,.25);
+    --rule:rgba(242,242,240,.22);
+    --vwash:.66;
+    --mono:"SF Mono","IBM Plex Mono","Space Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:'Inter Tight','Helvetica Neue',Helvetica,Arial,sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--ink);}
+  body{
+    font-family:var(--mono);font-size:13px;line-height:1.7;letter-spacing:.01em;
+    -webkit-font-smoothing:antialiased;min-height:100svh;
+    padding:22px max(16px,env(safe-area-inset-right,0px)) 44px max(16px,env(safe-area-inset-left,0px));
+    display:flex;flex-direction:column;position:relative;
+  }
+  a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent;}
+  ::selection{background:var(--ink);color:var(--bg);}
+
+  /* the traces film, looping behind everything, washed dark as on the site */
+  #film{position:fixed;inset:0;z-index:0;overflow:hidden;background:var(--bg);}
+  #film .still,#film video{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    filter:saturate(.95);
+  }
+  #film .still{background:center/cover no-repeat url("https://sof-studio-v100.vercel.app/media/intro-traces-poster.jpg");}
+  #film video{opacity:0;transition:opacity 1.2s ease;}
+  #film video.on{opacity:1;}
+  #film:after{content:"";position:absolute;inset:0;background:rgba(10,10,10,var(--vwash));}
+
+  /* grain: the same film as the site, crawling in steps */
+  #grain{
+    position:fixed;inset:-100%;z-index:60;pointer-events:none;opacity:.07;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='300' height='300' filter='url(%23n)'/></svg>");
+    background-size:300px 300px;animation:grainCrawl .8s steps(6) infinite;
+  }
+  @keyframes grainCrawl{
+    0%{transform:translate(0,0)}17%{transform:translate(-2%,1%)}33%{transform:translate(1%,-2%)}
+    50%{transform:translate(-1%,2%)}67%{transform:translate(2%,1%)}83%{transform:translate(-2%,-1%)}100%{transform:translate(0,0)}
+  }
+
+  header,main{position:relative;z-index:1;}
+
+  /* the name, top left, as on the door */
+  header h1{
+    margin:0;font-family:var(--sans);font-weight:300;
+    font-size:clamp(20px,2.3vw,26px);letter-spacing:-.025em;line-height:1;
+  }
+
+  main{width:100%;max-width:500px;margin:0 auto;flex:1;display:flex;flex-direction:column;}
+
+  /* the mark in the centre, drawn in pixels; one line; the six marks under it */
+  .mark{display:flex;flex-direction:column;align-items:center;margin:clamp(28px,7vh,64px) 0 clamp(26px,5vh,40px);}
+  .mark canvas{width:clamp(100px,24vw,140px);aspect-ratio:44/55;display:block;}
+  .mark p{margin:20px 0 0;color:var(--g80);text-align:center;max-width:44ch;line-height:1.7;font-size:12px;}
+  .social{display:flex;justify-content:center;gap:22px;margin:20px 0 0;}
+  .social a{
+    display:inline-block;width:17px;height:17px;background:var(--g60);
+    -webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat;
+    transition:background .2s,transform .2s;
+  }
+  .social a:hover,.social a:focus-visible{background:var(--ink);transform:translateY(-1px);outline:none;}
+  .si-substack{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/substack.svg");}
+  .si-instagram{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/instagram.svg");}
+  .si-spotify{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/spotify.svg");}
+  .si-youtube{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/youtube.svg");}
+  .si-tiktok{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/tiktok.svg");}
+  .si-discord{--ic:url("https://cdn.jsdelivr.net/npm/simple-icons@13/icons/discord.svg");}
+
+  /* the links: boxes with curved ends, a picture on the left, over a light veil */
+  .lines{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .line{
+    display:grid;grid-template-columns:48px 1fr auto;column-gap:14px;align-items:center;
+    min-height:64px;padding:8px 18px 8px 8px;border-radius:999px;
+    border:1px solid rgba(242,242,240,.14);background:rgba(10,10,10,.28);
+    -webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);
+    transition:background .2s,border-color .2s,transform .2s;
+  }
+  .line:hover,.line:focus-visible{background:rgba(242,242,240,.09);border-color:var(--g60);transform:translateY(-1px);outline:none;}
+  .line .pic{
+    width:48px;height:48px;border-radius:50%;overflow:hidden;background:rgba(242,242,240,.08);
+    display:flex;align-items:center;justify-content:center;flex:none;
+  }
+  .line .pic img{width:100%;height:100%;object-fit:cover;display:block;}
+  .line .pic.mk{background:var(--bg);}
+  .line .pic.mk canvas{width:30px;aspect-ratio:44/55;}
+  .line .t{min-width:0;}
+  .line .k{color:var(--ink);display:block;line-height:1.35;}
+  .line .k small{color:var(--g60);margin-left:8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;}
+  .line .d{display:block;color:var(--g60);font-size:11.5px;line-height:1.45;margin-top:3px;}
+  .line .arrow{color:var(--g40);transition:color .18s,transform .18s;}
+  .line:hover .arrow,.line:focus-visible .arrow{color:var(--ink);transform:translateX(3px);}
+  .also{display:flex;flex-wrap:wrap;gap:0 16px;padding:6px 20px 2px;font-size:11px;color:var(--g40);letter-spacing:.04em;}
+  .also a{color:var(--g60);border-bottom:1px solid transparent;transition:color .18s,border-color .18s;}
+  .also a:hover,.also a:focus-visible{color:var(--ink);border-bottom-color:var(--g40);outline:none;}
+
+  footer{margin-top:34px;text-align:center;color:var(--g25);font-size:11px;letter-spacing:.08em;}
+  footer a{color:var(--g40);}
+  footer a:hover{color:var(--ink);}
+
+  @media (prefers-reduced-motion:reduce){
+    #grain{animation:none;}
+    #film video{display:none;}
+    .line,.line .arrow,.social a{transition:none;}
+  }
+</style>
+</head>
+<body>
+<div id="film" aria-hidden="true"><div class="still"></div></div>
+<div id="grain" aria-hidden="true"></div>
+
+<header>
+  <h1>sound of fractures</h1>
+</header>
+
+<main>
+  <div class="mark">
+    <canvas id="mark" aria-hidden="true"></canvas>
+    <p>jamie reddington (sound of fractures) is a uk-based artist and researcher working at the intersection of music, memory, and participation.</p>
+    <nav class="social" aria-label="elsewhere">
+      <a class="si-instagram" data-l="s-instagram" href="https://www.instagram.com/soundoffractures" target="_blank" rel="noopener" aria-label="instagram" title="instagram"></a>
+      <a class="si-tiktok" data-l="s-tiktok" href="https://www.tiktok.com/@sofractures" target="_blank" rel="noopener" aria-label="tiktok" title="tiktok"></a>
+      <a class="si-spotify" data-l="s-spotify" href="https://open.spotify.com/artist/4syKpCOJEOnegH5QmuGnKk" target="_blank" rel="noopener" aria-label="spotify" title="spotify"></a>
+      <a class="si-substack" data-l="s-substack" href="https://soundoffractures.substack.com" target="_blank" rel="noopener" aria-label="substack" title="substack"></a>
+      <a class="si-youtube" data-l="s-youtube" href="https://www.youtube.com/channel/UChaLC-ENK3p4el3jiiFRcqw" target="_blank" rel="noopener" aria-label="youtube" title="youtube"></a>
+      <a class="si-discord" data-l="s-discord" href="https://discord.gg/wUH6eBYXUZ" target="_blank" rel="noopener" aria-label="discord" title="discord"></a>
+    </nav>
+  </div>
+
+  <ul class="lines" id="lines"></ul>
+
+  <footer>or write directly — <a data-l="f-mail" href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></footer>
+</main>
+
+<script>
+/* ---------- the links: edit here. id is what the tracking records. ---------- */
+const SITE='https://sof-studio-v100.vercel.app';
+const LINES=[
+  {id:'now', k:'alone together — the film', tag:'new', d:'highlights 001', href:'https://youtu.be/UFmeF6Un_rM',
+    img:'https://i.ytimg.com/vi/UFmeF6Un_rM/hqdefault.jpg'},
+  {id:'listen', k:'music', d:'emotional electronic music — where every world begins', href:'https://open.spotify.com/artist/4syKpCOJEOnegH5QmuGnKk',
+    img:'https://image-cdn-fa.spotifycdn.com/image/ab676161000051745bc5bd1767967b125c58b1b2',
+    also:[{id:'listen-bandcamp',t:'collect the music',href:'https://sofractures.bandcamp.com/'},
+          {id:'listen-playlist',t:"where i’m @ — playlist",href:'https://open.spotify.com/playlist/6isoH65GLBFtBhKsMnrwsR'}]},
+  {id:'at', k:'alone together', d:'a live work for strangers — alone, then together, then alone together', href:'https://alonetogether.soundoffractures.com/',
+    img:'https://substackcdn.com/image/fetch/$s_!IAmd!,w_600,h_338,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2b967c12-3be1-4b84-b4b3-193e103b3807_3184x1660.jpeg',
+    also:[{id:'at-community',t:'join the community',href:'https://alonetogether.dfos.com/'},
+          {id:'at-read',t:'alone together: two days later',href:'https://soundoffractures.substack.com/p/alone-together-building-for-depth'}]},
+  {id:'scenes', k:'scenes', d:'the participatory album', href:'https://scenes.soundoffractures.com/',
+    img:'https://scenes.soundoffractures.com/social-images/opengraph-image.jpg',
+    also:[{id:'scenes-book',t:'the post card book',href:'https://soundoffractures.metalabel.com/scenesbook?variantId=1'},
+          {id:'scenes-read',t:'beyond streams & virality',href:'https://soundoffractures.substack.com/p/beyond-streams-and-virality-a-case'}]},
+  {id:'letters', k:'the letters', d:'occasional letters — experiments, essays, invitations. no noise.', href:'https://soundoffractures.substack.com',
+    img:'https://substackcdn.com/image/fetch/$s_!NFRk!,w_400,h_400,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1d2ea92c-8b8f-4660-a658-3def35542b0c_1280x1280.png'},
+  {id:'shop', k:'shop', d:'more than merch — memories you can hold', href:'https://sofractures.myshopify.com/',
+    img:'https://metalabel.imgix.net/QmdT71Cyt5LtxaycjrB8dNRhQJh8okuJRi1nEwJ1oUmQZK?w=200',
+    also:[{id:'shop-cards',t:'alone together conversation cards',href:'https://sofractures.myshopify.com/products/alone-together-conversation-cards'},
+          {id:'shop-book',t:'scenes post card book',href:'https://sofractures.myshopify.com/products/scenes-prompts-to-reflect-the-postcard-book'},
+          {id:'shop-metalabel',t:'on metalabel',href:'https://soundoffractures.metalabel.com/record_4szze9odexxo99tto?variantId=1'}]},
+  {id:'watch', k:'videos', d:'the worlds in motion', href:'https://www.youtube.com/channel/UChaLC-ENK3p4el3jiiFRcqw',
+    img:'https://i.ytimg.com/vi/97BGIyBCeso/hqdefault.jpg'},
+  {id:'world', k:'the map', d:'every project, record, film and essay, in one place', href:SITE, self:true, mark:true},
+];
+
+(function render(){
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const ul=document.getElementById('lines');
+  ul.innerHTML=LINES.map(l=>{
+    const tgt=l.self?'':' target="_blank" rel="noopener"';
+    const pic=l.mark? '<span class="pic mk"><canvas class="minimark" aria-hidden="true"></canvas></span>'
+      : '<span class="pic">'+(l.img?'<img src="'+esc(l.img)+'" alt="" loading="lazy" decoding="async">':'')+'</span>';
+    let h='<li><a class="line" data-l="'+esc(l.id)+'" href="'+esc(l.href)+'"'+tgt+'>'
+      +pic
+      +'<span class="t"><span class="k">'+esc(l.k)+(l.tag?'<small>'+esc(l.tag)+'</small>':'')+'</span>'
+      +(l.d?'<span class="d">'+esc(l.d)+'</span>':'')+'</span>'
+      +'<span class="arrow" aria-hidden="true">'+(l.self?'→':'↗')+'</span></a>';
+    if(l.also&&l.also.length){
+      h+='<div class="also">'+l.also.map(a=>'<a data-l="'+esc(a.id)+'" href="'+esc(a.href)+'" target="_blank" rel="noopener">'+esc(a.t)+'</a>').join('')+'</div>';
+    }
+    return h+'</li>';
+  }).join('');
+})();
+
+/* ---------- the traces film: a silent loop; the poster shows until it plays ---------- */
+(function film(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const box=document.getElementById('film');
+  const v=document.createElement('video');
+  v.muted=true; v.defaultMuted=true; v.loop=true; v.autoplay=true; v.playsInline=true;
+  ['muted','playsinline','webkit-playsinline','autoplay','loop'].forEach(a=>v.setAttribute(a,''));
+  v.preload='auto';
+  const big=Math.max(innerWidth,innerHeight)>=900 || (window.devicePixelRatio||1)>=2;
+  v.src='https://sof-studio-v100.vercel.app/media/intro-traces-'+(big?'720':'540')+'.mp4';
+  box.appendChild(v);
+  v.addEventListener('playing',()=>v.classList.add('on'));
+  const go=()=>{ if(!v.paused) return; try{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); }catch(e){} };
+  go(); ['loadedmetadata','loadeddata','canplay'].forEach(ev=>v.addEventListener(ev,go));
+  let tries=0; const iv=setInterval(()=>{ if(!v.paused||++tries>30){ clearInterval(iv); return; } go(); },400);
+  ['touchend','click','pointerdown'].forEach(g=>document.addEventListener(g,go,{once:true,capture:true}));
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) go(); });
+})();
+
+/* ---------- the mark: the site's pixel bitmap, breathing slowly ---------- */
+(function mark(){
+  const LG={"GW":44,"GH":55,"b64":"A8AAAAABwwAAAAAwCAAAAAEAQAAAABgCAAAAAIAQAAAABAEAAAAAIAgAAAADAIAAgAAQCfh/AB+AcHgYAg4cAgDAQH4gEAQMAwHwgCBgEAHMAwMAgAZgMAwEABMGAGBgALGAAYIADjAADBABzAAAMYA5gAAAjAdgAAAGQOwAAAAaDwAAAADxwAAAAAM4AAAAAB4AAAAAAOAAAAAAF4AAAAACfgAAAADC+AAAABgiwAAAAgETAAAAQBDMAAAYAIYwAAMACDDAAHgAwIMACIAEBAwAjABAMCAMYAIBggAjACAMQAGP/wAkAAfgcAGAAAMBwBwAABAPBmAAAIC/gwAADAkAIAAAQEgMAAAGBHOAAAAgYeAAAAECAAAAABggAAAAAMEAAAAABhAAAAAAHwAA","CX":21.34,"CY":27.12};
+  const raw=atob(LG.b64), P=[];
+  for(let j=0;j<LG.GH;j++) for(let i=0;i<LG.GW;i++){
+    const n=j*LG.GW+i; if(!(raw.charCodeAt(n>>3)&(128>>(n&7)))) continue;
+    P.push({gx:i+.5-LG.CX, gy:j+.5-LG.CY});
+  }
+  const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function paint(cv,k,alpha){
+    const ctx=cv.getContext('2d');
+    const w=cv.clientWidth, h=cv.clientHeight; if(!w) return;
+    const d=Math.min(2,window.devicePixelRatio||1);
+    const W=Math.round(w*d), H=Math.round(h*d);
+    if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+    ctx.clearRect(0,0,W,H);
+    const cell=w/LG.GW*d, cx=LG.CX*cell, cy=LG.CY*cell, sz=Math.max(1,Math.round(cell*.92));
+    ctx.fillStyle='rgb(242,242,240)'; ctx.globalAlpha=alpha;
+    for(const p of P){
+      const X=cx+Math.round(p.gx*k)*cell, Y=cy+Math.round(p.gy*k)*cell;
+      ctx.fillRect(Math.round(X),Math.round(Y),sz,sz);
+    }
+  }
+  const big=document.getElementById('mark');
+  const minis=[...document.querySelectorAll('canvas.minimark')];
+  function draw(t){
+    if(!still) requestAnimationFrame(draw);
+    if(document.hidden) return;
+    const k=still?1:1+Math.sin((t||0)/2600)*.018;
+    paint(big,k,.85);
+    minis.forEach(m=>paint(m,1,.9));
+  }
+  requestAnimationFrame(draw);
+  addEventListener('resize',()=>{ if(still) draw(0); });
+})();
+
+/* ---------- tracking: what linktree counts, kept anonymous ----------
+   one row per view and per click: which link, where the visitor came from
+   (utm_source or the referrer's platform), a continent from the timezone,
+   phone/tablet/desktop, the browser language, and a per-visit id so clicks
+   can be joined to their view. never an ip, never a precise location,
+   never a name. ?nt switches it off (for checking the page). */
+(function track(){
+  const SB_URL='https://sqrriiduxnbjcdpdbiyq.supabase.co';
+  const SB_KEY='sb_publishable_InhTMA89gwNxRVeKdAlE1g_dpko7Gu7';
+  const q=new URL(location.href).searchParams;
+  if(q.has('nt')||navigator.doNotTrack==='1') return;
+
+  const REGION=(()=>{try{
+    const tz=(Intl.DateTimeFormat().resolvedOptions().timeZone||'').split('/')[0].toLowerCase();
+    const m={america:'americas',australia:'oceania',pacific:'oceania',antarctica:'',atlantic:'',indian:'',arctic:'',etc:'',utc:''};
+    const r=(tz in m)? m[tz] : tz;
+    return ['europe','americas','asia','africa','oceania'].includes(r)? r : '';
+  }catch(e){ return ''; }})();
+  const SRC=(()=>{try{
+    const utm=(q.get('utm_source')||q.get('src')||q.get('ref')||'').toLowerCase().slice(0,24);
+    if(utm) return utm.replace(/[^a-z0-9._-]/g,'');
+    const h=(document.referrer? new URL(document.referrer).hostname:'').toLowerCase();
+    if(!h||h===location.hostname) return 'direct';
+    if(h.includes('instagram'))return 'instagram';
+    if(h.includes('t.co')||h.includes('twitter')||h.includes('x.com'))return 'x';
+    if(h.includes('substack'))return 'substack';
+    if(h.includes('youtu'))return 'youtube';
+    if(h.includes('linkedin'))return 'linkedin';
+    if(h.includes('facebook'))return 'facebook';
+    if(h.includes('tiktok'))return 'tiktok';
+    if(h.includes('google'))return 'google';
+    if(h.includes('discord'))return 'discord';
+    if(h.includes('spotify'))return 'spotify';
+    return h.slice(0,40);
+  }catch(e){ return 'direct'; }})();
+  const REF=(()=>{try{ const h=document.referrer? new URL(document.referrer).hostname:''; return h===location.hostname?'':h.slice(0,120); }catch(e){ return ''; }})();
+  const DEVICE=(()=>{ const w=Math.min(screen.width,screen.height), ua=navigator.userAgent;
+    if(/iPad|Tablet/i.test(ua)||(w>=600&&w<1000&&'ontouchstart' in window)) return 'tablet';
+    if(/Mobi|Android|iPhone/i.test(ua)||w<600) return 'phone'; return 'desktop'; })();
+  const LANG=(navigator.language||'').slice(0,16);
+  const SID=(crypto.randomUUID? crypto.randomUUID() : Math.random().toString(36).slice(2)).replace(/-/g,'').slice(0,32);
+  const CAMP=(q.get('utm_campaign')||q.get('c')||'').toLowerCase().slice(0,40).replace(/[^a-z0-9._-]/g,'');
+
+  function send(kind,link){
+    const body=JSON.stringify({p_kind:kind,p_link:link||null,p_src:SRC||null,p_ref:(CAMP?REF+'|'+CAMP:REF)||null,p_region:REGION||null,p_device:DEVICE,p_lang:LANG||null,p_sid:SID});
+    try{
+      fetch(SB_URL+'/rest/v1/rpc/log_link_event',{method:'POST',keepalive:true,
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},body}).catch(()=>{});
+    }catch(e){}
+  }
+  send('view');
+  const seen=new Set();
+  document.addEventListener('click',e=>{
+    const a=e.target.closest('a[data-l]'); if(!a) return;
+    const id=a.getAttribute('data-l');
+    if(seen.has(id)&&e.detail>1) return;
+    seen.add(id); send('click',id);
+  },{capture:true});
+  document.addEventListener('auxclick',e=>{
+    const a=e.target.closest('a[data-l]'); if(!a||e.button!==1) return;
+    send('click',a.getAttribute('data-l'));
+  },{capture:true});
+})();
+</script>
+</body>
+</html>
