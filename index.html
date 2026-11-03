@@ -117,6 +117,7 @@
   .also a{color:var(--g60);border-bottom:1px solid transparent;transition:color .18s,border-color .18s;}
   .also a:hover,.also a:focus-visible{color:var(--ink);border-bottom-color:var(--g40);outline:none;}
 
+  .lines .head{margin:22px 0 -2px;padding:12px 20px 0;border-top:1px solid var(--g25);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--g60);}
   footer{margin-top:34px;text-align:center;color:var(--g25);font-size:11px;letter-spacing:.08em;}
   footer a{color:var(--g40);}
   footer a:hover{color:var(--ink);}
@@ -159,36 +160,37 @@
 /* ---------- the links: edit here. id is what the tracking records. ---------- */
 const SITE='https://sof-studio-v100.vercel.app';
 const LINES=[
-  {id:'now', k:'alone together — the film', tag:'new', d:'highlights 001', href:'https://youtu.be/UFmeF6Un_rM',
-    img:'https://i.ytimg.com/vi/UFmeF6Un_rM/hqdefault.jpg'},
-  {id:'listen', k:'music', d:'emotional electronic music — where every world begins', href:'https://open.spotify.com/artist/4syKpCOJEOnegH5QmuGnKk',
+  {id:'listen', k:'listen to my music', d:'on spotify — emotional electronic music', href:'https://open.spotify.com/artist/4syKpCOJEOnegH5QmuGnKk',
     img:'https://image-cdn-fa.spotifycdn.com/image/ab676161000051745bc5bd1767967b125c58b1b2',
-    also:[{id:'listen-bandcamp',t:'collect the music',href:'https://sofractures.bandcamp.com/'},
-          {id:'listen-playlist',t:"where i’m @ — playlist",href:'https://open.spotify.com/playlist/6isoH65GLBFtBhKsMnrwsR'}]},
-  {id:'at', k:'alone together', d:'a live work for strangers — alone, then together, then alone together', href:'https://alonetogether.soundoffractures.com/',
-    img:'https://substackcdn.com/image/fetch/$s_!IAmd!,w_600,h_338,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2b967c12-3be1-4b84-b4b3-193e103b3807_3184x1660.jpeg',
-    also:[{id:'at-community',t:'join the community',href:'https://alonetogether.dfos.com/'},
-          {id:'at-read',t:'alone together: two days later',href:'https://soundoffractures.substack.com/p/alone-together-building-for-depth'}]},
+    also:[{id:'listen-bandcamp',t:'buy it on bandcamp',href:'https://sofractures.bandcamp.com/'},
+          {id:'listen-playlist',t:"where i’m @ — my playlist",href:'https://open.spotify.com/playlist/6isoH65GLBFtBhKsMnrwsR'}]},
+  {id:'letters', k:'join my newsletter', d:'occasional letters on substack — experiments, essays, invitations', href:'https://soundoffractures.substack.com',
+    img:'https://substackcdn.com/image/fetch/$s_!NFRk!,w_400,h_400,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1d2ea92c-8b8f-4660-a658-3def35542b0c_1280x1280.png'},
+  {head:'projects'},
+  {id:'now', k:'alone together — the film', tag:'new', d:'a live work for strangers — alone, then together, then alone together', href:'https://youtu.be/UFmeF6Un_rM',
+    img:'https://i.ytimg.com/vi/UFmeF6Un_rM/hqdefault.jpg',
+    also:[{id:'at-read',t:'read more about alone together',href:'https://soundoffractures.substack.com/p/alone-together-building-for-depth'},
+          {id:'at-community',t:'join the alone together online community',href:'https://alonetogether.dfos.com/'}]},
+  {id:'at', k:'leave a memory and make a custom song', d:'the alone together platform', href:'https://alonetogether.soundoffractures.com/',
+    img:'https://substackcdn.com/image/fetch/$s_!IAmd!,w_600,h_338,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2b967c12-3be1-4b84-b4b3-193e103b3807_3184x1660.jpeg'},
   {id:'scenes', k:'scenes', d:'the participatory album', href:'https://scenes.soundoffractures.com/',
     img:'https://scenes.soundoffractures.com/social-images/opengraph-image.jpg',
-    also:[{id:'scenes-book',t:'the post card book',href:'https://soundoffractures.metalabel.com/scenesbook?variantId=1'},
-          {id:'scenes-read',t:'beyond streams & virality',href:'https://soundoffractures.substack.com/p/beyond-streams-and-virality-a-case'}]},
-  {id:'letters', k:'the letters', d:'occasional letters — experiments, essays, invitations. no noise.', href:'https://soundoffractures.substack.com',
-    img:'https://substackcdn.com/image/fetch/$s_!NFRk!,w_400,h_400,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F1d2ea92c-8b8f-4660-a658-3def35542b0c_1280x1280.png'},
+    also:[{id:'scenes-read',t:'read more about scenes',href:'https://soundoffractures.substack.com/p/beyond-streams-and-virality-a-case'}]},
+  {head:'more'},
   {id:'shop', k:'shop', d:'more than merch — memories you can hold', href:'https://sofractures.myshopify.com/',
     img:'https://metalabel.imgix.net/QmdT71Cyt5LtxaycjrB8dNRhQJh8okuJRi1nEwJ1oUmQZK?w=200',
-    also:[{id:'shop-cards',t:'alone together conversation cards',href:'https://sofractures.myshopify.com/products/alone-together-conversation-cards'},
-          {id:'shop-book',t:'scenes post card book',href:'https://sofractures.myshopify.com/products/scenes-prompts-to-reflect-the-postcard-book'},
-          {id:'shop-metalabel',t:'on metalabel',href:'https://soundoffractures.metalabel.com/record_4szze9odexxo99tto?variantId=1'}]},
-  {id:'watch', k:'videos', d:'the worlds in motion', href:'https://www.youtube.com/channel/UChaLC-ENK3p4el3jiiFRcqw',
+    also:[{id:'shop-cards',t:'alone together conversation cards',href:'https://soundoffractures.metalabel.com/record_4szze9odexxo99tto?variantId=1'},
+          {id:'shop-book',t:'scenes: prompts to reflect — post card book',href:'https://soundoffractures.metalabel.com/scenesbook?variantId=1'}]},
+  {id:'watch', k:'watch the videos', d:'on youtube — the worlds in motion', href:'https://www.youtube.com/channel/UChaLC-ENK3p4el3jiiFRcqw',
     img:'https://i.ytimg.com/vi/97BGIyBCeso/hqdefault.jpg'},
-  {id:'world', k:'the map', d:'every project, record, film and essay, in one place', href:SITE, self:true, mark:true},
+  {id:'world', k:'explore the full site', d:'every project, record, film and essay, in one place', href:SITE, self:true, mark:true},
 ];
 
 (function render(){
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const ul=document.getElementById('lines');
   ul.innerHTML=LINES.map(l=>{
+    if(l.head) return '<li class="head">'+esc(l.head)+'</li>';
     const tgt=l.self?'':' target="_blank" rel="noopener"';
     const pic=l.mark? '<span class="pic mk"><canvas class="minimark" aria-hidden="true"></canvas></span>'
       : '<span class="pic">'+(l.img?'<img src="'+esc(l.img)+'" alt="" loading="lazy" decoding="async">':'')+'</span>';
