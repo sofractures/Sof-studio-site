@@ -245,7 +245,7 @@
   }
   #studioView.open{display:block;}
   .sdef{border-left:1px solid var(--g25);padding:2px 0 2px 16px;font-style:italic;color:var(--g60);}
-  #sdPatron .ww:after,#sdWork .ww:after{content:' →';}
+  #sdWork .ww:after{content:' →';}
   .wrow{display:flex;gap:18px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--g12);text-decoration:none;color:var(--ink);}
   .wrow .wt{font-size:12px;font-weight:700;letter-spacing:.02em;line-height:1.7;flex:1;}
   .wrow .ww{font-size:10px;color:var(--g40);letter-spacing:.06em;line-height:1.8;flex:0 0 46%;text-align:right;}
@@ -275,10 +275,6 @@
     background:var(--bg);border:1px solid var(--ink);padding:10px 22px;color:var(--ink);cursor:pointer;
   }
   .pform .send:hover{background:var(--ink);color:var(--bg);}
-  .pform .pchoice{display:flex;flex-direction:column;gap:10px;margin:0 0 18px;}
-  .pform .pchoice label{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-size:12px;line-height:1.7;letter-spacing:.02em;color:var(--g60);}
-  .pform .pchoice input{width:auto;flex:none;margin:5px 0 0;padding:0;border:none;accent-color:#f2f2f0;}
-  .pform .pchoice input:checked + span{color:var(--ink);}
   .pform .pdone{font-size:12px;line-height:2.1;letter-spacing:.03em;padding:10px 0;}
   /* credits */
   .pcredits{margin-bottom:14px;}
@@ -306,6 +302,7 @@
   .ptile:hover .ptt{text-decoration:underline;}
   .ptile .pts{display:block;font-size:9px;color:var(--g40);letter-spacing:.08em;margin-top:4px;}
   .pmail{font-size:10.5px;color:var(--g40);margin-top:28px;letter-spacing:.05em;}
+  .pmail.ptop{margin:14px 0 8px;line-height:1.9;}
   .pmail a{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
   .pback{
     position:fixed;top:24px;left:26px;font-family:var(--mono);font-size:11px;
@@ -1029,8 +1026,8 @@
   <nav class="menu-inner">
     <button class="mi" id="miSignup"><span class="u">sign up</span></button>
     <button class="mi" id="miStudio"><span class="u">studio</span></button>
-    <button class="mi" id="miPatron"><span class="u">support my work</span></button>
-    <button class="mi" id="miWork"><span class="u">work with me</span></button>
+    <button class="mi" id="miPatron"><span class="u">support my work ↗</span></button>
+    <button class="mi" id="miWork"><span class="u">outputs</span></button>
   </nav>
   <div class="menu-side">
     <div class="msocial">
@@ -1064,10 +1061,8 @@
 <div id="patronView">
   <button class="pback" id="patronBack">← back</button>
   <div class="patron">
-    <div class="pnum">— SOUND OF FRACTURES</div>
-    <h1>support my work</h1>
-    <!-- pre-launch: the studio-model content below is hidden until seams launches (jan 2027). remove `hidden` to bring it back. -->
-    <div class="prelaunch-hidden" hidden>
+    <div class="pnum">— THE STUDIO</div>
+    <h1>join the studio</h1>
     <p>seams studio is funded by people who want this work to exist. it funds the experiment, and the time it takes to make meaningful work, not the outcome.</p>
     <div class="plabel">THE MODEL</div>
     <div class="pcredits">
@@ -1114,15 +1109,10 @@
     </div>
     <div class="plabel">START THE CONVERSATION</div>
     <p>it starts as a conversation — write to me, or leave a note here.</p>
-    </div>
     <form class="pform" id="patronForm">
-      <div class="pchoice" role="radiogroup" aria-label="what would you like">
-        <label><input type="radio" name="ptKind" value="executive producer" checked><span>learn more about becoming an executive producer of my work</span></label>
-        <label><input type="radio" name="ptKind" value="patron community"><span>join the patron community</span></label>
-      </div>
       <input type="email" id="ptEmail" placeholder="your email" autocomplete="email" required>
       <input type="text" id="ptWeb" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <textarea id="ptNote" rows="3" maxlength="600" placeholder="anything you’d like to add (optional)"></textarea>
+      <textarea id="ptNote" rows="3" maxlength="600" placeholder="what part of the work do you want to help make possible? (optional)"></textarea>
       <button class="send" type="submit">send</button>
     </form>
     <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
@@ -1156,8 +1146,8 @@
     <div class="plabel">DOORS</div>
     <div class="wlist">
       <a class="wrow" href="https://soundoffractures.substack.com" target="_blank" rel="noopener"><span class="wt">follow the work</span><span class="ww">substack</span></a>
-      <a class="wrow" href="#" id="sdPatron"><span class="wt">step into it</span><span class="ww">support my work</span></a>
-      <a class="wrow" href="#" id="sdWork"><span class="wt">bring it somewhere</span><span class="ww">work with me</span></a>
+      <a class="wrow" href="https://soundoffractures.substack.com/subscribe" target="_blank" rel="noopener" id="sdPatron"><span class="wt">step into it</span><span class="ww">support my work ↗</span></a>
+      <a class="wrow" href="#" id="sdWork"><span class="wt">bring it somewhere</span><span class="ww">outputs</span></a>
     </div>
     <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
   </div>
@@ -1166,10 +1156,8 @@
 <div id="workView">
   <button class="pback" id="workBack">← back</button>
   <div class="patron">
-    <div class="pnum">— WORK WITH ME</div>
-    <h1>the practice travels</h1>
-    <p>the same method has now been an album, an exhibition, a book, a platform, a peer-reviewed chapter and a keynote. the thinking behind it lives in <a href="#" id="wkStudioLink">the studio</a>.</p>
-    <p>if you're interested in collaborating, write to me — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a>.</p>
+    <div class="pnum">— OUTPUTS</div>
+    <div class="pmail ptop">if you're interested in collaborating, write to me — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
 
     <div class="plabel">WHAT I DO</div>
     <div class="pcredits">
@@ -2887,7 +2875,7 @@ const VERSIONS=[
   {v:'v108', d:'4 nov 2026', url:'https://sof-studio-v108.vercel.app',
    t:'the studio page becomes its pre-launch edit: seams, launching january 2027.'},
   {v:'v109', d:'now', url:null,
-   t:'join the studio rests until launch; in its place, support my work — become an executive producer, or join the patron community.'},
+   t:'before launch, support my work simply leads to substack; work with me becomes outputs.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3080,10 +3068,10 @@ function openFlowNote(kind){
     a.setAttribute('target','_blank');
     flowFlags.sub=1;
   } else {
-    p.textContent='you clearly like to lean in deep and really explore. if the work resonates, there are closer ways to support it.';
-    a.textContent='support my work';
-    a.href='#';
-    a.removeAttribute('target');
+    p.textContent='you clearly like to lean in deep and really explore. if the work resonates, you can support it on substack.';
+    a.textContent='support my work ↗';
+    a.href='https://soundoffractures.substack.com/subscribe';
+    a.setAttribute('target','_blank');
     flowFlags.patron=1;
   }
   saveFlow();
@@ -3137,15 +3125,15 @@ const menuView=document.getElementById('menuView');
 const patronView=document.getElementById('patronView');
 const signupBox=document.getElementById('signupBox');
 
-/* conversations (work with me, support my work) go straight to jamie's inbox via web3forms;
+/* conversations (work with me, join the studio) go straight to jamie's inbox via web3forms;
    the reply goes back to the sender's address. the sign-up list stays in supabase. */
 const W3F_KEY='05a43c81-2b03-4735-9799-862444b06d26';
-function sendNote(kind,email,note,cb,choice){
-  const subj = kind==='patron' ? 'support my work — '+(choice||'a note')+' — from the site' : 'work with me — a note from the site';
+function sendNote(kind,email,note,cb){
+  const subj = kind==='patron' ? 'join the studio — a note from the site' : 'work with me — a note from the site';
   fetch('https://api.web3forms.com/submit',{
     method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify({access_key:W3F_KEY, subject:subj, from_name:'soundoffractures.com',
-      email:email, replyto:email, message:(choice?'['+choice+'] ':'')+(note||'(no note — just an address)'), form:kind})
+      email:email, replyto:email, message:note||'(no note — just an address)', form:kind})
   }).then(r=>r.json()).then(j=>cb(!!(j&&j.success))).catch(()=>cb(false));
 }
 function sbSignup(email,kind,note,cb){
@@ -3193,7 +3181,7 @@ document.getElementById('miSignup').onclick=()=>{
 document.getElementById('signupBack').onclick=()=>signupView.classList.remove('open');
 document.getElementById('miPatron').onclick=()=>{
   menuView.classList.remove('open');
-  patronView.classList.add('open');
+  window.open('https://soundoffractures.substack.com/subscribe','_blank','noopener');
 };
 document.getElementById('patronBack').onclick=()=>patronView.classList.remove('open');
 const workView=document.getElementById('workView');
@@ -3208,17 +3196,13 @@ document.getElementById('miStudio').onclick=()=>{
   studioView.classList.add('open');
 };
 document.getElementById('studioBack').onclick=()=>studioView.classList.remove('open');
-document.getElementById('sdPatron').onclick=e=>{
-  e.preventDefault();
-  studioView.classList.remove('open');
-  patronView.classList.add('open');
-};
+/* sdPatron: a plain link to substack (pre-launch) */
 document.getElementById('sdWork').onclick=e=>{
   e.preventDefault();
   studioView.classList.remove('open');
   workView.classList.add('open');
 };
-document.getElementById('wkStudioLink').onclick=e=>{
+if(document.getElementById('wkStudioLink')) document.getElementById('wkStudioLink').onclick=e=>{
   e.preventDefault();
   workView.classList.remove('open');
   studioView.classList.add('open');
@@ -3263,14 +3247,13 @@ document.getElementById('patronForm').addEventListener('submit',e=>{
     form.innerHTML='<div class="pdone">thank you — the conversation is open.<br>jamie reads every one of these and will reply to you directly.</div>';
   };
   if(hp && hp.value){ finish(); return; }
-  const choice=((document.querySelector('input[name=ptKind]:checked')||{}).value)||'';
   sendNote('patron',email,note,ok=>{
     if(ok) finish();
     else{
       const b=form.querySelector('.send');
       if(b) b.textContent='try again';
     }
-  },choice);
+  });
 });
 
 /* ---------- leave a trace ---------- */
