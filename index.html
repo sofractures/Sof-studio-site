@@ -663,12 +663,16 @@
   }
   #privacyView.open{display:block;}
   /* memories: the corner pill and the page */
-  #memPill{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:40;
-    font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink);cursor:pointer;height:34px;padding:0 16px;
-    border-radius:999px;border:1px solid rgba(242,242,240,.28);background:rgba(10,10,10,.42);
-    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:border-color .2s,opacity .4s;opacity:0;pointer-events:none;}
+  /* v113 — the way in is a small microphone, printed in dots like the people holding hands */
+  #memPill{position:fixed;right:max(24px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));z-index:20;
+    background:none;border:0;padding:4px 2px;color:var(--g40);cursor:pointer;display:block;
+    transition:color .2s,opacity .35s;opacity:0;pointer-events:none;}
+  #memPill svg{width:17px;height:19px;display:block;fill:currentColor;transition:transform .3s;}
   body.mapready #memPill{opacity:1;pointer-events:auto;}
-  #memPill:hover{border-color:var(--g60);}
+  #memPill:hover,#memPill:focus-visible{color:var(--ink);}
+  #memPill:hover svg{transform:translateY(-1px);}
+  body.insec #memPill,body.dirmode #memPill{opacity:0;pointer-events:none;}
+  @media (max-width:640px){ #memPill{right:max(18px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));} #memPill svg{width:15px;height:16px;} }
   #memView{position:fixed;inset:0;z-index:52;display:none;padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #memView.open{display:block;}
   .mtabs{display:flex;gap:22px;margin:4px 0 30px;}
@@ -1255,7 +1259,19 @@
   </div>
 </div>
 
-<button id="memPill" aria-label="leave a memory">leave a memory</button>
+<button id="memPill" aria-label="leave a memory" title="leave a memory"><svg viewBox="0 0 20 22" aria-hidden="true">
+  <defs>
+    <pattern id="htDotsM" width="1.7" height="1.7" patternUnits="userSpaceOnUse"><circle cx=".85" cy=".85" r=".64"/></pattern>
+    <mask id="htMic" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="22">
+      <g fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="butt">
+        <rect x="6.6" y="1.3" width="6.8" height="11.4" rx="3.4"/>
+        <path d="M2 9 a8 8 0 0 0 16 0"/>
+        <path d="M10 17 V20.4"/><path d="M5 20.6 H15"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="20" height="22" fill="url(#htDotsM)" mask="url(#htMic)"/>
+</svg></button>
 <div id="memView" aria-hidden="true">
   <button class="pback" id="memBack">← back</button>
   <div class="patron">
@@ -2953,8 +2969,10 @@ const VERSIONS=[
    t:'the event 2 photo deck gets its picture.'},
   {v:'v111', d:'4 nov 2026', url:'https://sof-studio-v111.vercel.app',
    t:'test: leave a memory — a voice note or a few words — and hear memories inside the music, in place of the song’s own voice.'},
-  {v:'v112', d:'now', url:null,
+  {v:'v112', d:'4 nov 2026', url:'https://sof-studio-v112.vercel.app',
    t:'test: the alone together memories say where they came from.'},
+  {v:'v113', d:'now', url:null,
+   t:'test: the corner pill becomes a small microphone, printed in dots like the people holding hands.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
