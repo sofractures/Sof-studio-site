@@ -2951,8 +2951,10 @@ const VERSIONS=[
    t:'before launch, support my work simply leads to substack; work with me becomes outputs.'},
   {v:'v110', d:'4 nov 2026', url:'https://sof-studio-v110.vercel.app',
    t:'the event 2 photo deck gets its picture.'},
-  {v:'v111', d:'now', url:null,
+  {v:'v111', d:'4 nov 2026', url:'https://sof-studio-v111.vercel.app',
    t:'test: leave a memory — a voice note or a few words — and hear memories inside the music, in place of the song’s own voice.'},
+  {v:'v112', d:'now', url:null,
+   t:'test: the alone together memories say where they came from.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3589,7 +3591,7 @@ requestAnimationFrame(draw);
     if(!list||!list.length){ box.innerHTML='<div class="mq">none yet — be the first.</div>'; return; }
     box.innerHTML=list.map((m,k)=>{
       const who=[m.name,m.place].filter(Boolean).join(' · ')||'someone';
-      const q=m.prompt? esc(m.prompt) : (m.source==='alone-together'?'left at alone together':'');
+      const q=m.prompt? esc(m.prompt) : (m.source==='alone-together'?'left as part of the alone together project':'');
       return '<div class="mrow" data-k="'+k+'">'+(m.kind==='voice'?'<button class="mp" aria-label="play">▶</button>':'<span></span>')
         +'<div><div class="mw">'+esc(who)+'</div>'+(q?'<div class="mq">'+q+'</div>':'')+(m.kind==='text'&&m.text?'<div class="mt">'+esc(m.text)+'</div>':'')+'</div></div>';
     }).join('');
