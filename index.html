@@ -651,7 +651,7 @@
     transform:translate(-50%,-50%);
   }
   #pgvid:after{content:'';position:absolute;inset:0;background:rgba(10,10,10,.74);}
-  #patronView,#workView,#studioView,#signupView{background:transparent;}
+  #patronView,#workView,#studioView,#signupView,#memView{background:transparent;}
   #signupView{
     position:fixed;inset:0;z-index:52;display:none;
     padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;
@@ -662,6 +662,45 @@
     padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;
   }
   #privacyView.open{display:block;}
+  /* memories: the corner pill and the page */
+  #memPill{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));z-index:40;
+    font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--ink);cursor:pointer;height:34px;padding:0 16px;
+    border-radius:999px;border:1px solid rgba(242,242,240,.28);background:rgba(10,10,10,.42);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:border-color .2s,opacity .4s;opacity:0;pointer-events:none;}
+  body.mapready #memPill{opacity:1;pointer-events:auto;}
+  #memPill:hover{border-color:var(--g60);}
+  #memView{position:fixed;inset:0;z-index:52;display:none;padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  #memView.open{display:block;}
+  .mtabs{display:flex;gap:22px;margin:4px 0 30px;}
+  .mtabs button,.mmode button,.malt,.mafter button{font-family:var(--mono);background:none;border:0;padding:0;cursor:pointer;color:var(--g40);font-size:12px;letter-spacing:.06em;}
+  .mtabs button.on,.mmode button.on{color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:3px;}
+  .mprompt{font-size:17px;line-height:1.6;color:var(--ink);max-width:560px;margin:0 0 10px;}
+  .malt{font-size:10.5px;color:var(--g40);border-bottom:1px dotted var(--g25);margin-bottom:30px;}
+  .mmode{display:flex;gap:18px;margin:0 0 22px;}
+  .mrec{width:84px;height:84px;border-radius:50%;border:1px solid var(--g60);background:rgba(10,10,10,.35);color:var(--ink);cursor:pointer;
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;transition:all .25s;}
+  .mrec.on{border-color:#e05a4a;color:#e05a4a;box-shadow:0 0 0 0 rgba(224,90,74,.5);animation:mpulse 1.6s infinite;}
+  @keyframes mpulse{0%{box-shadow:0 0 0 0 rgba(224,90,74,.45)}70%{box-shadow:0 0 0 18px rgba(224,90,74,0)}100%{box-shadow:0 0 0 0 rgba(224,90,74,0)}}
+  .mtime{font-size:10.5px;color:var(--g40);letter-spacing:.05em;margin:12px 0 18px;}
+  .mafter{font-size:11px;color:var(--g40);margin:0 0 24px;}
+  .mafter button{color:var(--ink);border-bottom:1px dotted var(--g40);font-size:11px;}
+  #mWords{width:100%;max-width:560px;min-height:120px;background:transparent;border:1px solid var(--g25);color:var(--ink);
+    font-family:var(--mono);font-size:13px;line-height:1.7;padding:12px;resize:vertical;margin:0 0 20px;}
+  .mmeta input[type=text]{display:block;width:100%;max-width:420px;background:transparent;border:0;border-bottom:1px solid var(--g25);
+    color:var(--ink);font-family:var(--mono);font-size:13px;padding:10px 0;margin:0 0 12px;outline:none;}
+  .mok{display:flex;gap:10px;align-items:flex-start;font-size:11px;line-height:1.7;color:var(--g60);max-width:460px;margin:14px 0 18px;cursor:pointer;}
+  .mok input{margin-top:4px;accent-color:#f2f2f0;}
+  .mmeta .send{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--bg);background:var(--ink);border:0;border-radius:999px;padding:10px 22px;cursor:pointer;}
+  .mmeta .send:disabled{opacity:.3;cursor:default;}
+  .mstatus{font-size:11px;color:var(--g60);margin-top:14px;min-height:1.6em;}
+  .mlead{font-size:12px;line-height:1.8;color:var(--g60);max-width:520px;}
+  .mrow{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;padding:16px 0;border-top:1px solid var(--rule,rgba(242,242,240,.14));max-width:620px;}
+  .mrow:last-child{border-bottom:1px solid var(--rule,rgba(242,242,240,.14));}
+  .mrow .mp{width:30px;height:30px;border-radius:50%;border:1px solid var(--g40);background:none;color:var(--ink);cursor:pointer;font-size:10px;}
+  .mrow.playing .mp{border-color:var(--ink);background:var(--ink);color:var(--bg);}
+  .mrow .mw{font-size:13px;color:var(--ink);}
+  .mrow .mq{font-size:10.5px;color:var(--g40);margin-top:3px;line-height:1.6;}
+  .mrow .mt{font-size:12.5px;line-height:1.75;color:var(--g80);margin-top:6px;}
   .pnote{font-size:10.5px;color:var(--g40);letter-spacing:.05em;line-height:1.9;margin-top:16px;max-width:520px;}
   .pnote a,.fnpriv{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
   .pnote a:hover,.fnpriv:hover{color:var(--ink);border-color:var(--ink);}
@@ -1210,8 +1249,42 @@
     <p>your email, only if you give it — for the occasional email, or to reply to you.</p>
     <p>your trail — the coloured line you draw as you wander, the name you give it, the continent your device's clock is set to, and where you arrived from (instagram, substack…). trails are shared on the map; your email never is.</p>
     <p>which links get tapped, counted without names.</p>
+    <p>your memory, if you leave one — a voice note or a few words, with the name and place you choose. others hear it only once jamie has listened to it.</p>
     <p>never your ip address, never your exact location. nothing is sold or shared. the data sits with supabase, in a locked database only jamie can read.</p>
     <p>to see what's kept about you, or to have it removed: <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></p>
+  </div>
+</div>
+
+<button id="memPill" aria-label="leave a memory">leave a memory</button>
+<div id="memView" aria-hidden="true">
+  <button class="pback" id="memBack">← back</button>
+  <div class="patron">
+    <div class="pnum">— MEMORIES</div>
+    <h1>memories</h1>
+    <div class="mtabs"><button id="mtLeave" class="on">leave one</button><button id="mtListen">listen</button></div>
+    <div id="mLeave">
+      <div class="mprompt" id="mPrompt"></div>
+      <button class="malt" id="mNext">another question</button>
+      <div class="mmode"><button id="mmVoice" class="on">record</button><button id="mmText">write</button></div>
+      <div id="mVoiceBox">
+        <button class="mrec" id="mRec">record</button>
+        <div class="mtime" id="mTime">up to 60 seconds</div>
+        <div class="mafter" id="mAfter" hidden><button id="mHear">hear it in the music</button> &nbsp;·&nbsp; <button id="mAgain">record again</button></div>
+      </div>
+      <div id="mTextBox" hidden><textarea id="mWords" maxlength="600" placeholder="a few words"></textarea></div>
+      <div class="mmeta" id="mMeta" hidden>
+        <input type="text" id="mName" placeholder="your first name (optional)" maxlength="40" autocomplete="given-name">
+        <input type="text" id="mPlace" placeholder="where you are (optional)" maxlength="60">
+        <label class="mok"><input type="checkbox" id="mOk"><span>my memory can be heard by others on this site, once jamie has listened to it</span></label>
+        <button class="send" id="mSave" disabled>leave it</button>
+        <div class="mstatus" id="mStatus"></div>
+      </div>
+      <div class="pnote"><a class="toPriv" href="?go=privacy">privacy</a></div>
+    </div>
+    <div id="mListen" hidden>
+      <p class="mlead">memories left by people who found the music. each one takes the place of the voice in the song that's playing.</p>
+      <div id="mList"></div>
+    </div>
   </div>
 </div>
 
@@ -2876,8 +2949,10 @@ const VERSIONS=[
    t:'the studio page becomes its pre-launch edit: seams, launching january 2027.'},
   {v:'v109', d:'4 nov 2026', url:'https://sof-studio-v109.vercel.app',
    t:'before launch, support my work simply leads to substack; work with me becomes outputs.'},
-  {v:'v110', d:'now', url:null,
+  {v:'v110', d:'4 nov 2026', url:'https://sof-studio-v110.vercel.app',
    t:'the event 2 photo deck gets its picture.'},
+  {v:'v111', d:'now', url:null,
+   t:'test: leave a memory — a voice note or a few words — and hear memories inside the music, in place of the song’s own voice.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3264,6 +3339,7 @@ window.addEventListener('keydown',e=>{
   if(ytView.classList.contains('open')){ closeYt(); return; }
   if(flowNote.classList.contains('on')){ closeFlowNote(); return; }
   if(privacyView.classList.contains('open')){ closePrivacy(); return; }
+  if(document.getElementById('memView').classList.contains('open')){ document.getElementById('memBack').click(); return; }
   if(patronView.classList.contains('open')){ patronView.classList.remove('open'); return; }
   if(workView.classList.contains('open')){ workView.classList.remove('open'); return; }
   if(studioView.classList.contains('open')){ studioView.classList.remove('open'); return; }
@@ -3290,7 +3366,8 @@ const PAGE_VIDEOS = {
   studioView:'UFmeF6Un_rM',
   signupView:'nHbDu3u6JaY',
   patronView:'YRlw8RfUoU8',
-  workView:'YRlw8RfUoU8'
+  workView:'YRlw8RfUoU8',
+  memView:'UFmeF6Un_rM'
 };
 (()=>{
   const el=document.getElementById('pgvid');
@@ -3376,6 +3453,163 @@ const PAGE_VIDEOS = {
 })();
 
 requestAnimationFrame(draw);
+
+/* ---------- memories: leave one (voice or words), or listen ----------
+   new voice notes go to a private folder; a memory is heard by others only once jamie approves it
+   (supabase: site_memories.approved). listening fetches the approved list and plays each one
+   into the music through window.SOF. */
+(()=>{
+  const view=document.getElementById('memView'); if(!view) return;
+  const $=id=>document.getElementById(id);
+  const PROMPTS=[
+    'share a moment when music made you feel less alone.',
+    'tell me about a moment music was playing and you felt totally present. a dancefloor, a wedding, a gig?',
+    'tell me about a moment from your past that music or a song takes you straight back to.',
+    'what does music do for you that nothing else can?'
+  ];
+  const SBH={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+  let pi=Math.floor(Math.random()*PROMPTS.length), mode='voice';
+  const setPrompt=()=>{ $('mPrompt').textContent=PROMPTS[pi]; };
+  setPrompt();
+  $('mNext').onclick=()=>{ pi=(pi+1)%PROMPTS.length; setPrompt(); };
+
+  function open(tab){
+    document.getElementById('menuView')&&document.getElementById('menuView').classList.remove('open');
+    view.classList.add('open'); view.setAttribute('aria-hidden','false'); view.scrollTop=0;
+    show(tab||'leave');
+  }
+  window.openMemories=open;
+  function close(){ view.classList.remove('open'); view.setAttribute('aria-hidden','true'); stopRec(true); }
+  $('memPill').onclick=()=>open('leave');
+  $('memBack').onclick=close;
+  function show(tab){
+    $('mtLeave').classList.toggle('on',tab==='leave'); $('mtListen').classList.toggle('on',tab==='listen');
+    $('mLeave').hidden=tab!=='leave'; $('mListen').hidden=tab!=='listen';
+    if(tab==='listen') loadList();
+  }
+  $('mtLeave').onclick=()=>show('leave'); $('mtListen').onclick=()=>show('listen');
+  setTimeout(()=>document.body.classList.add('mapready'),3500);
+
+  /* --- voice or words --- */
+  function setMode(m){ mode=m; $('mmVoice').classList.toggle('on',m==='voice'); $('mmText').classList.toggle('on',m==='text');
+    $('mVoiceBox').hidden=m!=='voice'; $('mTextBox').hidden=m!=='text'; refresh(); }
+  $('mmVoice').onclick=()=>setMode('voice'); $('mmText').onclick=()=>setMode('text');
+  function ready(){ return mode==='voice' ? !!recBlob : $('mWords').value.trim().length>=2; }
+  function refresh(){ $('mMeta').hidden=!ready(); $('mSave').disabled=!(ready()&&$('mOk').checked); }
+  $('mWords').addEventListener('input',refresh); $('mOk').addEventListener('change',refresh);
+
+  /* --- recording: up to 60 seconds; the music steps back while the mic is open --- */
+  let mr=null, stream=null, chunks=[], recBlob=null, recMime='', recDur=0, t0=0, tick=0, cutT=0;
+  const MAX=60;
+  function pickMime(){ if(!window.MediaRecorder||!MediaRecorder.isTypeSupported) return '';
+    for(const m of ['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus']) if(MediaRecorder.isTypeSupported(m)) return m; return ''; }
+  async function startRec(){
+    if(!navigator.mediaDevices||!window.MediaRecorder){ $('mTime').textContent='this browser can’t record here — try writing it instead'; return; }
+    try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}); }
+    catch(e){ $('mTime').textContent='the microphone was blocked — allow it, or write it instead'; return; }
+    window.SOF&&window.SOF.memStop(); window.SOF&&window.SOF.recDuck(true);
+    recMime=pickMime(); chunks=[]; recBlob=null; refresh();
+    mr=new MediaRecorder(stream, recMime?{mimeType:recMime}:undefined);
+    mr.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+    mr.onstop=()=>{
+      const type=(mr.mimeType||recMime||'audio/webm');
+      recBlob=chunks.length? new Blob(chunks,{type}) : null;
+      recDur=Math.round((performance.now()-t0)/1000);
+      stream&&stream.getTracks().forEach(t=>t.stop()); stream=null;
+      window.SOF&&window.SOF.recDuck(false);
+      $('mRec').classList.remove('on'); $('mRec').textContent='record';
+      $('mRec').hidden=!!recBlob; $('mAfter').hidden=!recBlob;
+      $('mTime').textContent=recBlob? recDur+' seconds' : 'nothing came through — try again';
+      refresh();
+    };
+    mr.start(250); t0=performance.now();
+    $('mRec').classList.add('on'); $('mRec').textContent='stop'; $('mAfter').hidden=true;
+    clearInterval(tick); tick=setInterval(()=>{ const s=Math.floor((performance.now()-t0)/1000);
+      $('mTime').textContent=(MAX-s)+' seconds left'; },250);
+    clearTimeout(cutT); cutT=setTimeout(()=>stopRec(),MAX*1000);
+  }
+  function stopRec(quiet){
+    clearInterval(tick); clearTimeout(cutT);
+    if(mr&&mr.state!=='inactive'){ try{ mr.stop(); }catch(e){} }
+    else if(quiet){ stream&&stream.getTracks().forEach(t=>t.stop()); stream=null; window.SOF&&window.SOF.recDuck(false); }
+  }
+  $('mRec').onclick=()=>{ if(mr&&mr.state==='recording') stopRec(); else startRec(); };
+  $('mAgain').onclick=()=>{ window.SOF&&window.SOF.memStop(); recBlob=null; $('mAfter').hidden=true; $('mRec').hidden=false; $('mTime').textContent='up to 60 seconds'; refresh(); };
+  $('mHear').onclick=async()=>{
+    if(!recBlob||!window.SOF) return;
+    if(window.SOF.isPlaying()){ window.SOF.memStop(); $('mHear').textContent='hear it in the music'; return; }
+    $('mHear').textContent='tuning in…';
+    try{ await window.SOF.memPlay(recBlob,()=>{ $('mHear').textContent='hear it in the music'; }); $('mHear').textContent='stop'; }
+    catch(e){ $('mHear').textContent='hear it in the music'; }
+  };
+
+  /* --- leaving it --- */
+  const ext=m=>/mp4|m4a|aac/.test(m)?'mp4':/ogg/.test(m)?'ogg':'webm';
+  $('mSave').onclick=async()=>{
+    if($('mSave').disabled) return;
+    $('mSave').disabled=true; $('mStatus').textContent='leaving it…';
+    const id=(crypto.randomUUID?crypto.randomUUID():([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)));
+    let path=null, mime=null;
+    try{
+      if(mode==='voice'){
+        mime=(recBlob.type||'audio/webm').split(';')[0];
+        path='new/'+id+'.'+ext(mime);
+        const up=await fetch(SB_URL+'/storage/v1/object/site-memories/'+path,{method:'POST',headers:Object.assign({'Content-Type':mime,'x-upsert':'false'},SBH),body:recBlob});
+        if(!up.ok) throw new Error('upload '+up.status);
+      }
+      const trail=(typeof userTrail!=='undefined'&&userTrail&&/^[0-9a-f-]{36}$/.test(userTrail.id||''))?userTrail.id:null;
+      const r=await fetch(SB_URL+'/rest/v1/rpc/add_site_memory',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},SBH),
+        body:JSON.stringify({p_id:id,p_kind:mode,p_path:path,p_mime:mime,p_duration:mode==='voice'?recDur:null,p_prompt:PROMPTS[pi],
+          p_text:mode==='text'?$('mWords').value:null,p_name:$('mName').value,p_place:$('mPlace').value,p_trail:trail,p_consent:$('mOk').checked})});
+      const ok=r.ok && (await r.json())===true;
+      if(!ok) throw new Error('save');
+      window.SOF&&window.SOF.memStop();
+      $('mLeave').querySelectorAll('.mmode,#mVoiceBox,#mTextBox,#mMeta,.malt').forEach(n=>n.hidden=true);
+      $('mPrompt').textContent='thank you — it’s with me now. once i’ve listened, others will hear it inside the music. — jamie';
+    }catch(e){
+      $('mSave').disabled=false; $('mStatus').textContent='that didn’t go through — try again in a moment';
+    }
+  };
+
+  /* --- listening --- */
+  let list=null, playingRow=null;
+  async function loadList(){
+    const box=$('mList');
+    if(list){ render(); return; }
+    box.innerHTML='<div class="mq">gathering them…</div>';
+    try{
+      const r=await fetch(SB_URL+'/rest/v1/rpc/list_site_memories',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},SBH),body:'{}'});
+      if(!r.ok) throw new Error(r.status);
+      list=await r.json(); render();
+    }catch(e){ box.innerHTML='<div class="mq">memories aren’t switched on yet.</div>'; }
+  }
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function render(){
+    const box=$('mList');
+    if(!list||!list.length){ box.innerHTML='<div class="mq">none yet — be the first.</div>'; return; }
+    box.innerHTML=list.map((m,k)=>{
+      const who=[m.name,m.place].filter(Boolean).join(' · ')||'someone';
+      const q=m.prompt? esc(m.prompt) : (m.source==='alone-together'?'left at alone together':'');
+      return '<div class="mrow" data-k="'+k+'">'+(m.kind==='voice'?'<button class="mp" aria-label="play">▶</button>':'<span></span>')
+        +'<div><div class="mw">'+esc(who)+'</div>'+(q?'<div class="mq">'+q+'</div>':'')+(m.kind==='text'&&m.text?'<div class="mt">'+esc(m.text)+'</div>':'')+'</div></div>';
+    }).join('');
+    box.querySelectorAll('.mrow .mp').forEach(b=>b.onclick=()=>play(b.closest('.mrow')));
+  }
+  async function play(row){
+    const m=list[+row.dataset.k];
+    if(playingRow===row){ window.SOF.memStop(); row.classList.remove('playing'); row.querySelector('.mp').textContent='▶'; playingRow=null; return; }
+    if(playingRow){ playingRow.classList.remove('playing'); playingRow.querySelector('.mp').textContent='▶'; }
+    playingRow=row; row.classList.add('playing'); row.querySelector('.mp').textContent='…';
+    try{
+      const r=await fetch(SB_URL+'/storage/v1/object/authenticated/'+m.bucket+'/'+m.path,{headers:SBH});
+      if(!r.ok) throw new Error(r.status);
+      const blob=await r.blob();
+      if(playingRow!==row) return;
+      await window.SOF.memPlay(blob,()=>{ if(playingRow===row){ row.classList.remove('playing'); row.querySelector('.mp').textContent='▶'; playingRow=null; } });
+      row.querySelector('.mp').textContent='■';
+    }catch(e){ row.classList.remove('playing'); row.querySelector('.mp').textContent='▶'; if(playingRow===row) playingRow=null; }
+  }
+})();
 
 /* ---------- intro + background video ---------- */
 /* the reveal is the scenes platform's intro, rebuilt without react: eight full-bleed photographs
@@ -3802,6 +4036,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
      whose small speakers lose most of the low end */
   const VOL=matchMedia('(hover:none)').matches?.44:.31;
   let wantOn=true; try{ wantOn=localStorage.getItem(LS)!=='off'; }catch(e){}
+  let bed=null, memActive=false;
   let ctx=null, master=null, comp=null, IR={}, started=false, current=null, nextTimer=0, ticker=0, lastSong=-1, an=null, fbins=null;
   const R=(a,b)=>a+Math.random()*(b-a);
   const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -3816,6 +4051,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     /* a fast limiter last in line, so nothing the drift lands on can clip */
     const lim=ctx.createDynamicsCompressor(); lim.threshold.value=-4; lim.knee.value=0; lim.ratio.value=20; lim.attack.value=.002; lim.release.value=.15;
     comp.connect(master); master.connect(lim); lim.connect(ctx.destination); master.__lim=lim;
+    bed=ctx.createGain(); bed.gain.value=1; bed.connect(comp);
     an=ctx.createAnalyser(); an.fftSize=1024; an.smoothingTimeConstant=.8; lim.connect(an); fbins=new Float32Array(an.frequencyBinCount);
     IR=buildIR(ctx);
   }
@@ -3878,7 +4114,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     /* the grain cloud keeps to the song's key: each song picks a set of consonant intervals in semitones */
     const SETS=[[0,12],[0,-12],[0,7,12],[-12,-5,0],[0,12,19],[0,0,12],[-12,0,7]];
     let gset=pick(SETS);
-    const out=ctx.createGain(); out.gain.value=0; out.connect(comp);
+    const out=ctx.createGain(); out.gain.value=0; out.connect(bed);
     const verb=ctx.createConvolver(); verb.buffer=IR[room]; verb.connect(out);
     /* one grain cloud per song: stems send into it, grains are windowed slices of the recent past */
     const gIn=ctx.createGain(), gOut=ctx.createGain(); gOut.gain.value=.9; gOut.connect(out);
@@ -3914,7 +4150,8 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
       const dl=ctx.createDelay(3); dl.delayTime.value=delayT; const fb=ctx.createGain(); const dw=ctx.createGain(); dw.gain.value=.6;
       const rs=ctx.createGain(), gsnd=ctx.createGain();
       const pan=ctx.createStereoPanner(), vol=ctx.createGain();
-      src.connect(trim); trim.connect(filt);
+      const mute=ctx.createGain(); mute.gain.value=(st.role==='voice'&&memActive)?0:1;
+      src.connect(mute); mute.connect(trim); trim.connect(filt);
       filt.connect(dry); dry.connect(pan);
       filt.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(dw); dw.connect(pan);
       pan.connect(vol); vol.connect(out);
@@ -3924,7 +4161,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
       KEYS.forEach(key=>{ const r=rg[key]; cur[key]=R(r.min,r.max); const ph=Math.random();
         tg[key]={from:cur[key],to:R(r.min,r.max),t0:t0-drift*ph,t1:t0+drift*(1-ph)}; });
       src.start(t0);
-      return {src,filt,fb,rs,gsnd,pan,vol,rg,cur,tg,role:st.role};
+      return {src,mute,filt,fb,rs,gsnd,pan,vol,rg,cur,tg,role:st.role};
     }).filter(Boolean);
     grain();
     function step(){
@@ -3955,14 +4192,14 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
       stems.forEach(S=>{ try{S.src.stop();}catch(e){} });
       try{ cap.disconnect(); cap.onaudioprocess=null; out.disconnect(); }catch(e){}
     }
-    return {i,out,step,stop,room};
+    return {i,out,step,stop,room,verb,gIn,voiceMutes:stems.filter(S=>S.role==='voice').map(S=>S.mute)};
   }
 
   async function playSong(i,fade){
     lastSong=i;
     const bufs=await loadSong(i);
     if(!bufs.some(Boolean)) return false;
-    const p=makePlayer(i,bufs), now=ctx.currentTime, prev=current;
+    const p=makePlayer(i,bufs), now=ctx.currentTime, prev=current; p.__prev=prev;
     p.out.gain.setValueAtTime(0,now); p.out.gain.linearRampToValueAtTime(1,now+fade);
     if(prev){ prev.out.gain.setValueAtTime(prev.out.gain.value,now); prev.out.gain.linearRampToValueAtTime(0,now+fade);
       setTimeout(()=>{ prev.stop(); if(prev.i!==i && (!current||current.i!==prev.i)) delete cache[prev.i]; },fade*1000+300); }
@@ -4081,6 +4318,58 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     }
   }
   requestAnimationFrame(drawMark);
+
+  /* ---------- memories in the music ----------
+     a memory takes the voice's place: the song's own voice stem fades out, the memory plays clear
+     over a lowered bed, and a share of it goes into the song's room and grain cloud, so it sits
+     inside the music. when it ends, the voice comes back. */
+  let mem=null;
+  function ramp(g,to,t){ if(!g||!ctx) return; const now=ctx.currentTime; g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value,now); g.gain.linearRampToValueAtTime(to,now+t); }
+  function voices(to,t){ [current].concat(current&&current.__prev?[current.__prev]:[]).forEach(p=>p&&p.voiceMutes&&p.voiceMutes.forEach(g=>ramp(g,to,t))); }
+  function memStop(silent){
+    if(!mem) return;
+    const m=mem; mem=null; memActive=false;
+    try{ ramp(m.g,0,.6); setTimeout(()=>{ try{ m.src.stop&&m.src.stop(); }catch(e){} try{ m.el&&m.el.pause(); }catch(e){} try{ m.g.disconnect(); }catch(e){} },700); }catch(e){}
+    voices(1,3); ramp(bed,1,3);
+    if(!silent&&m.onEnd) m.onEnd();
+  }
+  async function memPlay(blob,onEnd){
+    memStop(true);
+    if(!wantOn){ wantOn=true; try{ localStorage.setItem(LS,'on'); }catch(e){} }
+    unlock(); await start(); setBtn();
+    if(!current) throw new Error('no music');
+    const g=ctx.createGain(); g.gain.value=0;
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=110;
+    const cm=ctx.createDynamicsCompressor(); cm.threshold.value=-26; cm.ratio.value=3; cm.attack.value=.01; cm.release.value=.25;
+    const pn=ctx.createStereoPanner(); pn.pan.value=0;
+    let src=null, el=null, lvl=1.4;
+    try{
+      const ab=await blob.arrayBuffer();
+      const buf=await new Promise((res,rej)=>ctx.decodeAudioData(ab.slice(0),res,rej));
+      let pk=0; for(let c=0;c<buf.numberOfChannels;c++){ const d=buf.getChannelData(c); for(let k=0;k<d.length;k+=4){ const v=Math.abs(d[k]); if(v>pk) pk=v; } }
+      lvl=Math.min(6,.8/Math.max(.02,pk));
+      src=ctx.createBufferSource(); src.buffer=buf;
+    }catch(e){
+      /* some browsers can't decode every recording format directly: play it through a media element instead */
+      el=new Audio(); el.src=URL.createObjectURL(blob); el.crossOrigin='anonymous'; el.playsInline=true;
+      src=ctx.createMediaElementSource(el);
+    }
+    src.connect(hp); hp.connect(cm); cm.connect(g); g.connect(pn); pn.connect(comp);
+    const sv=ctx.createGain(); sv.gain.value=.38; g.connect(sv); sv.connect(current.verb);
+    const sg=ctx.createGain(); sg.gain.value=.22; g.connect(sg); sg.connect(current.gIn);
+    memActive=true; voices(0,2.5); ramp(bed,.55,2.5);
+    mem={src,el,g,onEnd};
+    const me=mem;
+    const done=()=>{ if(mem===me) memStop(); };
+    const t=ctx.currentTime+1.2;
+    g.gain.setValueAtTime(0,t-.01); g.gain.linearRampToValueAtTime(lvl,t+.4);
+    let drift=0; const dI=setInterval(()=>{ if(mem!==me){ clearInterval(dI); return; } drift+=.03; pn.pan.setTargetAtTime(Math.sin(drift)*.22,ctx.currentTime,.5); },200);
+    if(el){ el.onended=done; setTimeout(()=>el.play().catch(done),1200); }
+    else { src.onended=done; src.start(t); }
+  }
+  /* while someone records, the music steps right back so the mic hears them, not it */
+  function recDuck(on){ if(!ctx||!bed) return; ramp(bed,on?.08:1,on?.4:2); }
+  window.SOF={memPlay, memStop:()=>memStop(true), recDuck, isPlaying:()=>!!mem};
   /* away from the tab, the room goes quiet; back again, it returns */
   document.addEventListener('visibilitychange',()=>{
     if(!started) return;
@@ -4136,6 +4425,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   if(go==='studio'){ setTimeout(()=>studioView.classList.add('open'),400); return; }
   if(go==='signup'){ setTimeout(()=>signupView.classList.add('open'),400); return; }
   if(go==='privacy'){ setTimeout(openPrivacy,400); return; }
+  if(go==='memory'||go==='memories'){ setTimeout(()=>window.openMemories&&window.openMemories(go==='memories'?'listen':'leave'),400); return; }
   if(!go || !SECTIONS[go]) return;
   const root=rootId(go);
   setTimeout(()=>{ if(view==='over') enterSection(root); },900);
