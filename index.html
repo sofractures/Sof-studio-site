@@ -1259,7 +1259,7 @@ const L = {
   twoDays:{t:'alone together: two days later', s:'substack · essay', url:'https://soundoffractures.substack.com/p/alone-together-building-for-depth',
     img:'https://substackcdn.com/image/fetch/$s_!IAmd!,w_600,h_338,c_fill,f_auto,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F2b967c12-3be1-4b84-b4b3-193e103b3807_3184x1660.jpeg'},
   canva:{t:'event 2 — photo deck', s:'canva · photos', url:'https://alonetogetherpatrons.my.canva.site/alone-together-event-2', img:null, ph:'photo deck'},
-  cheads:{t:'when strangers start to meet', s:'c-heads · interview', url:'https://www.c-heads.com/2026/04/29/when-strangers-start-to-meet-sound-of-fractures-on-alone-together/', img:null, ph:'c-heads'},
+  cheads:{t:'when strangers start to meet', s:'c-heads · interview', url:'https://www.c-heads.com/2026/04/29/when-strangers-start-to-meet-sound-of-fractures-on-alone-together/', img:'media/press-cheads.jpg'},
   spotify:{t:'sound of fractures', s:'spotify · artist', url:'https://open.spotify.com/artist/4syKpCOJEOnegH5QmuGnKk',
     img:'https://image-cdn-fa.spotifycdn.com/image/ab676161000051745bc5bd1767967b125c58b1b2'},
   playlist:{t:'where i’m @ — playlist', s:'spotify · playlist', url:'https://open.spotify.com/playlist/6isoH65GLBFtBhKsMnrwsR',
@@ -1338,7 +1338,8 @@ const L = {
     img:'https://substackcdn.com/image/fetch/$s_!h_5o!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F4910182a-7e4c-440a-a93f-4052314bda20_1600x1080.jpeg'},
   naMagnetic:{t:'sound of fractures & metalabel curate a directory of inspiration', s:'magnetic magazine · press', url:'https://magneticmag.com/2024/12/sound-of-fractures-metalabel-curate-innovative-directory-of-inspiration-with-network-archives-001/',
     img:'https://magneticmag.com/wp-content/uploads/2024/12/241127-direct-cover.png'},
-  naMusically:{t:'sound of fractures and metalabel launch network archives zine', s:'music ally · press', url:'https://musically.com/2024/12/16/sound-of-fractures-and-metalabel-launch-network-archives-zine/', img:null, ph:'music ally'},
+  naMusically:{t:'sound of fractures and metalabel launch network archives zine', s:'music ally · press', url:'https://musically.com/2024/12/16/sound-of-fractures-and-metalabel-launch-network-archives-zine/', img:'media/na-musically.jpg'},
+  naAlgae:{t:'algae ecosystem 001', s:'metalabel · network archives · new', url:'https://networkarchives.metalabel.com/algae_ecosystem_001?variantId=1', img:'media/na-algae-ecosystem-001.jpg'},
   /* teaching, talks & conversations — the practice, out loud */
   rTeaching:{t:'deputy course leader — ma music management, university of westminster', s:'teaching', wide:1, bare:1, still:1},
 };
@@ -1379,10 +1380,10 @@ const SECTIONS = {
     children:[
       {id:'scenes', label:'scenes', x:.22, y:.32, mx:.5, my:.17, leaves:[L.scenesSite, L.beyond, L.decential]},
       {id:'alonetogether', label:'alone together', x:.78, y:.40, mx:.5, my:.58, leaves:[L.atReel, L.atTogether, L.twoDays, L.canva, L.cheads]},
-      {id:'networkarchives', label:'network archives', x:.50, y:.80, mx:.5, my:.85, leaves:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
+      {id:'networkarchives', label:'network archives', x:.50, y:.80, mx:.5, my:.85, leaves:[L.naAlgae, L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
     ]},
   networkarchives:{ num:'01', title:'network archives', d:'a directory of inspiration — 60 artists building worlds, with metalabel', parent:'projects',
-    leaves:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
+    leaves:[L.naAlgae, L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
   scenes:{ num:'01', title:'scenes', d:'the participatory album', parent:'projects', proc:'scenesproc',
     leaves:[L.scenesSite, L.beyond, L.decential]},
   alonetogether:{ num:'01', title:'alone together', d:'a live work for strangers — alone, then together, then alone together', parent:'projects', proc:'atproc',
@@ -1407,7 +1408,7 @@ const SECTIONS = {
   research:{ num:'05', title:'research', d:'the practice, studied — chapters, field notes, teaching',
     leaves:[L.rScenes, L.rTeach, L.rSprint, L.rTeaching]},
   shop:{ num:'06', title:'shop', d:'more than merch — memories you can hold',
-    leaves:[L.cards, L.book, L.naObj, L.bandcamp]},
+    leaves:[L.cards, L.book, L.naAlgae, L.naObj, L.bandcamp]},
 };
 
 const SEED_TRACES = 137;
@@ -2643,7 +2644,7 @@ const DIRECTORY = [
     {g:'scenes — the process', items:[L.scBook, L.scVideo, L.scVibe, L.scProduct]},
     {g:'alone together — the current world', items:[L.atReel, L.atTogether, L.twoDays, L.canva, L.cheads]},
     {g:'alone together — the process', items:[L.atFilm, L.atFindings, L.atWork, L.atConnect, L.atWorld]},
-    {g:'network archives — the meta-world', items:[L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
+    {g:'network archives — the meta-world', items:[L.naAlgae, L.naObj, L.naOut, L.naMagnetic, L.naMusically]},
   ]},
   {num:'02', title:'music', groups:[
     {g:null, items:[L.spotify, L.playlist, L.bandcamp]},
@@ -2658,7 +2659,7 @@ const DIRECTORY = [
     {g:'field notes', items:[L.rSprint]},
     {g:'teaching', items:[L.rTeaching]},
   ]},
-  {num:'06', title:'shop', groups:[{g:null, items:[L.cards, L.book, L.naObj, L.bandcamp]}]},
+  {num:'06', title:'shop', groups:[{g:null, items:[L.cards, L.book, L.naAlgae, L.naObj, L.bandcamp]}]},
 ];
 
 const dirRoot=document.getElementById('dirRoot');
@@ -2828,8 +2829,10 @@ const VERSIONS=[
    t:'a small privacy note: what this site keeps, and how to have it removed.'},
   {v:'v102', d:'4 nov 2026', url:'https://sof-studio-v102.vercel.app',
    t:'privacy shrinks to a single word under each form.'},
-  {v:'v103', d:'now', url:null,
+  {v:'v103', d:'4 nov 2026', url:'https://sof-studio-v103.vercel.app',
    t:'a note left under work with me or join the studio now arrives straight in jamie\'s inbox.'},
+  {v:'v104', d:'now', url:null,
+   t:'algae ecosystem 001 joins network archives and the shop; the music ally and c-heads pieces get their pictures.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
