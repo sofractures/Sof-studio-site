@@ -2826,8 +2826,10 @@ const VERSIONS=[
    t:'the small lines under the worlds learned to speak to a visitor rather than a researcher; the tab just says sound of fractures; c.y. lee joins the team as executive producer.'},
   {v:'v101', d:'4 nov 2026', url:'https://sof-studio-v101.vercel.app',
    t:'a small privacy note: what this site keeps, and how to have it removed.'},
-  {v:'v102', d:'now', url:null,
+  {v:'v102', d:'4 nov 2026', url:'https://sof-studio-v102.vercel.app',
    t:'privacy shrinks to a single word under each form.'},
+  {v:'v103', d:'now', url:null,
+   t:'a note left under work with me or join the studio now arrives straight in jamie\'s inbox.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3077,6 +3079,17 @@ const menuView=document.getElementById('menuView');
 const patronView=document.getElementById('patronView');
 const signupBox=document.getElementById('signupBox');
 
+/* conversations (work with me, join the studio) go straight to jamie's inbox via web3forms;
+   the reply goes back to the sender's address. the sign-up list stays in supabase. */
+const W3F_KEY='05a43c81-2b03-4735-9799-862444b06d26';
+function sendNote(kind,email,note,cb){
+  const subj = kind==='patron' ? 'join the studio — a note from the site' : 'work with me — a note from the site';
+  fetch('https://api.web3forms.com/submit',{
+    method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({access_key:W3F_KEY, subject:subj, from_name:'soundoffractures.com',
+      email:email, replyto:email, message:note||'(no note — just an address)', form:kind})
+  }).then(r=>r.json()).then(j=>cb(!!(j&&j.success))).catch(()=>cb(false));
+}
 function sbSignup(email,kind,note,cb){
   fetch(SB_URL+'/rest/v1/rpc/add_signup',{
     method:'POST', headers:SB_HDRS,
@@ -3160,7 +3173,7 @@ document.getElementById('workForm').addEventListener('submit',e=>{
   const form=document.getElementById('workForm');
   const finish=()=>{ form.innerHTML='<div class="pdone">thank you — jamie reads every one of these and will reply to you directly.</div>'; };
   if(hp && hp.value){ finish(); return; }
-  sbSignup(email,'work',note,ok=>{
+  sendNote('work',email,note,ok=>{
     if(ok) finish();
     else{ const b=form.querySelector('.send'); if(b) b.textContent='try again'; }
   });
@@ -3192,7 +3205,7 @@ document.getElementById('patronForm').addEventListener('submit',e=>{
     form.innerHTML='<div class="pdone">thank you — the conversation is open.<br>jamie reads every one of these and will reply to you directly.</div>';
   };
   if(hp && hp.value){ finish(); return; }
-  sbSignup(email,'patron',note,ok=>{
+  sendNote('patron',email,note,ok=>{
     if(ok) finish();
     else{
       const b=form.querySelector('.send');
