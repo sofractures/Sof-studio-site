@@ -1033,7 +1033,7 @@
   <div class="patron">
     <h1>sign up</h1>
     <div id="signupBox" class="open">
-      <div class="promise" id="suPromise">occasional letters from the studio — experiments, essays, invitations. no noise.</div>
+      <div class="promise" id="suPromise">occasional emails from the studio — experiments, essays, invitations. no noise.</div>
       <form id="signupForm">
         <input type="email" id="suEmail" placeholder="your email" autocomplete="email" required>
         <input type="text" id="suWeb" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -1136,8 +1136,7 @@
     </div>
     <div class="plabel">DOORS</div>
     <div class="wlist">
-      <a class="wrow" href="https://soundoffractures.substack.com" target="_blank" rel="noopener"><span class="wt">follow the work</span><span class="ww">the letters</span></a>
-      <a class="wrow" href="https://symphony.to/sound-of-fractures/vpvkxkmpt4o1" target="_blank" rel="noopener"><span class="wt">take part</span><span class="ww">join the community</span></a>
+      <a class="wrow" href="https://soundoffractures.substack.com" target="_blank" rel="noopener"><span class="wt">follow the work</span><span class="ww">substack</span></a>
       <a class="wrow" href="#" id="sdPatron"><span class="wt">step into it</span><span class="ww">join the studio</span></a>
       <a class="wrow" href="#" id="sdWork"><span class="wt">bring it somewhere</span><span class="ww">work with me</span></a>
     </div>
@@ -1201,7 +1200,7 @@
     <div class="pnum">— PRIVACY</div>
     <h1>what this site keeps</h1>
     <p>this site is run by sound of fractures, london. it keeps three things:</p>
-    <p>your email, only if you give it — for the letters, or to reply to you.</p>
+    <p>your email, only if you give it — for the occasional email, or to reply to you.</p>
     <p>your trail — the coloured line you draw as you wander, the name you give it, the continent your device's clock is set to, and where you arrived from (instagram, substack…). trails are shared on the map; your email never is.</p>
     <p>which links get tapped, counted without names.</p>
     <p>never your ip address, never your exact location. nothing is sold or shared. the data sits with supabase, in a locked database only jamie can read.</p>
@@ -2831,8 +2830,10 @@ const VERSIONS=[
    t:'privacy shrinks to a single word under each form.'},
   {v:'v103', d:'4 nov 2026', url:'https://sof-studio-v103.vercel.app',
    t:'a note left under work with me or join the studio now arrives straight in jamie\'s inbox.'},
-  {v:'v104', d:'now', url:null,
+  {v:'v104', d:'4 nov 2026', url:'https://sof-studio-v104.vercel.app',
    t:'algae ecosystem 001 joins network archives and the shop; the music ally and c-heads pieces get their pictures.'},
+  {v:'v105', d:'now', url:null,
+   t:'plainer words: substack is called substack, the sign-up just says you’re on the list; the community door is gone.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3014,7 +3015,7 @@ function openFlowNote(kind){
   f.style.display='none'; a.style.display='';
   if(kind==='signup'){
     const d=flowDepth();
-    p.textContent='thanks for being curious — that’s '+(NUMW[d]||d)+' branches explored so far. if you’d like to keep a thread to this place: name your trail on the map, and leave your email for occasional letters from me — jamie.';
+    p.textContent='thanks for being curious — that’s '+(NUMW[d]||d)+' branches explored so far. if you’d like to keep a thread to this place: name your trail on the map, and leave your email and i’ll write now and then — jamie.';
     a.style.display='none';
     f.style.display='block';
     flowFlags.signup=1;
@@ -3039,7 +3040,7 @@ document.getElementById('fnForm').addEventListener('submit',e=>{
   const email=(document.getElementById('fnEmail').value||'').trim();
   sbSignup(email,'signup',null,ok=>{
     if(ok){
-      document.getElementById('fnText').textContent='welcome — the first letter will find you. and your trail is on the map, waiting to be named.';
+      document.getElementById('fnText').textContent='welcome — you’re on the list. and your trail is on the map, waiting to be named.';
       document.getElementById('fnForm').style.display='none';
       setTimeout(closeFlowNote, 2800);
     } else {
@@ -3187,7 +3188,7 @@ document.getElementById('signupForm').addEventListener('submit',e=>{
   const hp=document.getElementById('suWeb');
   const email=(document.getElementById('suEmail').value||'').trim();
   const finish=()=>{
-    signupBox.innerHTML='<div class="done">welcome — the first letter will find you.<br>'+
+    signupBox.innerHTML='<div class="done">welcome — you’re on the list.<br>'+
       '<a class="alt" href="https://soundoffractures.substack.com" target="_blank" rel="noopener">read the writing so far ↗</a></div>';
     addWaypoint('writing',(Math.random()-.5)*60,(Math.random()-.5)*44);
   };
