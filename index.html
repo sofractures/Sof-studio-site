@@ -275,6 +275,10 @@
     background:var(--bg);border:1px solid var(--ink);padding:10px 22px;color:var(--ink);cursor:pointer;
   }
   .pform .send:hover{background:var(--ink);color:var(--bg);}
+  .pform .pchoice{display:flex;flex-direction:column;gap:10px;margin:0 0 18px;}
+  .pform .pchoice label{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-size:12px;line-height:1.7;letter-spacing:.02em;color:var(--g60);}
+  .pform .pchoice input{width:auto;flex:none;margin:5px 0 0;padding:0;border:none;accent-color:#f2f2f0;}
+  .pform .pchoice input:checked + span{color:var(--ink);}
   .pform .pdone{font-size:12px;line-height:2.1;letter-spacing:.03em;padding:10px 0;}
   /* credits */
   .pcredits{margin-bottom:14px;}
@@ -1025,7 +1029,7 @@
   <nav class="menu-inner">
     <button class="mi" id="miSignup"><span class="u">sign up</span></button>
     <button class="mi" id="miStudio"><span class="u">studio</span></button>
-    <button class="mi" id="miPatron"><span class="u">join the studio</span></button>
+    <button class="mi" id="miPatron"><span class="u">support my work</span></button>
     <button class="mi" id="miWork"><span class="u">work with me</span></button>
   </nav>
   <div class="menu-side">
@@ -1060,8 +1064,10 @@
 <div id="patronView">
   <button class="pback" id="patronBack">← back</button>
   <div class="patron">
-    <div class="pnum">— THE STUDIO</div>
-    <h1>join the studio</h1>
+    <div class="pnum">— SOUND OF FRACTURES</div>
+    <h1>support my work</h1>
+    <!-- pre-launch: the studio-model content below is hidden until seams launches (jan 2027). remove `hidden` to bring it back. -->
+    <div class="prelaunch-hidden" hidden>
     <p>seams studio is funded by people who want this work to exist. it funds the experiment, and the time it takes to make meaningful work, not the outcome.</p>
     <div class="plabel">THE MODEL</div>
     <div class="pcredits">
@@ -1108,10 +1114,15 @@
     </div>
     <div class="plabel">START THE CONVERSATION</div>
     <p>it starts as a conversation — write to me, or leave a note here.</p>
+    </div>
     <form class="pform" id="patronForm">
+      <div class="pchoice" role="radiogroup" aria-label="what would you like">
+        <label><input type="radio" name="ptKind" value="executive producer" checked><span>learn more about becoming an executive producer of my work</span></label>
+        <label><input type="radio" name="ptKind" value="patron community"><span>join the patron community</span></label>
+      </div>
       <input type="email" id="ptEmail" placeholder="your email" autocomplete="email" required>
       <input type="text" id="ptWeb" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <textarea id="ptNote" rows="3" maxlength="600" placeholder="what part of the work do you want to help make possible? (optional)"></textarea>
+      <textarea id="ptNote" rows="3" maxlength="600" placeholder="anything you’d like to add (optional)"></textarea>
       <button class="send" type="submit">send</button>
     </form>
     <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
@@ -1145,7 +1156,7 @@
     <div class="plabel">DOORS</div>
     <div class="wlist">
       <a class="wrow" href="https://soundoffractures.substack.com" target="_blank" rel="noopener"><span class="wt">follow the work</span><span class="ww">substack</span></a>
-      <a class="wrow" href="#" id="sdPatron"><span class="wt">step into it</span><span class="ww">join the studio</span></a>
+      <a class="wrow" href="#" id="sdPatron"><span class="wt">step into it</span><span class="ww">support my work</span></a>
       <a class="wrow" href="#" id="sdWork"><span class="wt">bring it somewhere</span><span class="ww">work with me</span></a>
     </div>
     <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
@@ -2873,8 +2884,10 @@ const VERSIONS=[
    t:'the sign-up is for sound of fractures as a whole, not just the studio.'},
   {v:'v107', d:'4 nov 2026', url:'https://sof-studio-v107.vercel.app',
    t:'music opens with listen — apple music, spotify and youtube, one tap each; collect the music shows bandcamp; podcasts newest first; lectures named as lectures.'},
-  {v:'v108', d:'now', url:null,
+  {v:'v108', d:'4 nov 2026', url:'https://sof-studio-v108.vercel.app',
    t:'the studio page becomes its pre-launch edit: seams, launching january 2027.'},
+  {v:'v109', d:'now', url:null,
+   t:'join the studio rests until launch; in its place, support my work — become an executive producer, or join the patron community.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3067,8 +3080,8 @@ function openFlowNote(kind){
     a.setAttribute('target','_blank');
     flowFlags.sub=1;
   } else {
-    p.textContent='you clearly like to lean in deep and really explore. the studio has a way to be part of it — not a subscription, a role.';
-    a.textContent='join the studio';
+    p.textContent='you clearly like to lean in deep and really explore. if the work resonates, there are closer ways to support it.';
+    a.textContent='support my work';
     a.href='#';
     a.removeAttribute('target');
     flowFlags.patron=1;
@@ -3124,15 +3137,15 @@ const menuView=document.getElementById('menuView');
 const patronView=document.getElementById('patronView');
 const signupBox=document.getElementById('signupBox');
 
-/* conversations (work with me, join the studio) go straight to jamie's inbox via web3forms;
+/* conversations (work with me, support my work) go straight to jamie's inbox via web3forms;
    the reply goes back to the sender's address. the sign-up list stays in supabase. */
 const W3F_KEY='05a43c81-2b03-4735-9799-862444b06d26';
-function sendNote(kind,email,note,cb){
-  const subj = kind==='patron' ? 'join the studio — a note from the site' : 'work with me — a note from the site';
+function sendNote(kind,email,note,cb,choice){
+  const subj = kind==='patron' ? 'support my work — '+(choice||'a note')+' — from the site' : 'work with me — a note from the site';
   fetch('https://api.web3forms.com/submit',{
     method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify({access_key:W3F_KEY, subject:subj, from_name:'soundoffractures.com',
-      email:email, replyto:email, message:note||'(no note — just an address)', form:kind})
+      email:email, replyto:email, message:(choice?'['+choice+'] ':'')+(note||'(no note — just an address)'), form:kind})
   }).then(r=>r.json()).then(j=>cb(!!(j&&j.success))).catch(()=>cb(false));
 }
 function sbSignup(email,kind,note,cb){
@@ -3250,13 +3263,14 @@ document.getElementById('patronForm').addEventListener('submit',e=>{
     form.innerHTML='<div class="pdone">thank you — the conversation is open.<br>jamie reads every one of these and will reply to you directly.</div>';
   };
   if(hp && hp.value){ finish(); return; }
+  const choice=((document.querySelector('input[name=ptKind]:checked')||{}).value)||'';
   sendNote('patron',email,note,ok=>{
     if(ok) finish();
     else{
       const b=form.querySelector('.send');
       if(b) b.textContent='try again';
     }
-  });
+  },choice);
 });
 
 /* ---------- leave a trace ---------- */
