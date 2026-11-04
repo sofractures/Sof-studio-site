@@ -644,6 +644,17 @@
     padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;
   }
   #signupView.open{display:block;}
+  #privacyView{
+    position:fixed;inset:0;z-index:54;display:none;background:var(--bg);
+    padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  }
+  #privacyView.open{display:block;}
+  .pnote{font-size:10.5px;color:var(--g40);letter-spacing:.05em;line-height:1.9;margin-top:16px;max-width:520px;}
+  .pnote a,.fnpriv{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
+  .pnote a:hover,.fnpriv:hover{color:var(--ink);border-color:var(--ink);}
+  .fnpriv{display:inline-block;font-size:9.5px;letter-spacing:.06em;margin:0 0 4px;}
+  .dir-priv{font-size:11px;color:var(--g40);letter-spacing:.05em;padding:28px 0 10px;}
+  .dir-priv a{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
   body.inpage header .wordmark,body.inpage header .modes{visibility:hidden;}
   header{transition:opacity .3s;}
   body.menuopen header{opacity:0;pointer-events:none;}
@@ -665,7 +676,7 @@
   }
   @media (min-width:900px){
     .patron > p:not(:first-of-type),.patron > .pcredits,.patron > .pvoices,.patron > .wlist,
-    .patron > .pform,.patron > .pnet,.patron > .pmail,.patron > blockquote,.patron > #signupBox{
+    .patron > .pform,.patron > .pnet,.patron > .pmail,.patron > .pnote,.patron > blockquote,.patron > #signupBox{
       margin-left:34%;
     }
     /* the label sits in the left column, level with its text */
@@ -680,7 +691,7 @@
   #signupBox input[type=email]{text-align:left;font-size:16px;max-width:520px;}
   #signupBox .alt{margin-top:28px;}
   @media (max-width:640px){
-    #patronView,#workView,#studioView,#signupView{padding:84px 18px 70px;}
+    #patronView,#workView,#studioView,#signupView,#privacyView{padding:84px 18px 70px;}
     .patron h1{font-size:clamp(42px,14vw,72px);}
   }
 
@@ -723,7 +734,7 @@
   #vdots button.on{background:var(--ink);border-color:var(--ink);transform:scale(1.15);}
   #vdots button:hover{border-color:var(--ink);}
   body.inpage #vdots,body.menuopen #vdots,body.dirmode #vdots{opacity:0;pointer-events:none;}
-  #patronView,#workView,#studioView,#signupView,#directoryView{overscroll-behavior:contain;}
+  #patronView,#workView,#studioView,#signupView,#privacyView,#directoryView{overscroll-behavior:contain;}
   @media (max-width:640px){ #vdots{right:8px;gap:9px;} }
 
   /* =========================================================
@@ -1012,6 +1023,7 @@
       <a class="si si-spotify" href="https://open.spotify.com/artist/4syKpCOJEOnegH5QmuGnKk" target="_blank" rel="noopener" aria-label="spotify" title="spotify"></a>
     </div>
     <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a>
+    <a class="toPriv" href="?go=privacy">privacy</a>
   </div>
   <div class="menu-mark" aria-hidden="true">sound of fractures</div>
 </div>
@@ -1028,6 +1040,7 @@
         <button class="join" type="submit">join</button>
       </form>
       <a class="alt" href="https://soundoffractures.substack.com" target="_blank" rel="noopener">or read the writing so far ↗</a>
+      <div class="pnote">your address stays with sound of fractures. it's used for the letters and nothing else — never shared, never sold. every letter has a way out, or write to hello@soundoffractures.com and it's gone. <a class="toPriv" href="?go=privacy">privacy</a></div>
     </div>
   </div>
 </div>
@@ -1090,6 +1103,7 @@
       <button class="send" type="submit">send</button>
     </form>
     <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
+    <div class="pnote">your address and note stay with sound of fractures, and are used only to reply to you. write to hello@soundoffractures.com to have them removed. <a class="toPriv" href="?go=privacy">privacy</a></div>
   </div>
 </div>
 
@@ -1177,6 +1191,21 @@
       <button class="send" type="submit">send</button>
     </form>
     <div class="pmail">or write directly — <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></div>
+    <div class="pnote">your address and note stay with sound of fractures, and are used only to reply to you. write to hello@soundoffractures.com to have them removed. <a class="toPriv" href="?go=privacy">privacy</a></div>
+  </div>
+</div>
+
+<div id="privacyView" aria-hidden="true">
+  <button class="pback" id="privacyBack">← back</button>
+  <div class="patron">
+    <div class="pnum">— PRIVACY</div>
+    <h1>what this site keeps</h1>
+    <p>this site is run by sound of fractures, london. it keeps three things:</p>
+    <p>your email, only if you give it — for the letters, or to reply to you.</p>
+    <p>your trail — the coloured line you draw as you wander, the name you give it, the continent your device's clock is set to, and where you arrived from (instagram, substack…). trails are shared on the map; your email never is.</p>
+    <p>which links get tapped, counted without names.</p>
+    <p>never your ip address, never your exact location. nothing is sold or shared. the data sits with supabase, in a locked database only jamie can read.</p>
+    <p>to see what's kept about you, or to have it removed: <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></p>
   </div>
 </div>
 
@@ -1192,6 +1221,7 @@
     <form id="fnForm" style="display:none">
       <input type="email" id="fnEmail" placeholder="your email" autocomplete="email" required>
       <button class="fna" type="submit">sign up</button>
+      <div><a class="fnpriv toPriv" href="?go=privacy">privacy</a></div>
     </form>
     <a class="fna" id="fnAction" href="#" rel="noopener"></a>
     <button class="fnb" id="fnLater"><span>another time — keep exploring</span></button>
@@ -2792,8 +2822,10 @@ const VERSIONS=[
    t:'join the studio names its people: the board, an advisory board, technical partners and the team.'},
   {v:'v99', d:'29 oct 2026', url:'https://sof-studio-v99.vercel.app',
    t:'join the studio opens with the studio\'s name: seams studio is funded by people who want this work to exist.'},
-  {v:'v100', d:'now', url:null,
+  {v:'v100', d:'31 oct 2026', url:'https://sof-studio-v100.vercel.app',
    t:'the small lines under the worlds learned to speak to a visitor rather than a researcher; the tab just says sound of fractures; c.y. lee joins the team as executive producer.'},
+  {v:'v101', d:'now', url:null,
+   t:'a small privacy note: what this site keeps, and how to have it removed.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -2809,6 +2841,7 @@ VERSIONS.forEach(x=>{
     </div>`;
 });
 dirHTML += `</div>`;
+dirHTML += `<div class="dir-priv"><a class="toPriv" href="?go=privacy">privacy</a></div>`;
 
 dirRoot.innerHTML = dirHTML;
 dirRoot.addEventListener('click',e=>{
@@ -3072,6 +3105,12 @@ menuView.addEventListener('click',e=>{
   if(e.target===menuView){ menuView.classList.remove('open'); }
 });
 const signupView=document.getElementById('signupView');
+/* privacy: opens over whatever is open, and back returns to it */
+const privacyView=document.getElementById('privacyView');
+function openPrivacy(){ menuView.classList.remove('open'); privacyView.classList.add('open'); privacyView.setAttribute('aria-hidden','false'); privacyView.scrollTop=0; }
+function closePrivacy(){ privacyView.classList.remove('open'); privacyView.setAttribute('aria-hidden','true'); }
+document.addEventListener('click',e=>{ const a=e.target.closest('a.toPriv'); if(!a) return; e.preventDefault(); openPrivacy(); });
+document.getElementById('privacyBack').onclick=closePrivacy;
 document.getElementById('miSignup').onclick=()=>{
   menuView.classList.remove('open');
   signupView.classList.add('open');
@@ -3165,6 +3204,7 @@ window.addEventListener('keydown',e=>{
   if(e.key!=='Escape' || chipEditing) return;
   if(ytView.classList.contains('open')){ closeYt(); return; }
   if(flowNote.classList.contains('on')){ closeFlowNote(); return; }
+  if(privacyView.classList.contains('open')){ closePrivacy(); return; }
   if(patronView.classList.contains('open')){ patronView.classList.remove('open'); return; }
   if(workView.classList.contains('open')){ workView.classList.remove('open'); return; }
   if(studioView.classList.contains('open')){ studioView.classList.remove('open'); return; }
@@ -3473,7 +3513,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
      vertical, without wandering — up for the next film, down for the one before. scrolling inside
      pages, the menu and the index, and two-finger gestures, are left to the browser */
   if(matchMedia('(hover:none) and (pointer:coarse)').matches){
-    const FREE='#menuView,#patronView,#workView,#studioView,#signupView,#directoryView,#ytView,#flowNote,input,textarea,select';
+    const FREE='#menuView,#patronView,#workView,#studioView,#signupView,#privacyView,#directoryView,#ytView,#flowNote,input,textarea,select';
     const mapOwns=e=>{
       const b=document.body, door=document.getElementById('intro');
       if(b.classList.contains('inpage')||b.classList.contains('menuopen')||b.classList.contains('dirmode')) return false;
@@ -4036,6 +4076,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   if(go==='patron'){ setTimeout(()=>patronView.classList.add('open'),400); return; }
   if(go==='studio'){ setTimeout(()=>studioView.classList.add('open'),400); return; }
   if(go==='signup'){ setTimeout(()=>signupView.classList.add('open'),400); return; }
+  if(go==='privacy'){ setTimeout(openPrivacy,400); return; }
   if(!go || !SECTIONS[go]) return;
   const root=rootId(go);
   setTimeout(()=>{ if(view==='over') enterSection(root); },900);
