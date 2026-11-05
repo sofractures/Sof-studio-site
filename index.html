@@ -3028,8 +3028,10 @@ const VERSIONS=[
    t:'test: the corner pill becomes a small microphone, printed in dots like the people holding hands.'},
   {v:'v114', d:'5 nov 2026', url:'https://sof-studio-v114.vercel.app',
    t:'test: memories are for leaving, by voice, with the alone together prompts; the fourth branch asks for one.'},
-  {v:'v115', d:'now', url:null,
+  {v:'v115', d:'5 nov 2026', url:'https://sof-studio-v115.vercel.app',
    t:'test: hear others — the worlds fall back and the memories come forward on the network, each on a trace.'},
+  {v:'v116', d:'now', url:null,
+   t:'test: memories play on iphone, and after recording the phone gives the sound back.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3638,7 +3640,7 @@ requestAnimationFrame(draw);
     window.SOF.prime();
     setOn(p,true);
     try{
-      const blob=await getBlob(p);
+      const blob=p.blob || await getBlob(p);
       if(!p.on) return;
       await window.SOF.memPlay(blob,()=>setOn(p,false));
     }catch(e){ setOn(p,false); }
@@ -3666,6 +3668,7 @@ requestAnimationFrame(draw);
     for(const m of ['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus']) if(MediaRecorder.isTypeSupported(m)) return m; return ''; }
   async function startRec(){
     if(!navigator.mediaDevices||!window.MediaRecorder){ $('mTime').textContent='this browser can’t record here — try another one'; return; }
+    try{ if(navigator.audioSession) navigator.audioSession.type='play-and-record'; }catch(e){}
     try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}); }
     catch(e){ $('mTime').textContent='the microphone was blocked — allow it and try again'; return; }
     window.SOF&&window.SOF.memStop(); window.SOF&&window.SOF.recDuck(true);
@@ -3677,6 +3680,7 @@ requestAnimationFrame(draw);
       recBlob=chunks.length? new Blob(chunks,{type}) : null;
       recDur=Math.round((performance.now()-t0)/1000);
       stream&&stream.getTracks().forEach(t=>t.stop()); stream=null;
+      micDone();
       window.SOF&&window.SOF.recDuck(false);
       $('mRec').classList.remove('on'); $('mRec').textContent='record';
       $('mRec').hidden=!!recBlob; $('mAfter').hidden=!recBlob;
@@ -3693,8 +3697,9 @@ requestAnimationFrame(draw);
   function stopRec(quiet){
     clearInterval(tick); clearTimeout(cutT);
     if(mr&&mr.state!=='inactive'){ try{ mr.stop(); }catch(e){} }
-    else if(quiet){ stream&&stream.getTracks().forEach(t=>t.stop()); stream=null; window.SOF&&window.SOF.recDuck(false); }
+    else if(quiet){ stream&&stream.getTracks().forEach(t=>t.stop()); stream=null; micDone(); window.SOF&&window.SOF.recDuck(false); }
   }
+  function micDone(){ try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){} }
   $('mRec').onclick=()=>{ if(mr&&mr.state==='recording') stopRec(); else startRec(); };
   $('mAgain').onclick=()=>{ window.SOF&&window.SOF.memStop(); recBlob=null; lockPick(false); $('mAfter').hidden=true; $('mRec').hidden=false; $('mTime').textContent='up to 60 seconds'; refresh(); };
   $('mHear').onclick=async()=>{
@@ -4450,24 +4455,47 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   let mem=null;
   function ramp(g,to,t){ if(!g||!ctx) return; const now=ctx.currentTime; g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value,now); g.gain.linearRampToValueAtTime(to,now+t); }
   function voices(to,t){ [current].concat(current&&current.__prev?[current.__prev]:[]).forEach(p=>p&&p.voiceMutes&&p.voiceMutes.forEach(g=>ramp(g,to,t))); }
+  let pendingEl=null;
   function memStop(silent){
+    if(pendingEl && (!mem || mem.el!==pendingEl)){ try{ pendingEl.pause(); }catch(e){} }
+    pendingEl=null;
     if(!mem) return;
     const m=mem; mem=null; memActive=false;
     try{ ramp(m.g,0,.6); setTimeout(()=>{ try{ m.src.stop&&m.src.stop(); }catch(e){} try{ m.el&&m.el.pause(); }catch(e){} try{ m.g.disconnect(); }catch(e){} },700); }catch(e){}
     voices(1,3); ramp(bed,1,3);
     if(!silent&&m.onEnd) m.onEnd();
   }
+  /* iphones and ipads: play memories through an <audio> element started inside the tap itself —
+     webkit drops the tap once anything is awaited, and it can't always decode a .webm into memory */
+  const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
   async function memPlay(blob,onEnd){
     memStop(true);
     if(!wantOn){ wantOn=true; try{ localStorage.setItem(LS,'on'); }catch(e){} }
-    unlock(); await start(); setBtn();
-    if(!current) throw new Error('no music');
+    unlock();
+    let early=null;
+    if(IOS){
+      early=new Audio(); early.src=URL.createObjectURL(blob); early.playsInline=true; early.setAttribute('playsinline','');
+      early.volume=1; early.play().catch(()=>{});
+      pendingEl=early;
+    }
+    await start(); setBtn();
+    if(!current){ if(early) early.pause(); throw new Error('no music'); }
     const g=ctx.createGain(); g.gain.value=0;
     const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=110;
     const cm=ctx.createDynamicsCompressor(); cm.threshold.value=-26; cm.ratio.value=3; cm.attack.value=.01; cm.release.value=.25;
     const pn=ctx.createStereoPanner(); pn.pan.value=0;
     let src=null, el=null, lvl=1.4;
-    try{
+    if(early){
+      /* already playing: from here on it runs through the room (reverb, grain) like any memory */
+      el=early; lvl=2.2;
+      try{ src=ctx.createMediaElementSource(el); }catch(e){ src=null; }
+      if(!src){ /* if webkit won't route it, it still plays plainly, over a quieter room */
+        memActive=true; voices(0,1.5); ramp(bed,.4,1.5);
+        mem={src:{stop(){}},el,g:ctx.createGain(),onEnd}; const me=mem;
+        el.onended=()=>{ if(mem===me) memStop(); }; return;
+      }
+    }
+    else try{
       const ab=await blob.arrayBuffer();
       const buf=await new Promise((res,rej)=>ctx.decodeAudioData(ab.slice(0),res,rej));
       let pk=0; for(let c=0;c<buf.numberOfChannels;c++){ const d=buf.getChannelData(c); for(let k=0;k<d.length;k+=4){ const v=Math.abs(d[k]); if(v>pk) pk=v; } }
@@ -4481,14 +4509,15 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     src.connect(hp); hp.connect(cm); cm.connect(g); g.connect(pn); pn.connect(comp);
     const sv=ctx.createGain(); sv.gain.value=.38; g.connect(sv); sv.connect(current.verb);
     const sg=ctx.createGain(); sg.gain.value=.22; g.connect(sg); sg.connect(current.gIn);
-    memActive=true; voices(0,2.5); ramp(bed,.55,2.5);
+    memActive=true; voices(0,2.5); ramp(bed,IOS?.4:.55,2.5);
     mem={src,el,g,onEnd};
     const me=mem;
     const done=()=>{ if(mem===me) memStop(); };
-    const t=ctx.currentTime+1.2;
-    g.gain.setValueAtTime(0,t-.01); g.gain.linearRampToValueAtTime(lvl,t+.4);
+    const t=ctx.currentTime+(early?.05:1.2);
+    g.gain.setValueAtTime(0,Math.max(ctx.currentTime,t-.01)); g.gain.linearRampToValueAtTime(lvl,t+.4);
     let drift=0; const dI=setInterval(()=>{ if(mem!==me){ clearInterval(dI); return; } drift+=.03; pn.pan.setTargetAtTime(Math.sin(drift)*.22,ctx.currentTime,.5); },200);
-    if(el){ el.onended=done; setTimeout(()=>el.play().catch(done),1200); }
+    if(early){ el.onended=done; if(el.paused) el.play().catch(done); }
+    else if(el){ el.onended=done; setTimeout(()=>el.play().catch(done),1200); }
     else { src.onended=done; src.start(t); }
   }
   /* while someone records, the music steps right back so the mic hears them, not it */
