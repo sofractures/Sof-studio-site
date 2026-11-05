@@ -699,7 +699,20 @@
   body.insec #memPill,body.dirmode #memPill{opacity:0;pointer-events:none;}
   @media (max-width:640px){ #memPill{right:max(18px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));} #memPill svg{width:15px;height:16px;} }
   #memView{position:fixed;inset:0;z-index:52;display:none;padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-  #memView.open{display:block;}
+  #memView.open{display:block;animation:memIn .9s ease .45s both;}
+  #memView.leaving{animation:memOut .5s ease both;}
+  @keyframes memIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes memOut{from{opacity:1}to{opacity:0}}
+  /* v118 — the memories page is see-through: its video goes under the map, the memory map shows behind the words */
+  body.mempage #pgvid{z-index:1;}
+  body.mempage #pgvid:after{background:rgba(10,10,10,.62);}
+  body.mempage #memView{background:linear-gradient(90deg,rgba(10,10,10,.82) 0%,rgba(10,10,10,.6) 40%,rgba(10,10,10,.12) 78%,rgba(10,10,10,0) 100%);}
+  body.mempage #memLayer{opacity:0;}
+  body.mempage #memPill{opacity:0 !important;pointer-events:none !important;}
+  #memLayer{transition:opacity .5s;}
+  @media (max-width:640px){
+    body.mempage #memView{background:linear-gradient(180deg,rgba(10,10,10,.42) 0%,rgba(10,10,10,.68) 30%,rgba(10,10,10,.66) 70%,rgba(10,10,10,.3) 100%);}
+  }
   .mpick button,.mafter button{font-family:var(--mono);background:none;border:0;padding:0;cursor:pointer;color:var(--g40);font-size:12px;letter-spacing:.06em;}
   .mpick{display:flex;align-items:center;gap:16px;margin:2px 0 14px;font-size:10.5px;letter-spacing:.08em;color:var(--g40);}
   .mpick button{font-size:13px;line-height:1;color:var(--g60);padding:4px 2px;}
@@ -1663,6 +1676,8 @@ const SRC=(()=>{try{
 let otherTrails=[];
 /* memories on the network (v115): memMode is the switch, memA its eased weight, memPts the points */
 let memMode=false, memA=0, memPts=[];
+/* v118: while someone records, their own trace comes forward and its end breathes with their voice */
+let memRec=false, memRecA=0, memLevel=()=>0;
 function loadTrails(){
   fetch(SB_URL+'/rest/v1/site_trails?select=id,hue,name,wps,region&order=updated_at.desc&limit=80',{headers:SB_HDRS})
     .then(r=>r.json())
@@ -2331,6 +2346,7 @@ function leaveSection(){
   },REDUCED?750:1350);
 }
 backBtn.addEventListener('click',leaveSection);
+window.__view=()=>view;
 /* inside a world, the empty space around it is also the way back: a plain click on the
    background (not a drag, not mid-turn) steps out one level, exactly like the back button */
 (()=>{
@@ -2665,9 +2681,30 @@ function drawOverview(t, alpha){
 
   ctx.globalAlpha=alpha;
   if(memA>.01) drawMemPts(t,alpha);
+  if(memRecA>.01) drawMemRec(t,alpha);
   drawSeeker(t,alpha);
 
   ctx.restore();
+}
+/* recording: the visitor's own trace, bright, and a point at its end that swells with their voice */
+let memLvl=0;
+function drawMemRec(t,alpha){
+  const a=memRecA*alpha;
+  memLvl+=((memRec?Math.min(1,memLevel()*7):0)-memLvl)*.25;
+  let end=null;
+  if(userTrail && userTrail.wps && userTrail.wps.length){
+    if(userTrail.wps.length>1){ ctx.globalAlpha=alpha; drawTrail(userTrail,t,.75*a,false,false,1.4); }
+    end=wpXY(userTrail.wps[userTrail.wps.length-1],t);
+  }
+  if(!end) end=[W/2,H/2];
+  const [x,y]=end;
+  for(let k=0;k<3;k++){
+    const ph=REDUCED?.5:(((t*.0009)+k/3)%1);
+    ctx.beginPath(); ctx.arc(x,y,5+ph*(20+memLvl*60),0,Math.PI*2);
+    ctx.strokeStyle='rgba(242,242,240,'+((1-ph)*.6*a)+')'; ctx.lineWidth=1; ctx.stroke();
+  }
+  ctx.beginPath(); ctx.arc(x,y,3+memLvl*6,0,Math.PI*2);
+  ctx.fillStyle='rgba(242,242,240,'+(.95*a)+')'; ctx.fill();
 }
 /* each memory sits on a waypoint of the trace it belongs to, breathing; the one playing pulses */
 function drawMemPts(t,alpha){
@@ -2772,7 +2809,8 @@ function draw(t){
 
   /* fellow explorers' names fade in and out rather than snapping */
   nameA+=((namesOn?1:0)-nameA)*(REDUCED?1:.08);
-  memA+=((memMode?1:0)-memA)*(REDUCED?1:.06);
+  memA+=((memMode?1:0)-memA)*(REDUCED?1:.045);
+  memRecA+=((memRec?1:0)-memRecA)*(REDUCED?1:.06);
   if(memA<.001) memA=0; if(memA>.999) memA=1;
   if(nameA<.001) nameA=0; if(nameA>.999) nameA=1;
 
@@ -3034,8 +3072,10 @@ const VERSIONS=[
    t:'test: hear others — the worlds fall back and the memories come forward on the network, each on a trace.'},
   {v:'v116', d:'5 nov 2026', url:'https://sof-studio-v116.vercel.app',
    t:'test: memories play on iphone, and after recording the phone gives the sound back.'},
-  {v:'v117', d:'now', url:null,
+  {v:'v117', d:'5 nov 2026', url:'https://sof-studio-v117.vercel.app',
    t:'test: each memory wears its name on its trace — tap the name or the trace to hear it.'},
+  {v:'v118', d:'now', url:null,
+   t:'test: the map turns into the memory map behind the words; recording lights your own trace; the song turns with each memory.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3571,12 +3611,28 @@ requestAnimationFrame(draw);
 
   function open(tab){
     document.getElementById('menuView')&&document.getElementById('menuView').classList.remove('open');
+    /* the map turns first; the words arrive over it */
+    if(typeof leaveSection==='function' && typeof window.__view==='function' && window.__view()!=='over') leaveSection();
+    visualOn();
+    document.body.classList.add('mempage');
+    view.classList.remove('leaving');
     view.classList.add('open'); view.setAttribute('aria-hidden','false'); view.scrollTop=0;
   }
   window.openMemories=open;
-  function close(){ view.classList.remove('open'); view.setAttribute('aria-hidden','true'); stopRec(true); }
+  /* close the page; keep=true leaves the memory map up (hear others), otherwise the map turns back */
+  function close(keep){
+    stopRec(true);
+    if(!view.classList.contains('open')) return;
+    view.classList.add('leaving');
+    document.body.classList.remove('mempage');
+    setTimeout(()=>{ view.classList.remove('open','leaving'); view.setAttribute('aria-hidden','true'); },480);
+    if(keep!==true) visualOff();
+  }
   $('memPill').onclick=()=>open('leave');
-  $('memBack').onclick=close;
+  $('memBack').onclick=()=>close();
+  /* if anything else shuts the page, the map turns back too */
+  new MutationObserver(()=>{ if(!view.classList.contains('open')){ document.body.classList.remove('mempage'); if(!hearing) visualOff(); } })
+    .observe(view,{attributes:true,attributeFilter:['class']});
   setTimeout(()=>document.body.classList.add('mapready'),3500);
 
   function ready(){ return !!recBlob; }
@@ -3610,7 +3666,7 @@ requestAnimationFrame(draw);
         el.setAttribute('aria-label','play a memory from '+[m.name,m.place].filter(Boolean).join(', '));
         el.innerHTML='<span class="ml"><b>'+esc(who)+'</b>'+more.map(s=>'<i>'+esc(s)+'</i>').join('')+'</span>';
         layer.appendChild(el);
-        p={m, el, seed:((k*0.618)%1), on:false, blob:null};
+        p={m, el, seed:((k*0.618)%1), on:false, blob:null, song:(k%((window.SOF&&window.SOF.songs)||3))};
         el.onclick=()=>toggle(p);
         memPts.push(p);
       }
@@ -3647,21 +3703,30 @@ requestAnimationFrame(draw);
     try{
       const blob=p.blob || await getBlob(p);
       if(!p.on) return;
-      await window.SOF.memPlay(blob,()=>setOn(p,false));
+      await window.SOF.memPlay(blob,()=>setOn(p,false),{song:p.song});
     }catch(e){ setOn(p,false); }
   }
-  async function enterMode(){
-    close();
-    if(typeof view!=='undefined' && view!=='over' && typeof leaveSection==='function') leaveSection();
+  let hearing=false;
+  async function visualOn(){
     if(typeof setModes==='function' && document.body.classList.contains('dirmode')) setModes('map');
     try{ hideSuggest(); closeFlowNote(); cancelFlowNote(); }catch(e){}
-    memMode=true; document.body.classList.add('memmode'); $('memExit').classList.add('on');
+    if(!memMode){ memMode=true; window.SOF&&window.SOF.songNext(6); }
+    document.body.classList.add('memmode');
     try{ await loadMems(); memAssign(); memPts.forEach(p=>getBlob(p).catch(()=>{})); }catch(e){}
   }
-  function exitMode(){
+  function visualOff(){
+    hearing=false;
     memMode=false; document.body.classList.remove('memmode'); $('memExit').classList.remove('on'); cv.style.cursor='';
     window.SOF&&window.SOF.memStop(); memPts.forEach(q=>setOn(q,false));
   }
+  async function enterMode(){
+    hearing=true;
+    if(view.classList.contains('open')) close(true);
+    else if(typeof leaveSection==='function' && typeof window.__view==='function' && window.__view()!=='over') leaveSection();
+    $('memExit').classList.add('on');
+    await visualOn();
+  }
+  function exitMode(){ visualOff(); }
   function nearMem(x,y){
     let best=null, bd=18;
     memPts.forEach(p=>{
@@ -3697,6 +3762,7 @@ requestAnimationFrame(draw);
     try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}); }
     catch(e){ $('mTime').textContent='the microphone was blocked — allow it and try again'; return; }
     window.SOF&&window.SOF.memStop(); window.SOF&&window.SOF.recDuck(true);
+    meter=window.SOF? window.SOF.micLevel(stream) : null; memLevel=meter? meter.level : ()=>0; memRec=true;
     recMime=pickMime(); chunks=[]; recBlob=null; refresh(); lockPick(true);
     mr=new MediaRecorder(stream, recMime?{mimeType:recMime}:undefined);
     mr.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
@@ -3705,7 +3771,7 @@ requestAnimationFrame(draw);
       recBlob=chunks.length? new Blob(chunks,{type}) : null;
       recDur=Math.round((performance.now()-t0)/1000);
       stream&&stream.getTracks().forEach(t=>t.stop()); stream=null;
-      micDone();
+      micDone(); recEnd();
       window.SOF&&window.SOF.recDuck(false);
       $('mRec').classList.remove('on'); $('mRec').textContent='record';
       $('mRec').hidden=!!recBlob; $('mAfter').hidden=!recBlob;
@@ -3722,8 +3788,10 @@ requestAnimationFrame(draw);
   function stopRec(quiet){
     clearInterval(tick); clearTimeout(cutT);
     if(mr&&mr.state!=='inactive'){ try{ mr.stop(); }catch(e){} }
-    else if(quiet){ stream&&stream.getTracks().forEach(t=>t.stop()); stream=null; micDone(); window.SOF&&window.SOF.recDuck(false); }
+    else if(quiet){ stream&&stream.getTracks().forEach(t=>t.stop()); stream=null; micDone(); recEnd(); window.SOF&&window.SOF.recDuck(false); }
   }
+  let meter=null;
+  function recEnd(){ memRec=false; memLevel=()=>0; if(meter){ meter.stop(); meter=null; } }
   function micDone(){ try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){} }
   $('mRec').onclick=()=>{ if(mr&&mr.state==='recording') stopRec(); else startRec(); };
   $('mAgain').onclick=()=>{ window.SOF&&window.SOF.memStop(); recBlob=null; lockPick(false); $('mAfter').hidden=true; $('mRec').hidden=false; $('mTime').textContent='up to 60 seconds'; refresh(); };
@@ -4493,17 +4561,22 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   /* iphones and ipads: play memories through an <audio> element started inside the tap itself —
      webkit drops the tap once anything is awaited, and it can't always decode a .webm into memory */
   const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
-  async function memPlay(blob,onEnd){
+  async function memPlay(blob,onEnd,opt){
     memStop(true);
     if(!wantOn){ wantOn=true; try{ localStorage.setItem(LS,'on'); }catch(e){} }
     unlock();
-    let early=null;
+    let early=null, routed=false;
     if(IOS){
+      /* started inside the tap so webkit lets it play, then held until the room is ready */
       early=new Audio(); early.src=URL.createObjectURL(blob); early.playsInline=true; early.setAttribute('playsinline','');
-      early.volume=1; early.play().catch(()=>{});
+      early.play().then(()=>{ if(!routed){ early.pause(); try{ early.currentTime=0; }catch(e){} } }).catch(()=>{});
       pendingEl=early;
     }
     await start(); setBtn();
+    /* each memory has a song it lives in: if another is playing, the room turns to it first */
+    if(opt && opt.song!=null && current && current.i!==opt.song && SONGS[opt.song]){
+      try{ await loadSong(opt.song); await playSong(opt.song,5); }catch(e){}
+    }
     if(!current){ if(early) early.pause(); throw new Error('no music'); }
     const g=ctx.createGain(); g.gain.value=0;
     const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=110;
@@ -4512,12 +4585,12 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     let src=null, el=null, lvl=1.4;
     if(early){
       /* already playing: from here on it runs through the room (reverb, grain) like any memory */
-      el=early; lvl=2.2;
+      el=early; lvl=2.2; routed=true;
       try{ src=ctx.createMediaElementSource(el); }catch(e){ src=null; }
       if(!src){ /* if webkit won't route it, it still plays plainly, over a quieter room */
         memActive=true; voices(0,1.5); ramp(bed,.4,1.5);
         mem={src:{stop(){}},el,g:ctx.createGain(),onEnd}; const me=mem;
-        el.onended=()=>{ if(mem===me) memStop(); }; return;
+        el.onended=()=>{ if(mem===me) memStop(); }; try{ el.currentTime=0; }catch(e){} el.play().catch(()=>{}); return;
       }
     }
     else try{
@@ -4541,13 +4614,25 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     const t=ctx.currentTime+(early?.05:1.2);
     g.gain.setValueAtTime(0,Math.max(ctx.currentTime,t-.01)); g.gain.linearRampToValueAtTime(lvl,t+.4);
     let drift=0; const dI=setInterval(()=>{ if(mem!==me){ clearInterval(dI); return; } drift+=.03; pn.pan.setTargetAtTime(Math.sin(drift)*.22,ctx.currentTime,.5); },200);
-    if(early){ el.onended=done; if(el.paused) el.play().catch(done); }
+    if(early){ el.onended=done; try{ el.currentTime=0; }catch(e){} el.play().catch(done); }
     else if(el){ el.onended=done; setTimeout(()=>el.play().catch(done),1200); }
     else { src.onended=done; src.start(t); }
   }
   /* while someone records, the music steps right back so the mic hears them, not it */
   function recDuck(on){ if(!ctx||!bed) return; ramp(bed,on?.08:1,on?.4:2); }
-  window.SOF={memPlay, memStop:()=>memStop(true), recDuck, isPlaying:()=>!!mem, prime:()=>{ try{ unlock(); }catch(e){} }};
+  /* the memory map has its own turn of the music: entering it moves to another song */
+  function songNext(fade){ if(started && wantOn) nextSong(fade||6); }
+  /* a level meter on the microphone (never sent anywhere, never played out) */
+  function micLevel(stream){
+    try{ ensureCtx(); const s=ctx.createMediaStreamSource(stream), a=ctx.createAnalyser(), z=ctx.createGain(); a.fftSize=512; z.gain.value=0;
+      s.connect(a); a.connect(z); z.connect(ctx.destination);   /* silent: only there so the meter keeps running */
+      const b=new Float32Array(a.fftSize);
+      return { level:()=>{ a.getFloatTimeDomainData(b); let q=0; for(let k=0;k<b.length;k++) q+=b[k]*b[k]; return Math.sqrt(q/b.length); },
+               stop:()=>{ try{ s.disconnect(); a.disconnect(); z.disconnect(); }catch(e){} } };
+    }catch(e){ return { level:()=>0, stop:()=>{} }; }
+  }
+  window.SOF={memPlay, memStop:()=>memStop(true), recDuck, isPlaying:()=>!!mem, prime:()=>{ try{ unlock(); }catch(e){} },
+              songNext, micLevel, songs:SONGS.length, songNow:()=>current?current.i:null};
   /* away from the tab, the room goes quiet; back again, it returns */
   document.addEventListener('visibilitychange',()=>{
     if(!started) return;
