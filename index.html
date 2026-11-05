@@ -709,6 +709,14 @@
   body.mempage #memView{background:linear-gradient(90deg,rgba(10,10,10,.82) 0%,rgba(10,10,10,.6) 40%,rgba(10,10,10,.12) 78%,rgba(10,10,10,0) 100%);}
   body.mempage #memLayer{opacity:0;}
   body.mempage #memPill{opacity:0 !important;pointer-events:none !important;}
+  body.memmode #memPill{opacity:0 !important;pointer-events:none !important;}
+  /* v119 — the memories open on the network; a record button waits in the middle of it */
+  #memCentre{position:fixed;left:50%;top:50%;z-index:14;transform:translate(-50%,-50%) scale(.92);opacity:0;pointer-events:none;
+    transition:opacity .6s ease .6s,transform .6s ease .6s;}
+  #memCentre.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+  body.mempage #memCentre{opacity:0 !important;pointer-events:none !important;transition:opacity .3s,transform .3s;}
+  body.mempage #memExit{opacity:0;pointer-events:none;}
+  #memView .patron{max-width:640px;}
   #memLayer{transition:opacity .5s;}
   @media (max-width:640px){
     body.mempage #memView{background:linear-gradient(180deg,rgba(10,10,10,.42) 0%,rgba(10,10,10,.68) 30%,rgba(10,10,10,.66) 70%,rgba(10,10,10,.3) 100%);}
@@ -1302,6 +1310,7 @@
 </svg></button>
 <div id="memLayer" aria-label="memories"></div>
 <button class="backmap" id="memExit">← the map</button>
+<button class="mrec" id="memCentre" aria-label="record a memory">record</button>
 <div id="memView" aria-hidden="true">
   <button class="pback" id="memBack">← back</button>
   <div class="patron">
@@ -1323,7 +1332,6 @@
         <div class="mstatus" id="mStatus"></div>
       </div>
       <div class="pnote"><a class="toPriv" href="?go=privacy">privacy</a></div>
-      <button class="mothers" id="mOthers">hear others ›</button>
     </div>
   </div>
 </div>
@@ -3074,8 +3082,10 @@ const VERSIONS=[
    t:'test: memories play on iphone, and after recording the phone gives the sound back.'},
   {v:'v117', d:'5 nov 2026', url:'https://sof-studio-v117.vercel.app',
    t:'test: each memory wears its name on its trace — tap the name or the trace to hear it.'},
-  {v:'v118', d:'now', url:null,
+  {v:'v118', d:'5 nov 2026', url:'https://sof-studio-v118.vercel.app',
    t:'test: the map turns into the memory map behind the words; recording lights your own trace; the song turns with each memory.'},
+  {v:'v119', d:'now', url:null,
+   t:'test: the mic opens onto the memory network, with a record button in its middle; the words come up from it and go back to it.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3618,7 +3628,8 @@ requestAnimationFrame(draw);
     view.classList.remove('leaving');
     view.classList.add('open'); view.setAttribute('aria-hidden','false'); view.scrollTop=0;
   }
-  window.openMemories=open;
+  /* every way in (the mic, the ladder, the whisper, ?go=memory) lands on the network first */
+  window.openMemories=()=>enterMode();
   /* close the page; keep=true leaves the memory map up (hear others), otherwise the map turns back */
   function close(keep){
     stopRec(true);
@@ -3628,8 +3639,11 @@ requestAnimationFrame(draw);
     setTimeout(()=>{ view.classList.remove('open','leaving'); view.setAttribute('aria-hidden','true'); },480);
     if(keep!==true) visualOff();
   }
-  $('memPill').onclick=()=>open('leave');
-  $('memBack').onclick=()=>close();
+  $('memPill').onclick=()=>enterMode();
+  $('memBack').onclick=()=>close(true);
+  /* clicking off the words (anywhere outside them) goes back to the network */
+  view.addEventListener('click',e=>{ if(e.target===view) close(true); });
+  $('memCentre').onclick=()=>{ memPts.forEach(q=>{ if(q.on) setOn(q,false); }); window.SOF&&window.SOF.memStop(); open('leave'); };
   /* if anything else shuts the page, the map turns back too */
   new MutationObserver(()=>{ if(!view.classList.contains('open')){ document.body.classList.remove('mempage'); if(!hearing) visualOff(); } })
     .observe(view,{attributes:true,attributeFilter:['class']});
@@ -3716,14 +3730,15 @@ requestAnimationFrame(draw);
   }
   function visualOff(){
     hearing=false;
-    memMode=false; document.body.classList.remove('memmode'); $('memExit').classList.remove('on'); cv.style.cursor='';
+    memMode=false; document.body.classList.remove('memmode'); $('memExit').classList.remove('on'); $('memCentre').classList.remove('show'); cv.style.cursor='';
     window.SOF&&window.SOF.memStop(); memPts.forEach(q=>setOn(q,false));
   }
   async function enterMode(){
     hearing=true;
+    document.getElementById('menuView')&&document.getElementById('menuView').classList.remove('open');
     if(view.classList.contains('open')) close(true);
     else if(typeof leaveSection==='function' && typeof window.__view==='function' && window.__view()!=='over') leaveSection();
-    $('memExit').classList.add('on');
+    $('memExit').classList.add('on'); $('memCentre').classList.add('show');
     await visualOn();
   }
   function exitMode(){ visualOff(); }
@@ -3748,7 +3763,6 @@ requestAnimationFrame(draw);
   cv.addEventListener('click',e=>{ if(!memMode) return; const p=nearMem(e.clientX,e.clientY); if(p) toggle(p); });
   cv.addEventListener('pointermove',e=>{ if(!memMode){ return; } cv.style.cursor=nearMem(e.clientX,e.clientY)?'pointer':''; });
   window.memModeEnter=enterMode; window.memModeExit=exitMode;
-  $('mOthers').onclick=enterMode;
   $('memExit').onclick=exitMode;
 
   /* --- recording: up to 60 seconds; the music steps back while the mic is open --- */
@@ -3823,7 +3837,6 @@ requestAnimationFrame(draw);
       if(!ok) throw new Error('save');
       window.SOF&&window.SOF.memStop();
       $('mLeave').querySelectorAll('#mPick,#mVoiceBox,#mMeta').forEach(n=>n.hidden=true);
-      $('mOthers').textContent='hear the others ›';
       $('mPrompt').textContent='thank you. it’s with me now — jamie';
       if(typeof flowFlags!=='undefined'){ flowFlags.memLeft=1; saveFlow(); }
     }catch(e){
@@ -4688,7 +4701,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   if(go==='studio'){ setTimeout(()=>studioView.classList.add('open'),400); return; }
   if(go==='signup'){ setTimeout(()=>signupView.classList.add('open'),400); return; }
   if(go==='privacy'){ setTimeout(openPrivacy,400); return; }
-  if(go==='memory'){ setTimeout(()=>window.openMemories&&window.openMemories(),400); return; }
+  if(go==='memory'){ setTimeout(()=>window.memModeEnter&&window.memModeEnter(),900); return; }
   if(go==='memories'){ setTimeout(()=>window.memModeEnter&&window.memModeEnter(),900); return; }
   if(!go || !SECTIONS[go]) return;
   const root=rootId(go);
