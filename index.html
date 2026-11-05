@@ -671,16 +671,18 @@
   body.mapready #memPill{opacity:1;pointer-events:auto;}
   #memPill:hover,#memPill:focus-visible{color:var(--ink);}
   #memPill:hover svg{transform:translateY(-1px);}
+  #memPill.glint{animation:micGlint 1.8s ease-in-out 3;}
+  @keyframes micGlint{0%,100%{color:var(--g40)}50%{color:var(--ink)}}
   body.insec #memPill,body.dirmode #memPill{opacity:0;pointer-events:none;}
   @media (max-width:640px){ #memPill{right:max(18px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));} #memPill svg{width:15px;height:16px;} }
   #memView{position:fixed;inset:0;z-index:52;display:none;padding:100px 30px 90px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #memView.open{display:block;}
-  .mtabs{display:flex;gap:22px;margin:4px 0 30px;}
-  .mtabs button,.mmode button,.malt,.mafter button{font-family:var(--mono);background:none;border:0;padding:0;cursor:pointer;color:var(--g40);font-size:12px;letter-spacing:.06em;}
-  .mtabs button.on,.mmode button.on{color:var(--ink);border-bottom:1px solid var(--ink);padding-bottom:3px;}
-  .mprompt{font-size:17px;line-height:1.6;color:var(--ink);max-width:560px;margin:0 0 10px;}
-  .malt{font-size:10.5px;color:var(--g40);border-bottom:1px dotted var(--g25);margin-bottom:30px;}
-  .mmode{display:flex;gap:18px;margin:0 0 22px;}
+  .mpick button,.mafter button{font-family:var(--mono);background:none;border:0;padding:0;cursor:pointer;color:var(--g40);font-size:12px;letter-spacing:.06em;}
+  .mpick{display:flex;align-items:center;gap:16px;margin:2px 0 14px;font-size:10.5px;letter-spacing:.08em;color:var(--g40);}
+  .mpick button{font-size:13px;line-height:1;color:var(--g60);padding:4px 2px;}
+  .mpick button:hover{color:var(--ink);}
+  .mpick.locked button{visibility:hidden;}
+  .mprompt{font-size:17px;line-height:1.6;color:var(--ink);max-width:560px;margin:0 0 34px;min-height:3.2em;}
   .mrec{width:84px;height:84px;border-radius:50%;border:1px solid var(--g60);background:rgba(10,10,10,.35);color:var(--ink);cursor:pointer;
     font-family:var(--mono);font-size:11px;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;transition:all .25s;}
   .mrec.on{border-color:#e05a4a;color:#e05a4a;box-shadow:0 0 0 0 rgba(224,90,74,.5);animation:mpulse 1.6s infinite;}
@@ -688,8 +690,6 @@
   .mtime{font-size:10.5px;color:var(--g40);letter-spacing:.05em;margin:12px 0 18px;}
   .mafter{font-size:11px;color:var(--g40);margin:0 0 24px;}
   .mafter button{color:var(--ink);border-bottom:1px dotted var(--g40);font-size:11px;}
-  #mWords{width:100%;max-width:560px;min-height:120px;background:transparent;border:1px solid var(--g25);color:var(--ink);
-    font-family:var(--mono);font-size:13px;line-height:1.7;padding:12px;resize:vertical;margin:0 0 20px;}
   .mmeta input[type=text]{display:block;width:100%;max-width:420px;background:transparent;border:0;border-bottom:1px solid var(--g25);
     color:var(--ink);font-family:var(--mono);font-size:13px;padding:10px 0;margin:0 0 12px;outline:none;}
   .mok{display:flex;gap:10px;align-items:flex-start;font-size:11px;line-height:1.7;color:var(--g60);max-width:460px;margin:14px 0 18px;cursor:pointer;}
@@ -697,14 +697,6 @@
   .mmeta .send{font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--bg);background:var(--ink);border:0;border-radius:999px;padding:10px 22px;cursor:pointer;}
   .mmeta .send:disabled{opacity:.3;cursor:default;}
   .mstatus{font-size:11px;color:var(--g60);margin-top:14px;min-height:1.6em;}
-  .mlead{font-size:12px;line-height:1.8;color:var(--g60);max-width:520px;}
-  .mrow{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;padding:16px 0;border-top:1px solid var(--rule,rgba(242,242,240,.14));max-width:620px;}
-  .mrow:last-child{border-bottom:1px solid var(--rule,rgba(242,242,240,.14));}
-  .mrow .mp{width:30px;height:30px;border-radius:50%;border:1px solid var(--g40);background:none;color:var(--ink);cursor:pointer;font-size:10px;}
-  .mrow.playing .mp{border-color:var(--ink);background:var(--ink);color:var(--bg);}
-  .mrow .mw{font-size:13px;color:var(--ink);}
-  .mrow .mq{font-size:10.5px;color:var(--g40);margin-top:3px;line-height:1.6;}
-  .mrow .mt{font-size:12.5px;line-height:1.75;color:var(--g80);margin-top:6px;}
   .pnote{font-size:10.5px;color:var(--g40);letter-spacing:.05em;line-height:1.9;margin-top:16px;max-width:520px;}
   .pnote a,.fnpriv{color:var(--g60);text-decoration:none;border-bottom:1px dotted var(--g25);}
   .pnote a:hover,.fnpriv:hover{color:var(--ink);border-color:var(--ink);}
@@ -1253,7 +1245,7 @@
     <p>your email, only if you give it — for the occasional email, or to reply to you.</p>
     <p>your trail — the coloured line you draw as you wander, the name you give it, the continent your device's clock is set to, and where you arrived from (instagram, substack…). trails are shared on the map; your email never is.</p>
     <p>which links get tapped, counted without names.</p>
-    <p>your memory, if you leave one — a voice note or a few words, with the name and place you choose. others hear it only once jamie has listened to it.</p>
+    <p>your memory, if you leave one — a voice note, with the name and place you choose. others hear it only once jamie has listened to it.</p>
     <p>never your ip address, never your exact location. nothing is sold or shared. the data sits with supabase, in a locked database only jamie can read.</p>
     <p>to see what's kept about you, or to have it removed: <a href="mailto:hello@soundoffractures.com">hello@soundoffractures.com</a></p>
   </div>
@@ -1276,30 +1268,23 @@
   <button class="pback" id="memBack">← back</button>
   <div class="patron">
     <div class="pnum">— MEMORIES</div>
-    <h1>memories</h1>
-    <div class="mtabs"><button id="mtLeave" class="on">leave one</button><button id="mtListen">listen</button></div>
+    <h1>leave a memory</h1>
     <div id="mLeave">
+      <div class="mpick" id="mPick"><button id="mPrev" aria-label="previous prompt">‹</button><span id="mCount">1 / 4</span><button id="mNext" aria-label="next prompt">›</button></div>
       <div class="mprompt" id="mPrompt"></div>
-      <button class="malt" id="mNext">another question</button>
-      <div class="mmode"><button id="mmVoice" class="on">record</button><button id="mmText">write</button></div>
       <div id="mVoiceBox">
         <button class="mrec" id="mRec">record</button>
         <div class="mtime" id="mTime">up to 60 seconds</div>
         <div class="mafter" id="mAfter" hidden><button id="mHear">hear it in the music</button> &nbsp;·&nbsp; <button id="mAgain">record again</button></div>
       </div>
-      <div id="mTextBox" hidden><textarea id="mWords" maxlength="600" placeholder="a few words"></textarea></div>
       <div class="mmeta" id="mMeta" hidden>
         <input type="text" id="mName" placeholder="your first name (optional)" maxlength="40" autocomplete="given-name">
         <input type="text" id="mPlace" placeholder="where you are (optional)" maxlength="60">
-        <label class="mok"><input type="checkbox" id="mOk"><span>my memory can be heard by others on this site, once jamie has listened to it</span></label>
+        <label class="mok"><input type="checkbox" id="mOk"><span>my memory can be heard by others, once jamie has listened to it</span></label>
         <button class="send" id="mSave" disabled>leave it</button>
         <div class="mstatus" id="mStatus"></div>
       </div>
       <div class="pnote"><a class="toPriv" href="?go=privacy">privacy</a></div>
-    </div>
-    <div id="mListen" hidden>
-      <p class="mlead">memories left by people who found the music. each one takes the place of the voice in the song that's playing.</p>
-      <div id="mList"></div>
     </div>
   </div>
 </div>
@@ -2620,7 +2605,12 @@ function drawOverview(t, alpha){
     if(t-suggestNow.t0>16000){ hideSuggest(); }
     else{
       const sn=nodeById(suggestNow.to);
-      if(sn){
+      if(suggestNow.to==='memory'){
+        /* this one points at the microphone in the corner, not at a world */
+        const mr=document.getElementById('memPill').getBoundingClientRect();
+        flowHint.style.transform=`translate(${mr.right}px,${mr.top-10}px) translate(-100%,-100%)`;
+      }
+      else if(sn){
         const [sx,sy]=nodePos(sn,t);
         for(let k=0;k<2;k++){
           const p=REDUCED? .45 : (((t*.00055)+k*.5)%1);
@@ -2971,8 +2961,10 @@ const VERSIONS=[
    t:'test: leave a memory — a voice note or a few words — and hear memories inside the music, in place of the song’s own voice.'},
   {v:'v112', d:'4 nov 2026', url:'https://sof-studio-v112.vercel.app',
    t:'test: the alone together memories say where they came from.'},
-  {v:'v113', d:'now', url:null,
+  {v:'v113', d:'4 nov 2026', url:'https://sof-studio-v113.vercel.app',
    t:'test: the corner pill becomes a small microphone, printed in dots like the people holding hands.'},
+  {v:'v114', d:'now', url:null,
+   t:'test: memories are for leaving, by voice, with the alone together prompts; the fourth branch asks for one.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3049,6 +3041,9 @@ const RULES=[
   {id:'at-process', to:'projects',
    text:'the making of alone together is documented — “the process”, inside its world',
    ok:()=> seenSec('alonetogether') && !seenSec('atproc')},
+  {id:'at-memory', to:'memory',
+   text:'alone together is made of people’s memories — you can leave one too',
+   ok:()=> seenSec('alonetogether') && !flowFlags.memLeft},
   {id:'newforms', to:'videos',
    text:'these ideas get talked out loud — the new forms interviews, inside videos',
    ok:()=> (seenSec('writing')||seenSec('research')) && !seenSec('newforms')},
@@ -3083,6 +3078,7 @@ flowHint.addEventListener('click',()=>{
   if(!suggestNow) return;
   const to=suggestNow.to;
   hideSuggest();
+  if(to==='memory'){ window.openMemories&&window.openMemories(); return; }
   enterSection(to);
 });
 function showSuggest(){
@@ -3097,6 +3093,7 @@ function showSuggest(){
   flowHint.textContent=r.text;
   flowHint.style.color=tintStr(r.to,.95);
   flowHint.classList.add('on');
+  if(r.to==='memory'){ glintMic(); flowHint.style.color=''; }
 }
 function hideSuggest(){ suggestNow=null; flowHint.classList.remove('on'); }
 
@@ -3105,7 +3102,7 @@ let flowFlags={};
 try{ flowFlags=JSON.parse(localStorage.getItem('sof_flow_v1'))||{}; }catch(e){}
 function saveFlow(){ try{ localStorage.setItem('sof_flow_v1',JSON.stringify(flowFlags)); }catch(e){} }
 const flowNote=document.getElementById('flowNote');
-/* the ladder: name your trail + letters → subscribe → patronage.
+/* the ladder (v114): name your trail + sign up → leave a memory → support on substack.
    depth counts every branch explored — main worlds AND sub-branches
    (scenes, the process, new forms…) — so deep divers climb faster.
    always the lowest unclimbed rung, one per return, each once ever. */
@@ -3114,7 +3111,7 @@ function flowDepth(){ return seen.secs.length; }
 function dueFlowKind(){
   const depth=flowDepth();
   if(depth>=2 && !flowFlags.signup) return 'signup';
-  if(depth>=4 && !flowFlags.sub) return 'subscribe';
+  if(depth>=4 && !flowFlags.memory && !flowFlags.memLeft) return 'memory';
   if(depth>=6 && !flowFlags.patron) return 'patron';
   return null;
 }
@@ -3158,12 +3155,14 @@ function openFlowNote(kind){
     a.style.display='none';
     f.style.display='block';
     flowFlags.signup=1;
-  } else if(kind==='subscribe'){
-    p.textContent='you’ve gone well beyond the surface. if the work resonates, a paid substack subscription is a simple way to support it.';
-    a.textContent='support on substack ↗';
-    a.href='https://soundoffractures.substack.com/subscribe';
-    a.setAttribute('target','_blank');
-    flowFlags.sub=1;
+  } else if(kind==='memory'){
+    const d=flowDepth();
+    p.textContent='you’ve been through '+(NUMW[d]||d)+' branches now.';
+    a.textContent='leave a memory';
+    a.href='?go=memory';
+    a.removeAttribute('target');
+    flowFlags.memory=1;
+    glintMic();
   } else {
     p.textContent='you clearly like to lean in deep and really explore. if the work resonates, you can support it on substack.';
     a.textContent='support my work ↗';
@@ -3189,12 +3188,13 @@ document.getElementById('fnForm').addEventListener('submit',e=>{
   });
 });
 function closeFlowNote(){ flowNote.classList.remove('on'); }
+function glintMic(){ const m=document.getElementById('memPill'); if(!m) return; m.classList.remove('glint'); void m.offsetWidth; m.classList.add('glint'); setTimeout(()=>m.classList.remove('glint'),5600); }
 document.getElementById('fnLater').onclick=closeFlowNote;
 document.getElementById('fnAction').addEventListener('click',e=>{
-  if(flowNote.dataset.kind==='patron'){
+  if(flowNote.dataset.kind==='memory'){
     e.preventDefault();
     closeFlowNote();
-    document.getElementById('patronView').classList.add('open');
+    window.openMemories&&window.openMemories();
   } else {
     closeFlowNote();
   }
@@ -3474,10 +3474,11 @@ const PAGE_VIDEOS = {
 
 requestAnimationFrame(draw);
 
-/* ---------- memories: leave one (voice or words), or listen ----------
-   new voice notes go to a private folder; a memory is heard by others only once jamie approves it
-   (supabase: site_memories.approved). listening fetches the approved list and plays each one
-   into the music through window.SOF. */
+/* ---------- memories: leave a voice memory ----------
+   v114: voice only, collecting — the wall of memories lives at alone together and in the room.
+   the four prompts are the alone together site's own (src/data/recordingPrompts.ts), chosen with ‹ ›
+   before recording, as there. new voice notes go to a private folder (supabase: site-memories);
+   nothing is played back to anyone but the person who left it. */
 (()=>{
   const view=document.getElementById('memView'); if(!view) return;
   const $=id=>document.getElementById(id);
@@ -3488,35 +3489,27 @@ requestAnimationFrame(draw);
     'what does music do for you that nothing else can?'
   ];
   const SBH={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
-  let pi=Math.floor(Math.random()*PROMPTS.length), mode='voice';
-  const setPrompt=()=>{ $('mPrompt').textContent=PROMPTS[pi]; };
+  let pi=0; const mode='voice';
+  const setPrompt=()=>{ $('mPrompt').textContent=PROMPTS[pi]; $('mCount').textContent=(pi+1)+' / '+PROMPTS.length; };
   setPrompt();
   $('mNext').onclick=()=>{ pi=(pi+1)%PROMPTS.length; setPrompt(); };
+  $('mPrev').onclick=()=>{ pi=(pi-1+PROMPTS.length)%PROMPTS.length; setPrompt(); };
+  /* the prompt can only change before recording, as on the alone together site */
+  const lockPick=on=>$('mPick').classList.toggle('locked',on);
 
   function open(tab){
     document.getElementById('menuView')&&document.getElementById('menuView').classList.remove('open');
     view.classList.add('open'); view.setAttribute('aria-hidden','false'); view.scrollTop=0;
-    show(tab||'leave');
   }
   window.openMemories=open;
   function close(){ view.classList.remove('open'); view.setAttribute('aria-hidden','true'); stopRec(true); }
   $('memPill').onclick=()=>open('leave');
   $('memBack').onclick=close;
-  function show(tab){
-    $('mtLeave').classList.toggle('on',tab==='leave'); $('mtListen').classList.toggle('on',tab==='listen');
-    $('mLeave').hidden=tab!=='leave'; $('mListen').hidden=tab!=='listen';
-    if(tab==='listen') loadList();
-  }
-  $('mtLeave').onclick=()=>show('leave'); $('mtListen').onclick=()=>show('listen');
   setTimeout(()=>document.body.classList.add('mapready'),3500);
 
-  /* --- voice or words --- */
-  function setMode(m){ mode=m; $('mmVoice').classList.toggle('on',m==='voice'); $('mmText').classList.toggle('on',m==='text');
-    $('mVoiceBox').hidden=m!=='voice'; $('mTextBox').hidden=m!=='text'; refresh(); }
-  $('mmVoice').onclick=()=>setMode('voice'); $('mmText').onclick=()=>setMode('text');
-  function ready(){ return mode==='voice' ? !!recBlob : $('mWords').value.trim().length>=2; }
+  function ready(){ return !!recBlob; }
   function refresh(){ $('mMeta').hidden=!ready(); $('mSave').disabled=!(ready()&&$('mOk').checked); }
-  $('mWords').addEventListener('input',refresh); $('mOk').addEventListener('change',refresh);
+  $('mOk').addEventListener('change',refresh);
 
   /* --- recording: up to 60 seconds; the music steps back while the mic is open --- */
   let mr=null, stream=null, chunks=[], recBlob=null, recMime='', recDur=0, t0=0, tick=0, cutT=0;
@@ -3524,11 +3517,11 @@ requestAnimationFrame(draw);
   function pickMime(){ if(!window.MediaRecorder||!MediaRecorder.isTypeSupported) return '';
     for(const m of ['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus']) if(MediaRecorder.isTypeSupported(m)) return m; return ''; }
   async function startRec(){
-    if(!navigator.mediaDevices||!window.MediaRecorder){ $('mTime').textContent='this browser can’t record here — try writing it instead'; return; }
+    if(!navigator.mediaDevices||!window.MediaRecorder){ $('mTime').textContent='this browser can’t record here — try another one'; return; }
     try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}); }
-    catch(e){ $('mTime').textContent='the microphone was blocked — allow it, or write it instead'; return; }
+    catch(e){ $('mTime').textContent='the microphone was blocked — allow it and try again'; return; }
     window.SOF&&window.SOF.memStop(); window.SOF&&window.SOF.recDuck(true);
-    recMime=pickMime(); chunks=[]; recBlob=null; refresh();
+    recMime=pickMime(); chunks=[]; recBlob=null; refresh(); lockPick(true);
     mr=new MediaRecorder(stream, recMime?{mimeType:recMime}:undefined);
     mr.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
     mr.onstop=()=>{
@@ -3540,6 +3533,7 @@ requestAnimationFrame(draw);
       $('mRec').classList.remove('on'); $('mRec').textContent='record';
       $('mRec').hidden=!!recBlob; $('mAfter').hidden=!recBlob;
       $('mTime').textContent=recBlob? recDur+' seconds' : 'nothing came through — try again';
+      if(!recBlob) lockPick(false);
       refresh();
     };
     mr.start(250); t0=performance.now();
@@ -3554,7 +3548,7 @@ requestAnimationFrame(draw);
     else if(quiet){ stream&&stream.getTracks().forEach(t=>t.stop()); stream=null; window.SOF&&window.SOF.recDuck(false); }
   }
   $('mRec').onclick=()=>{ if(mr&&mr.state==='recording') stopRec(); else startRec(); };
-  $('mAgain').onclick=()=>{ window.SOF&&window.SOF.memStop(); recBlob=null; $('mAfter').hidden=true; $('mRec').hidden=false; $('mTime').textContent='up to 60 seconds'; refresh(); };
+  $('mAgain').onclick=()=>{ window.SOF&&window.SOF.memStop(); recBlob=null; lockPick(false); $('mAfter').hidden=true; $('mRec').hidden=false; $('mTime').textContent='up to 60 seconds'; refresh(); };
   $('mHear').onclick=async()=>{
     if(!recBlob||!window.SOF) return;
     if(window.SOF.isPlaying()){ window.SOF.memStop(); $('mHear').textContent='hear it in the music'; return; }
@@ -3571,64 +3565,25 @@ requestAnimationFrame(draw);
     const id=(crypto.randomUUID?crypto.randomUUID():([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)));
     let path=null, mime=null;
     try{
-      if(mode==='voice'){
-        mime=(recBlob.type||'audio/webm').split(';')[0];
-        path='new/'+id+'.'+ext(mime);
-        const up=await fetch(SB_URL+'/storage/v1/object/site-memories/'+path,{method:'POST',headers:Object.assign({'Content-Type':mime,'x-upsert':'false'},SBH),body:recBlob});
-        if(!up.ok) throw new Error('upload '+up.status);
-      }
+      mime=(recBlob.type||'audio/webm').split(';')[0];
+      path='new/'+id+'.'+ext(mime);
+      const up=await fetch(SB_URL+'/storage/v1/object/site-memories/'+path,{method:'POST',headers:Object.assign({'Content-Type':mime,'x-upsert':'false'},SBH),body:recBlob});
+      if(!up.ok) throw new Error('upload '+up.status);
       const trail=(typeof userTrail!=='undefined'&&userTrail&&/^[0-9a-f-]{36}$/.test(userTrail.id||''))?userTrail.id:null;
       const r=await fetch(SB_URL+'/rest/v1/rpc/add_site_memory',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},SBH),
-        body:JSON.stringify({p_id:id,p_kind:mode,p_path:path,p_mime:mime,p_duration:mode==='voice'?recDur:null,p_prompt:PROMPTS[pi],
-          p_text:mode==='text'?$('mWords').value:null,p_name:$('mName').value,p_place:$('mPlace').value,p_trail:trail,p_consent:$('mOk').checked})});
+        body:JSON.stringify({p_id:id,p_kind:mode,p_path:path,p_mime:mime,p_duration:recDur,p_prompt:PROMPTS[pi],
+          p_text:null,p_name:$('mName').value,p_place:$('mPlace').value,p_trail:trail,p_consent:$('mOk').checked})});
       const ok=r.ok && (await r.json())===true;
       if(!ok) throw new Error('save');
       window.SOF&&window.SOF.memStop();
-      $('mLeave').querySelectorAll('.mmode,#mVoiceBox,#mTextBox,#mMeta,.malt').forEach(n=>n.hidden=true);
-      $('mPrompt').textContent='thank you — it’s with me now. once i’ve listened, others will hear it inside the music. — jamie';
+      $('mLeave').querySelectorAll('#mPick,#mVoiceBox,#mMeta').forEach(n=>n.hidden=true);
+      $('mPrompt').textContent='thank you. it’s with me now — jamie';
+      if(typeof flowFlags!=='undefined'){ flowFlags.memLeft=1; saveFlow(); }
     }catch(e){
       $('mSave').disabled=false; $('mStatus').textContent='that didn’t go through — try again in a moment';
     }
   };
 
-  /* --- listening --- */
-  let list=null, playingRow=null;
-  async function loadList(){
-    const box=$('mList');
-    if(list){ render(); return; }
-    box.innerHTML='<div class="mq">gathering them…</div>';
-    try{
-      const r=await fetch(SB_URL+'/rest/v1/rpc/list_site_memories',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},SBH),body:'{}'});
-      if(!r.ok) throw new Error(r.status);
-      list=await r.json(); render();
-    }catch(e){ box.innerHTML='<div class="mq">memories aren’t switched on yet.</div>'; }
-  }
-  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  function render(){
-    const box=$('mList');
-    if(!list||!list.length){ box.innerHTML='<div class="mq">none yet — be the first.</div>'; return; }
-    box.innerHTML=list.map((m,k)=>{
-      const who=[m.name,m.place].filter(Boolean).join(' · ')||'someone';
-      const q=m.prompt? esc(m.prompt) : (m.source==='alone-together'?'left as part of the alone together project':'');
-      return '<div class="mrow" data-k="'+k+'">'+(m.kind==='voice'?'<button class="mp" aria-label="play">▶</button>':'<span></span>')
-        +'<div><div class="mw">'+esc(who)+'</div>'+(q?'<div class="mq">'+q+'</div>':'')+(m.kind==='text'&&m.text?'<div class="mt">'+esc(m.text)+'</div>':'')+'</div></div>';
-    }).join('');
-    box.querySelectorAll('.mrow .mp').forEach(b=>b.onclick=()=>play(b.closest('.mrow')));
-  }
-  async function play(row){
-    const m=list[+row.dataset.k];
-    if(playingRow===row){ window.SOF.memStop(); row.classList.remove('playing'); row.querySelector('.mp').textContent='▶'; playingRow=null; return; }
-    if(playingRow){ playingRow.classList.remove('playing'); playingRow.querySelector('.mp').textContent='▶'; }
-    playingRow=row; row.classList.add('playing'); row.querySelector('.mp').textContent='…';
-    try{
-      const r=await fetch(SB_URL+'/storage/v1/object/authenticated/'+m.bucket+'/'+m.path,{headers:SBH});
-      if(!r.ok) throw new Error(r.status);
-      const blob=await r.blob();
-      if(playingRow!==row) return;
-      await window.SOF.memPlay(blob,()=>{ if(playingRow===row){ row.classList.remove('playing'); row.querySelector('.mp').textContent='▶'; playingRow=null; } });
-      row.querySelector('.mp').textContent='■';
-    }catch(e){ row.classList.remove('playing'); row.querySelector('.mp').textContent='▶'; if(playingRow===row) playingRow=null; }
-  }
 })();
 
 /* ---------- intro + background video ---------- */
@@ -4445,7 +4400,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   if(go==='studio'){ setTimeout(()=>studioView.classList.add('open'),400); return; }
   if(go==='signup'){ setTimeout(()=>signupView.classList.add('open'),400); return; }
   if(go==='privacy'){ setTimeout(openPrivacy,400); return; }
-  if(go==='memory'||go==='memories'){ setTimeout(()=>window.openMemories&&window.openMemories(go==='memories'?'listen':'leave'),400); return; }
+  if(go==='memory'||go==='memories'){ setTimeout(()=>window.openMemories&&window.openMemories(),400); return; }
   if(!go || !SECTIONS[go]) return;
   const root=rootId(go);
   setTimeout(()=>{ if(view==='over') enterSection(root); },900);
