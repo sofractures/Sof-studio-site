@@ -671,6 +671,27 @@
   body.mapready #memPill{opacity:1;pointer-events:auto;}
   #memPill:hover,#memPill:focus-visible{color:var(--ink);}
   #memPill:hover svg{transform:translateY(-1px);}
+  /* v115 — memories on the network: the worlds fall back, the traces carrying a memory come forward */
+  body.memmode #nodeLayer{opacity:.07;pointer-events:none;}
+  body.memmode #nodeLayer .node{pointer-events:none;}
+  body.memmode #expBtn,body.memmode #trailChip,body.memmode #trailHint,body.memmode #flowHint,body.memmode #flowNote{opacity:0 !important;pointer-events:none !important;}
+  #memLayer{position:fixed;inset:0;z-index:12;pointer-events:none;}
+  .mempt{position:fixed;top:0;left:0;width:30px;height:30px;margin:-15px 0 0 -15px;border:0;background:none;border-radius:50%;
+    cursor:pointer;padding:0;pointer-events:none;opacity:0;}
+  body.memmode .mempt{pointer-events:auto;}
+  .mempt .ml{position:absolute;left:24px;top:50%;transform:translateY(-50%);white-space:nowrap;font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.06em;color:var(--ink);opacity:0;transition:opacity .3s;text-align:left;line-height:1.75;pointer-events:none;
+    background:rgba(10,10,10,.6);padding:2px 6px;}
+  .mempt.left .ml{left:auto;right:24px;text-align:right;}
+  @media (max-width:640px){
+    .mempt .ml,.mempt.left .ml{left:50%;right:auto;top:34px;transform:translateX(calc(-50% + var(--sx,0px)));text-align:center;
+      white-space:normal;width:190px;}
+  }
+  .mempt .ml i{display:block;font-style:normal;color:var(--g40);font-size:8.5px;}
+  .mempt:hover .ml,.mempt:focus-visible .ml,.mempt.playing .ml{opacity:1;}
+  .mothers{font-family:var(--mono);background:none;border:0;padding:0;cursor:pointer;color:var(--g60);font-size:11px;letter-spacing:.06em;
+    border-bottom:1px dotted var(--g25);margin-top:26px;}
+  .mothers:hover{color:var(--ink);border-color:var(--ink);}
   #memPill.glint{animation:micGlint 1.8s ease-in-out 3;}
   @keyframes micGlint{0%,100%{color:var(--g40)}50%{color:var(--ink)}}
   body.insec #memPill,body.dirmode #memPill{opacity:0;pointer-events:none;}
@@ -1264,6 +1285,8 @@
   </defs>
   <rect width="20" height="22" fill="url(#htDotsM)" mask="url(#htMic)"/>
 </svg></button>
+<div id="memLayer" aria-label="memories"></div>
+<button class="backmap" id="memExit">← the map</button>
 <div id="memView" aria-hidden="true">
   <button class="pback" id="memBack">← back</button>
   <div class="patron">
@@ -1285,6 +1308,7 @@
         <div class="mstatus" id="mStatus"></div>
       </div>
       <div class="pnote"><a class="toPriv" href="?go=privacy">privacy</a></div>
+      <button class="mothers" id="mOthers">hear others ›</button>
     </div>
   </div>
 </div>
@@ -1635,6 +1659,8 @@ const SRC=(()=>{try{
 }catch(e){ return ''; }})();
 
 let otherTrails=[];
+/* memories on the network (v115): memMode is the switch, memA its eased weight, memPts the points */
+let memMode=false, memA=0, memPts=[];
 function loadTrails(){
   fetch(SB_URL+'/rest/v1/site_trails?select=id,hue,name,wps,region&order=updated_at.desc&limit=80',{headers:SB_HDRS})
     .then(r=>r.json())
@@ -1642,7 +1668,8 @@ function loadTrails(){
       if(!Array.isArray(rows)) return;
       otherTrails=rows
         .filter(r=>r.id!==userTrail.id && Array.isArray(r.wps) && r.wps.length>=2)
-        .map(r=>({h:r.hue, name:(r.name||'').slice(0,24), wps:r.wps, region:r.region||''}));
+        .map(r=>({id:r.id, h:r.hue, name:(r.name||'').slice(0,24), wps:r.wps, region:r.region||''}));
+      if(window.memAssign) window.memAssign();
       learnCommunities();
       expLabel();   /* hoisted — keeps the explorers count current */
     })
@@ -2480,7 +2507,9 @@ function drawSeeker(t,alpha){
 
 function drawOverview(t, alpha){
   ctx.save();
-  ctx.globalAlpha=alpha;
+  /* in memories, the worlds and their lines fall back to a trace */
+  const memK=1-.88*memA;
+  ctx.globalAlpha=alpha*memK;
 
   /* learnt communities: soft shared zones beneath everything */
   drawCommunities(t,alpha);
@@ -2497,6 +2526,13 @@ function drawOverview(t, alpha){
   /* other people's trails, fainter than the network */
   { const F=threadFocus, on=F.ei!=null && F.s>.01, A=on?EDGES[F.ei][0]:null, B=on?EDGES[F.ei][1]:null;
     otherTrails.forEach(tr=>{
+      if(memA>.01 && tr._mem){
+        ctx.globalAlpha=alpha;
+        drawTrail(tr,t,Math.min(.85,(.11+(tr._memOn?.62:.3)*memA))*alpha,false,false,.8+(tr._memOn?1:.5)*memA);
+        ctx.globalAlpha=alpha*memK;
+        return;
+      }
+      if(memA>.01){ drawTrail(tr,t,.11*alpha*memK,false); return; }
       if(!on){ drawTrail(tr,t,.11*alpha,true); return; }
       const m=trailMatch(tr,A,B);
       const k=m===1? 1+F.s*4.6 : m>0? 1+F.s*1.6 : 1-F.s*.55;
@@ -2598,7 +2634,7 @@ function drawOverview(t, alpha){
   /* your trail, on top but quiet */
   { const F=threadFocus, on=F.ei!=null && F.s>.01;
     const m=on? trailMatch(userTrail,EDGES[F.ei][0],EDGES[F.ei][1]) : 0;
-    drawTrail(userTrail,t,Math.min(.9,.32*(on?(m===1?1+F.s*1.4:m>0?1+F.s*.4:1-F.s*.3):1))*alpha,false,true,m===1? .8+F.s*.5 : .8); }
+    drawTrail(userTrail,t,Math.min(.9,.32*(on?(m===1?1+F.s*1.4:m>0?1+F.s*.4:1-F.s*.3):1))*alpha*memK,false,true,m===1? .8+F.s*.5 : .8); }
 
   /* suggested next world: a slow breathing ring */
   if(suggestNow){
@@ -2625,9 +2661,34 @@ function drawOverview(t, alpha){
     }
   }
 
+  ctx.globalAlpha=alpha;
+  if(memA>.01) drawMemPts(t,alpha);
   drawSeeker(t,alpha);
 
   ctx.restore();
+}
+/* each memory sits on a waypoint of the trace it belongs to, breathing; the one playing pulses */
+function drawMemPts(t,alpha){
+  memPts.forEach(p=>{
+    let xy=null;
+    if(p.tr){ const w=p.tr.wps[Math.min(p.wi,p.tr.wps.length-1)]; xy=w&&wpXY(w,t); }
+    if(!xy && p.node){ const [nx,ny]=nodePos(p.node,t); xy=[nx+Math.cos(p.seed*6.3)*70, ny+Math.sin(p.seed*6.3)*44]; }
+    if(!xy){ p.el.style.opacity=0; return; }
+    /* two memories on the same world sit a little apart */
+    if(p.dup){ xy=[xy[0]+Math.cos(1.1+p.dup*2.1)*30, xy[1]+Math.sin(1.1+p.dup*2.1)*24]; }
+    const [x,y]=xy, a=memA*alpha;
+    for(let k=0;k<(p.on?3:2);k++){
+      const ph=REDUCED? .4 : (((t*(p.on?.0011:.00045))+p.seed+k/(p.on?3:2))%1);
+      ctx.beginPath(); ctx.arc(x,y,4+ph*(p.on?30:16),0,Math.PI*2);
+      ctx.strokeStyle='rgba(242,242,240,'+((1-ph)*(p.on?.7:.4)*a)+')'; ctx.lineWidth=1; ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(x,y,p.on?3.4:2.6,0,Math.PI*2);
+    ctx.fillStyle='rgba(242,242,240,'+(.92*a)+')'; ctx.fill();
+    p.el.style.transform=`translate(${x}px,${y}px)`;
+    p.el.classList.toggle('left', x>W*.55);
+    if(W<=640){ const l=x-95, s=Math.max(8,Math.min(W-198,l))-l; p.el.style.setProperty('--sx',s+'px'); }
+    p.el.style.opacity=memA;
+  });
 }
 
 function drawSection(t, alpha){
@@ -2709,6 +2770,8 @@ function draw(t){
 
   /* fellow explorers' names fade in and out rather than snapping */
   nameA+=((namesOn?1:0)-nameA)*(REDUCED?1:.08);
+  memA+=((memMode?1:0)-memA)*(REDUCED?1:.06);
+  if(memA<.001) memA=0; if(memA>.999) memA=1;
   if(nameA<.001) nameA=0; if(nameA>.999) nameA=1;
 
   if(trans!==transTarget){
@@ -2963,8 +3026,10 @@ const VERSIONS=[
    t:'test: the alone together memories say where they came from.'},
   {v:'v113', d:'4 nov 2026', url:'https://sof-studio-v113.vercel.app',
    t:'test: the corner pill becomes a small microphone, printed in dots like the people holding hands.'},
-  {v:'v114', d:'now', url:null,
+  {v:'v114', d:'5 nov 2026', url:'https://sof-studio-v114.vercel.app',
    t:'test: memories are for leaving, by voice, with the alone together prompts; the fourth branch asks for one.'},
+  {v:'v115', d:'now', url:null,
+   t:'test: hear others — the worlds fall back and the memories come forward on the network, each on a trace.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3082,7 +3147,7 @@ flowHint.addEventListener('click',()=>{
   enterSection(to);
 });
 function showSuggest(){
-  if(view!=='over' || flowNote.classList.contains('on')) return;
+  if(view!=='over' || flowNote.classList.contains('on') || memMode) return;
   const now=performance.now();
   if(now-lastSuggestT<75000 || suggestCount>=3) return;
   const r=RULES.find(r=>!seen.rules.includes(r.id) && r.ok());
@@ -3125,7 +3190,7 @@ function othersShowing(){
   const b=document.body;
   return (trailHint&&trailHint.classList.contains('on')) || flowHint.classList.contains('on') ||
          !!document.querySelector('.mixLogo.hint') || b.classList.contains('menuopen') ||
-         b.classList.contains('inpage') || b.classList.contains('dirmode') || b.classList.contains('introon');
+         b.classList.contains('inpage') || b.classList.contains('dirmode') || b.classList.contains('introon') || b.classList.contains('memmode');
 }
 let calmSince=0;
 function scheduleFlowNote(kind){
@@ -3357,6 +3422,7 @@ document.getElementById('patronForm').addEventListener('submit',e=>{
 window.addEventListener('keydown',e=>{
   if(e.key!=='Escape' || chipEditing) return;
   if(ytView.classList.contains('open')){ closeYt(); return; }
+  if(memMode && !document.getElementById('memView').classList.contains('open')){ window.memModeExit&&window.memModeExit(); return; }
   if(flowNote.classList.contains('on')){ closeFlowNote(); return; }
   if(privacyView.classList.contains('open')){ closePrivacy(); return; }
   if(document.getElementById('memView').classList.contains('open')){ document.getElementById('memBack').click(); return; }
@@ -3511,6 +3577,88 @@ requestAnimationFrame(draw);
   function refresh(){ $('mMeta').hidden=!ready(); $('mSave').disabled=!(ready()&&$('mOk').checked); }
   $('mOk').addEventListener('change',refresh);
 
+  /* --- hearing others: memories on the network ---
+     the approved memories come forward on the map. until each new memory carries its own trail,
+     the alone together placeholders sit on traces left by visitors who didn't name theirs. */
+  let mems=null;
+  async function loadMems(){
+    if(mems) return mems;
+    const r=await fetch(SB_URL+'/rest/v1/rpc/list_site_memories',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},SBH),body:'{}'});
+    if(!r.ok) throw new Error(r.status);
+    mems=(await r.json()).filter(m=>m.kind==='voice'&&m.path); return mems;
+  }
+  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function memAssign(){
+    if(!mems) return;
+    otherTrails.forEach(tr=>{ tr._mem=false; tr._memOn=false; });
+    memPts.forEach(q=>{ q.placed=false; });
+    const open=otherTrails.filter(tr=>!tr.name && Array.isArray(tr.wps) && tr.wps.length>=2)
+      .sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+    const layer=$('memLayer');
+    mems.forEach((m,k)=>{
+      let p=memPts.find(q=>q.m.id===m.id);
+      if(!p){
+        const el=document.createElement('button'); el.className='mempt';
+        const who=[m.name,m.place].filter(Boolean).join(' · ')||'someone';
+        el.setAttribute('aria-label','play a memory from '+who);
+        el.innerHTML='<span class="ml">'+esc(who)+(m.source==='alone-together'?'<i>left as part of the alone together project</i>':'')+'</span>';
+        layer.appendChild(el);
+        p={m, el, seed:((k*0.618)%1), on:false, blob:null};
+        el.onclick=()=>toggle(p);
+        memPts.push(p);
+      }
+      if(open.length){
+        p.tr=open[k%open.length]; p.tr._mem=true; p.node=null;
+        const n=p.tr.wps.length, mid=Math.floor(n/2);
+        const order=[...Array(n).keys()].sort((a,b)=>Math.abs(a-mid)-Math.abs(b-mid));
+        const taken=memPts.filter(q=>q!==p && q.tr && q.placed).map(q=>q.tr.wps[q.wi][0]);
+        p.wi=order.find(i=>!taken.includes(p.tr.wps[i][0]) && !memPts.some(q=>q!==p&&q.placed&&q.tr===p.tr&&q.wi===i));
+        if(p.wi==null) p.wi=order.find(i=>!memPts.some(q=>q!==p&&q.placed&&q.tr===p.tr&&q.wi===i));
+        if(p.wi==null) p.wi=mid;
+        const nid=p.tr.wps[p.wi][0];
+        p.dup=memPts.filter(q=>q!==p&&q.placed&&q.tr&&q.tr.wps[q.wi][0]===nid).length;
+        p.placed=true;
+      } else {
+        p.tr=null; p.node=nodes[k%nodes.length];
+      }
+    });
+  }
+  window.memAssign=memAssign;
+  async function getBlob(p){
+    if(p.blob) return p.blob;
+    const r=await fetch(SB_URL+'/storage/v1/object/authenticated/'+p.m.bucket+'/'+p.m.path,{headers:SBH});
+    if(!r.ok) throw new Error(r.status);
+    p.blob=await r.blob(); return p.blob;
+  }
+  function setOn(p,on){ p.on=on; p.el.classList.toggle('playing',on); if(p.tr) p.tr._memOn=on; }
+  async function toggle(p){
+    if(!window.SOF) return;
+    if(p.on){ window.SOF.memStop(); setOn(p,false); return; }
+    memPts.forEach(q=>{ if(q.on) setOn(q,false); });
+    window.SOF.prime();
+    setOn(p,true);
+    try{
+      const blob=await getBlob(p);
+      if(!p.on) return;
+      await window.SOF.memPlay(blob,()=>setOn(p,false));
+    }catch(e){ setOn(p,false); }
+  }
+  async function enterMode(){
+    close();
+    if(typeof view!=='undefined' && view!=='over' && typeof leaveSection==='function') leaveSection();
+    if(typeof setModes==='function' && document.body.classList.contains('dirmode')) setModes('map');
+    try{ hideSuggest(); closeFlowNote(); cancelFlowNote(); }catch(e){}
+    memMode=true; document.body.classList.add('memmode'); $('memExit').classList.add('on');
+    try{ await loadMems(); memAssign(); memPts.forEach(p=>getBlob(p).catch(()=>{})); }catch(e){}
+  }
+  function exitMode(){
+    memMode=false; document.body.classList.remove('memmode'); $('memExit').classList.remove('on');
+    window.SOF&&window.SOF.memStop(); memPts.forEach(q=>setOn(q,false));
+  }
+  window.memModeEnter=enterMode; window.memModeExit=exitMode;
+  $('mOthers').onclick=enterMode;
+  $('memExit').onclick=exitMode;
+
   /* --- recording: up to 60 seconds; the music steps back while the mic is open --- */
   let mr=null, stream=null, chunks=[], recBlob=null, recMime='', recDur=0, t0=0, tick=0, cutT=0;
   const MAX=60;
@@ -3577,6 +3725,7 @@ requestAnimationFrame(draw);
       if(!ok) throw new Error('save');
       window.SOF&&window.SOF.memStop();
       $('mLeave').querySelectorAll('#mPick,#mVoiceBox,#mMeta').forEach(n=>n.hidden=true);
+      $('mOthers').textContent='hear the others ›';
       $('mPrompt').textContent='thank you. it’s with me now — jamie';
       if(typeof flowFlags!=='undefined'){ flowFlags.memLeft=1; saveFlow(); }
     }catch(e){
@@ -4344,7 +4493,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   }
   /* while someone records, the music steps right back so the mic hears them, not it */
   function recDuck(on){ if(!ctx||!bed) return; ramp(bed,on?.08:1,on?.4:2); }
-  window.SOF={memPlay, memStop:()=>memStop(true), recDuck, isPlaying:()=>!!mem};
+  window.SOF={memPlay, memStop:()=>memStop(true), recDuck, isPlaying:()=>!!mem, prime:()=>{ try{ unlock(); }catch(e){} }};
   /* away from the tab, the room goes quiet; back again, it returns */
   document.addEventListener('visibilitychange',()=>{
     if(!started) return;
@@ -4400,7 +4549,8 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   if(go==='studio'){ setTimeout(()=>studioView.classList.add('open'),400); return; }
   if(go==='signup'){ setTimeout(()=>signupView.classList.add('open'),400); return; }
   if(go==='privacy'){ setTimeout(openPrivacy,400); return; }
-  if(go==='memory'||go==='memories'){ setTimeout(()=>window.openMemories&&window.openMemories(),400); return; }
+  if(go==='memory'){ setTimeout(()=>window.openMemories&&window.openMemories(),400); return; }
+  if(go==='memories'){ setTimeout(()=>window.memModeEnter&&window.memModeEnter(),900); return; }
   if(!go || !SECTIONS[go]) return;
   const root=rootId(go);
   setTimeout(()=>{ if(view==='over') enterSection(root); },900);
