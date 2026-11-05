@@ -679,16 +679,18 @@
   .mempt{position:fixed;top:0;left:0;width:30px;height:30px;margin:-15px 0 0 -15px;border:0;background:none;border-radius:50%;
     cursor:pointer;padding:0;pointer-events:none;opacity:0;}
   body.memmode .mempt{pointer-events:auto;}
-  .mempt .ml{position:absolute;left:24px;top:50%;transform:translateY(-50%);white-space:nowrap;font-family:var(--mono);font-size:9.5px;
-    letter-spacing:.06em;color:var(--ink);opacity:0;transition:opacity .3s;text-align:left;line-height:1.75;pointer-events:none;
-    background:rgba(10,10,10,.6);padding:2px 6px;}
+  .mempt .ml{position:absolute;left:20px;top:50%;transform:translateY(-50%);white-space:nowrap;font-family:var(--mono);font-size:10px;
+    letter-spacing:.07em;color:var(--g60);text-transform:lowercase;text-align:left;line-height:1.75;
+    pointer-events:auto;cursor:pointer;padding:4px 4px;text-shadow:0 0 6px rgba(10,10,10,.9),0 0 2px rgba(10,10,10,.9);transition:color .25s;}
+  .mempt .ml b{font-weight:400;}
+  .mempt .ml i{display:block;font-style:normal;color:var(--g40);font-size:8.5px;max-height:0;overflow:hidden;opacity:0;transition:opacity .3s,max-height .3s;}
+  .mempt:hover .ml,.mempt:focus-visible .ml,.mempt.playing .ml{color:var(--ink);}
+  .mempt:hover .ml i,.mempt:focus-visible .ml i,.mempt.playing .ml i{max-height:3.6em;opacity:1;}
   .mempt.left .ml{left:auto;right:24px;text-align:right;}
   @media (max-width:640px){
-    .mempt .ml,.mempt.left .ml{left:50%;right:auto;top:34px;transform:translateX(calc(-50% + var(--sx,0px)));text-align:center;
+    .mempt .ml,.mempt.left .ml{left:50%;right:auto;top:30px;transform:translateX(calc(-50% + var(--sx,0px)));text-align:center;
       white-space:normal;width:190px;}
   }
-  .mempt .ml i{display:block;font-style:normal;color:var(--g40);font-size:8.5px;}
-  .mempt:hover .ml,.mempt:focus-visible .ml,.mempt.playing .ml{opacity:1;}
   .mothers{font-family:var(--mono);background:none;border:0;padding:0;cursor:pointer;color:var(--g60);font-size:11px;letter-spacing:.06em;
     border-bottom:1px dotted var(--g25);margin-top:26px;}
   .mothers:hover{color:var(--ink);border-color:var(--ink);}
@@ -3030,8 +3032,10 @@ const VERSIONS=[
    t:'test: memories are for leaving, by voice, with the alone together prompts; the fourth branch asks for one.'},
   {v:'v115', d:'5 nov 2026', url:'https://sof-studio-v115.vercel.app',
    t:'test: hear others — the worlds fall back and the memories come forward on the network, each on a trace.'},
-  {v:'v116', d:'now', url:null,
+  {v:'v116', d:'5 nov 2026', url:'https://sof-studio-v116.vercel.app',
    t:'test: memories play on iphone, and after recording the phone gives the sound back.'},
+  {v:'v117', d:'now', url:null,
+   t:'test: each memory wears its name on its trace — tap the name or the trace to hear it.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3601,9 +3605,10 @@ requestAnimationFrame(draw);
       let p=memPts.find(q=>q.m.id===m.id);
       if(!p){
         const el=document.createElement('button'); el.className='mempt';
-        const who=[m.name,m.place].filter(Boolean).join(' · ')||'someone';
-        el.setAttribute('aria-label','play a memory from '+who);
-        el.innerHTML='<span class="ml">'+esc(who)+(m.source==='alone-together'?'<i>left as part of the alone together project</i>':'')+'</span>';
+        const who=m.name||m.place||'someone';
+        const more=[m.name&&m.place?m.place:'', m.source==='alone-together'?'left as part of the alone together project':''].filter(Boolean);
+        el.setAttribute('aria-label','play a memory from '+[m.name,m.place].filter(Boolean).join(', '));
+        el.innerHTML='<span class="ml"><b>'+esc(who)+'</b>'+more.map(s=>'<i>'+esc(s)+'</i>').join('')+'</span>';
         layer.appendChild(el);
         p={m, el, seed:((k*0.618)%1), on:false, blob:null};
         el.onclick=()=>toggle(p);
@@ -3654,9 +3659,29 @@ requestAnimationFrame(draw);
     try{ await loadMems(); memAssign(); memPts.forEach(p=>getBlob(p).catch(()=>{})); }catch(e){}
   }
   function exitMode(){
-    memMode=false; document.body.classList.remove('memmode'); $('memExit').classList.remove('on');
+    memMode=false; document.body.classList.remove('memmode'); $('memExit').classList.remove('on'); cv.style.cursor='';
     window.SOF&&window.SOF.memStop(); memPts.forEach(q=>setOn(q,false));
   }
+  function nearMem(x,y){
+    let best=null, bd=18;
+    memPts.forEach(p=>{
+      if(!p.tr) return;
+      const tr=p.tr, pts=tr.wps.map(w=>wpXY(w,T)).filter(Boolean);
+      for(let i=0;i<pts.length-1;i++){
+        const [x1,y1]=pts[i], [x2,y2]=pts[i+1];
+        const bend=(((tr.h+i*37)%2)?-1:1)*(24+((tr.h+i*53)%38));
+        const mx=(x1+x2)/2, my=(y1+y2)/2, dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy)||1;
+        const cx=mx+(-dy/L)*bend, cy=my+(dx/L)*bend;
+        for(let k=0;k<=24;k++){
+          const s=k/24, u=1-s, qx=u*u*x1+2*u*s*cx+s*s*x2, qy=u*u*y1+2*u*s*cy+s*s*y2;
+          const d=Math.hypot(qx-x,qy-y); if(d<bd){ bd=d; best=p; }
+        }
+      }
+    });
+    return best;
+  }
+  cv.addEventListener('click',e=>{ if(!memMode) return; const p=nearMem(e.clientX,e.clientY); if(p) toggle(p); });
+  cv.addEventListener('pointermove',e=>{ if(!memMode){ return; } cv.style.cursor=nearMem(e.clientX,e.clientY)?'pointer':''; });
   window.memModeEnter=enterMode; window.memModeExit=exitMode;
   $('mOthers').onclick=enterMode;
   $('memExit').onclick=exitMode;
