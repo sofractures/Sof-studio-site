@@ -3123,8 +3123,10 @@ const VERSIONS=[
    t:'the site moves home to soundoffractures.com, with a picture for when it is shared.'},
   {v:'v122', d:'14 nov 2026', url:'https://sof-studio-v122.vercel.app',
    t:'the shared preview says electronic music artist.'},
-  {v:'v123', d:'now', url:null,
+  {v:'v123', d:'24 nov 2026', url:'https://sof-studio-v123.vercel.app',
    t:'memories go live: the microphone opens onto the memory network, and a voice left here plays inside the music.'},
+  {v:'v124', d:'now', url:null,
+   t:'when you record, the music falls silent so only your voice is kept.'},
 ];
 dirHTML += `<div class="dir-sect"><h2>07 <span class="big">versions</span></h2>
   <div class="dir-note">this site is made in public and every version stays live. each row opens the site as it was.</div>`;
@@ -3811,10 +3813,11 @@ requestAnimationFrame(draw);
     for(const m of ['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus']) if(MediaRecorder.isTypeSupported(m)) return m; return ''; }
   async function startRec(){
     if(!navigator.mediaDevices||!window.MediaRecorder){ $('mTime').textContent='this browser can’t record here — try another one'; return; }
+    window.SOF&&window.SOF.memStop(); window.SOF&&window.SOF.recDuck(true);
     try{ if(navigator.audioSession) navigator.audioSession.type='play-and-record'; }catch(e){}
     try{ stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}); }
-    catch(e){ $('mTime').textContent='the microphone was blocked — allow it and try again'; return; }
-    window.SOF&&window.SOF.memStop(); window.SOF&&window.SOF.recDuck(true);
+    catch(e){ window.SOF&&window.SOF.recDuck(false); $('mTime').textContent='the microphone was blocked — allow it and try again'; return; }
+    await new Promise(r=>setTimeout(r,180));
     meter=window.SOF? window.SOF.micLevel(stream) : null; memLevel=meter? meter.level : ()=>0; memRec=true;
     recMime=pickMime(); chunks=[]; recBlob=null; refresh(); lockPick(true);
     mr=new MediaRecorder(stream, recMime?{mimeType:recMime}:undefined);
@@ -4311,7 +4314,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   const VOL=matchMedia('(hover:none)').matches?.44:.31;
   let wantOn=true; try{ wantOn=localStorage.getItem(LS)!=='off'; }catch(e){}
   let bed=null, memActive=false;
-  let ctx=null, master=null, comp=null, IR={}, started=false, current=null, nextTimer=0, ticker=0, lastSong=-1, an=null, fbins=null;
+  let ctx=null, master=null, comp=null, IR={}, started=false, current=null, nextTimer=0, ticker=0, lastSong=-1, an=null, fbins=null; let hush=null;
   const R=(a,b)=>a+Math.random()*(b-a);
   const pick=a=>a[Math.floor(Math.random()*a.length)];
   const cache={};   /* decoded buffers per song, freed when a song is done */
@@ -4324,7 +4327,9 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     master=ctx.createGain(); master.gain.value=0;
     /* a fast limiter last in line, so nothing the drift lands on can clip */
     const lim=ctx.createDynamicsCompressor(); lim.threshold.value=-4; lim.knee.value=0; lim.ratio.value=20; lim.attack.value=.002; lim.release.value=.15;
-    comp.connect(master); master.connect(lim); lim.connect(ctx.destination); master.__lim=lim;
+    comp.connect(master); master.connect(lim);
+    /* v124: hush, the last gate before the speakers; recording closes it so the mic hears only the voice */
+    hush=ctx.createGain(); hush.gain.value=1; lim.connect(hush); hush.connect(ctx.destination); master.__lim=lim;
     bed=ctx.createGain(); bed.gain.value=1; bed.connect(comp);
     an=ctx.createAnalyser(); an.fftSize=1024; an.smoothingTimeConstant=.8; lim.connect(an); fbins=new Float32Array(an.frequencyBinCount);
     IR=buildIR(ctx);
@@ -4671,7 +4676,9 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
     else { src.onended=done; src.start(t); }
   }
   /* while someone records, the music steps right back so the mic hears them, not it */
-  function recDuck(on){ if(!ctx||!bed) return; ramp(bed,on?.08:1,on?.4:2); }
+  /* while recording, all sound stops (music, reverb tails, memories); after, it comes back slowly */
+  function recDuck(on){ if(!ctx||!hush) return; const t=ctx.currentTime; hush.gain.cancelScheduledValues(t); hush.gain.setValueAtTime(hush.gain.value,t);
+    if(on) hush.gain.linearRampToValueAtTime(0,t+.12); else hush.gain.linearRampToValueAtTime(1,t+2.5); }
   /* the memory map has its own turn of the music: entering it moves to another song */
   function songNext(fade){ if(started && wantOn) nextSong(fade||6); }
   /* a level meter on the microphone (never sent anywhere, never played out) */
@@ -4726,7 +4733,7 @@ const HOLD_IMAGES = [   /* the hold screen's floating photographs, in scenes' ar
   }
   /* the next song on request (a main world opened) — only once the sound is running and wanted */
   function nextOnRequest(){ if(!started||!wantOn||!current) return; nextSong(2.5); burst=performance.now(); }
-  window.__sound={start, next:nextOnRequest, touch, live:()=>started&&wantOn&&!!current&&ctx&&ctx.state==='running', mods:()=>({...MOD}), _out:()=>master.__lim, state:()=>({started,on:wantOn,song:current?SONGS[current.i].id:null,room:current?current.room:null,ctx:ctx?ctx.state:null}),
+  window.__sound={start, next:nextOnRequest, touch, live:()=>started&&wantOn&&!!current&&ctx&&ctx.state==='running', mods:()=>({...MOD}), _out:()=>master.__lim, _hush:()=>hush?+hush.gain.value.toFixed(3):null, state:()=>({started,on:wantOn,song:current?SONGS[current.i].id:null,room:current?current.room:null,ctx:ctx?ctx.state:null}),
     _tap:()=>master, _play:i=>playSong(i,2)};
   setBtn();
 })();
